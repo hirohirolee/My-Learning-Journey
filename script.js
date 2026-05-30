@@ -1,3 +1,4 @@
+alert("JS 檔案正在執行中！"); // 加這行測試
 document.addEventListener('DOMContentLoaded', () => {
     function updateClock() {
         const now = new Date();
