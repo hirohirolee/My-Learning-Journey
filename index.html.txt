@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hiro's Personal Page</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Hello, I am Hiro</h1>
+         <img src="avatar.jpg" alt="My Avatar" style="width:150px; border-radius:50%; margin: 10px;">
+        <div id="clock">Current Time: Loading...</div>
+        <p>Welcome to my personal web page.</p>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

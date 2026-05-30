@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML5 Boilerplate</title>
+  
+  <!-- Typography & Icons (Optional but recommended) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Layout Wrapper -->
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo">AppLogo</div>
+      <nav class="nav-links">
+        <a href="#" class="active">Home</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </nav>
+    </header>
+
+    <main class="app-main">
+      <section class="hero-section">
+        <h1>Welcome to Your New Project</h1>
+        <p>This is a lightweight, responsive, and clean boilerplate configured with modern CSS resets and variable-based design tokens.</p>
+        <div class="cta-group">
+          <button class="btn btn-primary" id="primaryBtn">Get Started</button>
+          <button class="btn btn-secondary">Learn More</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>&copy; <span id="currentYear"></span> Your Company. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script>
+    // Set current year dynamically in the footer
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+    // Simple interaction hook
+    const primaryBtn = document.getElementById('primaryBtn');
+    if (primaryBtn) {
+      primaryBtn.addEventListener('click', () => {
+        alert('Boilerplate is ready! Happy coding!');
+      });
+    }
+  </script>
+</body>
+</html>
