@@ -1,60 +1,31 @@
-/* 強制修正排版 */
-html, body {
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-}
+/* 全局重置 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: #fff; color: #333; }
 
-/* 確保容器寬度正確 */
+/* 專業導覽列 */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 10%;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+}
+.logo { font-size: 1.8rem; font-weight: 800; }
+.navbar nav ul { display: flex; list-style: none; gap: 40px; }
+.navbar nav a { text-decoration: none; color: #555; font-weight: 600; }
+
+/* 核心視覺區塊 (Hero) */
 .hero-section {
     width: 100%;
-    min-height: 80vh;
+    height: 70vh;
+    background: #1a1a1a; /* 深色底，對應你要的風格 */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-}
-
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #fff; }
-
-/* 導覽列 */
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 8%;
-    background: #fff;
-    border-bottom: 1px solid #eee;
-}
-
-.logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; }
-.navbar nav ul { display: flex; list-style: none; gap: 30px; }
-.navbar nav a { text-decoration: none; color: #333; font-size: 0.9rem; letter-spacing: 1px; }
-
-/* Hero Section (參考網頁核心) */
-.hero-section {
-    height: 80vh;
-    background: #2b2d35; /* 模擬該網頁的深色背景 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    text-align: center;
+    color: #fff;
     padding: 0 20px;
 }
-
-.hero-content h1 { font-size: 3rem; margin-bottom: 20px; }
-.hero-content p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9; }
-
-.btn {
-    padding: 12px 30px;
-    background: #ff7e33; /* 參考網頁的橙色按鈕 */
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-    border-radius: 5px;
-}
+.hero-content h1 { font-size: 3rem; margin-bottom: 15px; }
+.hero-content p { font-size: 1.2rem; margin-bottom: 30px; color: #ccc; }
