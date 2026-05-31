@@ -47,3 +47,21 @@ body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); c
     transition: 0.3s;
 }
 .btn:hover { background: rgba(100, 255, 218, 0.1); }
+
+/* --- 按鈕樣式 --- */
+.btn {
+    display: inline-block;
+    padding: 12px 30px;
+    margin-top: 20px;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    text-decoration: none;
+    border-radius: 5px;
+    transition: 0.3s;
+    font-weight: bold;
+}
+
+.btn:hover {
+    background: var(--accent-color);
+    color: var(--bg-color);
+}
