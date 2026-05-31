@@ -9,9 +9,9 @@
 
 ## 連結
 - **GitHub Repo**: https://github.com/hirohirolee/My-Learning-Journey
-- **Live Demo**: https://hirohirolee.github.io/My-Learning-Journey/
+- **Live Demo (基礎版)**: https://hirohirolee.github.io/My-Learning-Journey/portfolio/index.html
 
 ## 開發紀錄
 1. 安裝與設定 Antigravity。
 2. 使用 AI 產生 `index.html`、`style.css` 及 `script.js`。
-3. 將所有檔案部署至 GitHub Pages 的根目錄。
+3. 將所有檔案遷移至 `portfolio/` 資料夾並部署至 GitHub Pages。

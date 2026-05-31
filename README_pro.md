@@ -18,8 +18,8 @@
 3. **UI 設計**: 使用 Flexbox 進行響應式排版與現代化配色方案。
 
 ## 網站連結
-- [基礎學習頁面](https://hirohirolee.github.io/My-Learning-Journey/index.html)
-- [專業版 Portfolio](https://hirohirolee.github.io/My-Learning-Journey/index_pro.html)
+- [基礎學習頁面](https://hirohirolee.github.io/My-Learning-Journey/portfolio/index.html)
+- [專業版 Portfolio](https://hirohirolee.github.io/My-Learning-Journey/portfolio/index_pro.html)
 
 ---
 *由 Hiro 開發維護，持續更新中。*
