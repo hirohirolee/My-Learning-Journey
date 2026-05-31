@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hiro | Professional Portfolio v2</title>
+    <link rel="stylesheet" href="style_pro_v2.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">HIRO.DEV</div>
+            <ul>
+                <li><a href="#learning">學習路程</a></li>
+                <li><a href="#projects">專案作品</a></li>
+                <li><a href="#contact">聯繫我</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero">
+            <img src="../assets/avatar.jpg" class="profile-pic" alt="Hiro">
+            <h1>Hiro | Backend & Data Analyst</h1>
+            <p>持續進化，探索技術的無限可能。</p>
+            <div id="clock"></div>
+        </section>
+
+        <section id="projects">
+            <h2>作品展示</h2>
+            <div class="card">
+                <h3>版本 v2 實驗室</h3>
+                <p>這是全新的 Portfolio 架構，記錄我進階的技術實踐。</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

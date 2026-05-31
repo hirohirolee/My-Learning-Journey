@@ -1,0 +1,49 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #0a192f;
+    color: #e6f1ff;
+}
+
+header nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 2rem 5%;
+}
+
+.logo { 
+    font-weight: bold; 
+    font-size: 1.5rem; 
+    color: #64ffda; 
+}
+
+header nav ul {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+}
+
+header nav a {
+    color: #e6f1ff;
+    text-decoration: none;
+}
+
+#hero { text-align: center; padding: 80px 20px; }
+
+.profile-pic {
+    width: 150px;
+    border-radius: 50%;
+    border: 3px solid #64ffda;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: #112240;
+    padding: 30px;
+    margin: 20px auto;
+    max-width: 800px;
+    border-radius: 12px;
+    transition: 0.3s;
+}
+
+.card:hover { transform: translateY(-5px); }
