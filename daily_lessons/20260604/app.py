@@ -1,5 +1,6 @@
 import streamlit as st
-import requests
+import urllib.parse
+import time
 
 # 設定網頁標題與排版
 st.set_page_config(page_title="AI 魔法生圖器", page_icon="✨", layout="centered")
@@ -26,41 +27,34 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("✨ AI 魔法生圖器")
-st.caption("輸入文字，見證奇蹟 (Hugging Face 終極穩定版)")
-
-# 💡 終極解法：直接把你的 Token 貼在這裡的引號裡面！
-# 例如：HF_TOKEN = "hf_AbCdEfGhIjKlMnOpQrStUvWxYz"
-HF_TOKEN = "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"
+st.caption("輸入文字，見證奇蹟 (免密碼極簡版)")
 
 st.markdown("### 你想畫些什麼？")
-prompt = st.text_area("提示詞", label_visibility="collapsed", placeholder="例如：A cute cat on the grass drinking cola, high quality...", height=100)
-st.caption("💡 小提示：開源模型對英文的理解力更好，建議輸入英文提示詞喔！")
+prompt = st.text_area("提示詞", label_visibility="collapsed", placeholder="例如：一隻戴著太空頭盔的橘貓，正在火星上喝珍珠奶茶，高畫質...", height=100)
 
 # 生成按鈕
 if st.button("✨ 立即生成圖片"):
-    if HF_TOKEN == "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" or not HF_TOKEN.startswith("hf_"):
-        st.error("⚠️ 程式碼裡的 Token 好像還沒替換喔！請回到 GitHub 把 HF_TOKEN 換成你的密碼。")
-    elif not prompt.strip():
+    if not prompt.strip():
         st.warning("⚠️ 請先輸入你想生成的圖片描述！")
     else:
-        with st.spinner("魔法施展中，大約需要 15~30 秒，請稍候..."):
-            try:
-                # 使用 Hugging Face 官方穩定的生圖模型
-                API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
-                headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-                
-                payload = {"inputs": prompt.strip()}
-                response = requests.post(API_URL, headers=headers, json=payload, timeout=45)
-                
-                if response.status_code == 200:
-                    st.success("🎉 生成成功！")
-                    st.image(response.content, use_container_width=True)
-                elif response.status_code == 503:
-                    st.warning("模型正在暖機中，請等待約 30 秒後，再點擊一次「立即生成圖片」！")
-                else:
-                    st.error(f"圖片生成失敗 (錯誤碼: {response.status_code})。")
-                    
-            except requests.exceptions.Timeout:
-                st.error("伺服器畫圖畫太久了，發生超時錯誤，請稍後再試一次！")
-            except Exception as e:
-                st.error(f"生圖過程中發生錯誤：{e}")
+        with st.spinner("魔法施展中，大約需要 5~10 秒，請稍候..."):
+            
+            # 處理文字與亂數種子
+            safe_prompt = urllib.parse.quote(prompt.strip())
+            seed = int(time.time())
+            
+            # 使用完全免費免 Key 的 Pollinations 服務
+            image_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?nologo=true&seed={seed}"
+            
+            st.success("🎉 生成指令已送出！")
+            
+            # 嘗試用 Markdown 直接顯示圖片
+            st.markdown(f"![AI 生成圖片]({image_url})")
+            
+            # 備用保險機制：提供直接外連的按鈕 (交作業必備)
+            st.info("💡 如果上方沒有馬上顯示圖片，請點擊下方按鈕直接查看：")
+            st.markdown(f"""
+                <a href="{image_url}" target="_blank" style="display: block; text-align: center; background-color: #10B981; color: white; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: bold;">
+                    🔗 在新分頁開啟生成的圖片
+                </a>
+            """, unsafe_allow_html=True)
