@@ -1,7 +1,6 @@
 import streamlit as st
 import urllib.parse
 import time
-import streamlit.components.v1 as components
 
 # 設定網頁標題與排版
 st.set_page_config(page_title="AI 魔法生圖器", page_icon="✨", layout="centered")
@@ -28,7 +27,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("✨ AI 魔法生圖器")
-st.caption("輸入文字，見證奇蹟 (前端直連免 Key 版)")
+st.caption("輸入文字，見證奇蹟 (直連抗阻擋版)")
 
 st.markdown("### 你想畫些什麼？")
 prompt = st.text_area("提示詞", label_visibility="collapsed", placeholder="例如：一隻戴著太空頭盔的橘貓，正在火星上喝珍珠奶茶，高畫質...", height=100)
@@ -38,24 +37,24 @@ if st.button("✨ 立即生成圖片"):
     if not prompt.strip():
         st.warning("⚠️ 請先輸入你想生成的圖片描述！")
     else:
-        with st.spinner("魔法施展中，這大約需要 10~20 秒，請稍候..."):
+        with st.spinner("魔法施展中，大約需要 10 秒，請稍候..."):
             
-            # 處理中文與特殊符號，確保網址正確
+            # 處理中文與特殊符號
             safe_prompt = urllib.parse.quote(prompt.strip())
             seed = int(time.time())
             
-            # 使用 Pollinations 穩定的生圖網址
-            image_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=1024&height=1024&nologo=true&seed={seed}"
+            # 簡化網址，減少被伺服器誤判的機率
+            image_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?seed={seed}"
             
-            # 💡 關鍵架構轉換：使用 HTML img 標籤，把讀取圖片的工作轉交給「使用者的瀏覽器」
-            # 這能完美避開 Streamlit 雲端 IP 被阻擋 (402) 的問題，也解決了破圖問題。
-            html_code = f"""
-            <div style="display: flex; justify-content: center; align-items: center; width: 100%; padding: 10px;">
-                <img src="{image_url}" style="width: 100%; max-width: 512px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="AI 正在努力畫圖中，請稍候幾秒鐘...">
-            </div>
-            """
+            st.success("🎉 生成指令已送出！")
             
-            # 在 Streamlit 中嵌入並執行這段 HTML
-            components.html(html_code, height=600)
+            # 💡 解法 1：使用 Streamlit 內建 Markdown 渲染圖片，避開 iframe 隔離限制
+            st.markdown(f"![AI 生成圖片]({image_url})")
             
-            st.success("🎉 指令已發送！(請等待瀏覽器將圖片載入顯示)")
+            # 💡 解法 2：如果瀏覽器依然嚴格阻擋載入，提供直接外連的備用按鈕 (交作業必備)
+            st.info("💡 如果上方沒有顯示圖片 (被瀏覽器阻擋)，請點擊下方按鈕直接查看：")
+            st.markdown(f"""
+                <a href="{image_url}" target="_blank" style="display: block; text-align: center; background-color: #10B981; color: white; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: bold;">
+                    🔗 在新分頁開啟生成的圖片
+                </a>
+            """, unsafe_allow_html=True)
