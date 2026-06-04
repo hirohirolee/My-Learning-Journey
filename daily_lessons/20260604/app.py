@@ -43,19 +43,22 @@ if st.button("✨ 立即生成圖片"):
                 # 處理中文與特殊符號，確保網址正確
                 safe_prompt = urllib.parse.quote(prompt.strip())
                 seed = int(time.time())
-                
-                # 呼叫開源 Text2Image API 網址
                 image_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=1024&height=1024&nologo=true&seed={seed}"
                 
-                # 💡 關鍵修正：讓 Python 伺服器去等待並下載圖片，最多等 30 秒
-                response = requests.get(image_url, timeout=30)
+                # 💡 關鍵修正：加上 User-Agent 標頭，偽裝成 Chrome 瀏覽器，避免被伺服器阻擋
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+                
+                # 發送帶有偽裝標頭的請求
+                response = requests.get(image_url, headers=headers, timeout=30)
                 
                 if response.status_code == 200:
                     st.success("🎉 生成成功！")
-                    # 使用下載回來的二進位資料 (response.content) 來顯示圖片，確保絕對不會破圖
                     st.image(response.content, use_container_width=True)
                 else:
-                    st.error("圖片生成失敗，請稍後再試一次！")
+                    # 顯示具體的錯誤代碼，方便追蹤
+                    st.error(f"圖片生成失敗 (錯誤碼: {response.status_code})，請稍後再試一次！")
                     
             except requests.exceptions.Timeout:
                 st.error("伺服器畫圖畫太久了，發生超時錯誤，請再試一次！")
