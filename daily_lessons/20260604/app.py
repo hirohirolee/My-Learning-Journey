@@ -30,7 +30,7 @@ st.caption("輸入文字，見證奇蹟 (Hugging Face 終極穩定版)")
 
 # 💡 終極解法：直接把你的 Token 貼在這裡的引號裡面！
 # 例如：HF_TOKEN = "hf_AbCdEfGhIjKlMnOpQrStUvWxYz"
-HF_TOKEN = "請把你的hf_密碼貼在這裡"
+HF_TOKEN = "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"
 
 st.markdown("### 你想畫些什麼？")
 prompt = st.text_area("提示詞", label_visibility="collapsed", placeholder="例如：A cute cat on the grass drinking cola, high quality...", height=100)
