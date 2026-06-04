@@ -30,7 +30,7 @@ st.title("✨ AI 魔法生圖器")
 st.caption("輸入文字，見證奇蹟 (Streamlit 原生版)")
 
 # 讓使用者輸入 API Key (避免明碼寫在 GitHub 上，保護你的帳號安全)
-API_KEY = st.text_input("請輸入您的 Gemini API Key (測試用):", type="password")
+API_KEY = "AQ.Ab8RN6KRVMXVYcKOyeOewtdTfulJKHv1ScIfV4cqHvo3mG_hbg"
 
 st.markdown("### 你想畫些什麼？")
 prompt = st.text_area("提示詞", label_visibility="collapsed", placeholder="例如：一隻戴著太空頭盔的橘貓，正在火星上喝珍珠奶茶，高畫質...", height=100)
