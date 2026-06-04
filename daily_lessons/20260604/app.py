@@ -57,7 +57,8 @@ if st.button("✨ 立即生成圖片"):
     else:
         with st.spinner("魔法施展中，請稍候..."):
             try:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key={API_KEY}"
+                # 把原本的 imagen-4.0-generate-001 換成 imagen-3.0-generate-001
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key={API_KEY}"
                 headers = {'Content-Type': 'application/json'}
                 payload = {
                     "instances": {"prompt": prompt.strip()},
