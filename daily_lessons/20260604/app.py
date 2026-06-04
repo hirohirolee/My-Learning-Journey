@@ -1,6 +1,7 @@
 import streamlit as st
 import urllib.parse
 import time
+import requests
 
 # 設定網頁標題與排版
 st.set_page_config(page_title="AI 魔法生圖器", page_icon="✨", layout="centered")
@@ -37,20 +38,26 @@ if st.button("✨ 立即生成圖片"):
     if not prompt.strip():
         st.warning("⚠️ 請先輸入你想生成的圖片描述！")
     else:
-        with st.spinner("魔法施展中，請稍候..."):
+        with st.spinner("魔法施展中，這大約需要 5~10 秒，請稍候..."):
             try:
                 # 處理中文與特殊符號，確保網址正確
                 safe_prompt = urllib.parse.quote(prompt.strip())
-                
-                # 加入隨機的種子碼 (seed)，確保就算輸入一樣的文字，每次也能產生新的圖片
                 seed = int(time.time())
                 
-                # 呼叫開源 Text2Image API
+                # 呼叫開源 Text2Image API 網址
                 image_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=1024&height=1024&nologo=true&seed={seed}"
                 
-                st.success("🎉 生成成功！")
+                # 💡 關鍵修正：讓 Python 伺服器去等待並下載圖片，最多等 30 秒
+                response = requests.get(image_url, timeout=30)
                 
-                # 讓 Streamlit 直接載入並顯示圖片
-                st.image(image_url, use_container_width=True)
+                if response.status_code == 200:
+                    st.success("🎉 生成成功！")
+                    # 使用下載回來的二進位資料 (response.content) 來顯示圖片，確保絕對不會破圖
+                    st.image(response.content, use_container_width=True)
+                else:
+                    st.error("圖片生成失敗，請稍後再試一次！")
+                    
+            except requests.exceptions.Timeout:
+                st.error("伺服器畫圖畫太久了，發生超時錯誤，請再試一次！")
             except Exception as e:
                 st.error(f"生圖過程中發生錯誤：{e}")
