@@ -22,6 +22,19 @@
     * 初始網頁架構與 JavaScript 基礎功能練習（用於完成 HW1 作業）。
 * **[個人介紹網頁 (Personal Web)](https://hirohirolee.github.io/My-Learning-Journey/portfolio/person-web/)**
     * 運用 HTML/CSS 打造的專業 Fusion 風格作品集。
+ 
+2. 動態 AI 應用 (Streamlit Cloud)
+這些應用展示了您運用 API 串接與 AI 邊緣運算技術的實作成果，點擊即可即時體驗：
+
+AI Image Generation Web App (v20260604)
+https://my-learning-journey-a9egpqgpvwec9kup8grj6x.streamlit.app/
+
+整合 Puter.js 技術的穩定版生圖工作室。
+
+Linear AI App (v20260605)
+https://hiro-linear-regression.streamlit.app/
+
+課程練習與 AI 技術整合展示。
 
 ### 🔗 專案原始碼
 * **GitHub Repo**: [https://github.com/hirohirolee/My-Learning-Journey](https://github.com/hirohirolee/My-Learning-Journey)
