@@ -20,8 +20,6 @@
 
 * **[基礎學習頁面 / Hello Web Page](https://hirohirolee.github.io/My-Learning-Journey/portfolio/index.html)**
     * 初始網頁架構與 JavaScript 基礎功能練習（用於完成 HW1 作業）。
-* **[專業版 Portfolio](https://hirohirolee.github.io/My-Learning-Journey/portfolio/index_pro.html)**
-    * 針對後端開發與資料分析領域進行視覺優化，採用現代化卡片佈局與專業 UI/UX 設計。
 * **[實驗版 Portfolio v2](https://hirohirolee.github.io/My-Learning-Journey/portfolio/index_pro_v2.html)**
     * 採用模組化架構，記錄進階的技術實踐（即時時鐘與頭像整合）。
 * **[個人介紹網頁 (Personal Web)](https://hirohirolee.github.io/My-Learning-Journey/portfolio/person-web/)**
