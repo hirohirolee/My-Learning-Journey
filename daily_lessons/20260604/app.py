@@ -64,7 +64,7 @@ if submit_button:
         st.session_state.current_prompt = prompt.strip().replace('\n', ' ')
 
 # ==========================================
-# 4. 究精準語意分布式 AI 生成通道
+# 4. 精準語意分布式 AI 生成通道
 # ==========================================
 if st.session_state.generated:
     st.success("🎉 圖片生成指令已成功發送！")
@@ -75,10 +75,10 @@ if st.session_state.generated:
     # 隨機產生種子碼，確保每一次點擊都會觸發全新生成的圖片
     random_seed = random.randint(1, 99999)
     
-    # 換用真正的免費 AI 即時生成端點 (告別貓咪預設防禦機制)
+    # 換用真正的免費 AI 即時生成端點
     target_image_url = f"https://image.pollinations.ai/p/{encoded_prompt}?width=800&height=600&model=flux&seed={random_seed}"
 
-    # 三個單引號完美包裹，徹底避開引號衝突
+    # 🌟 三個單引號完美包裹，並在結尾處確實閉合 (修正完畢)
     html_template = '''
     <!DOCTYPE html>
     <html>
@@ -113,3 +113,18 @@ if st.session_state.generated:
             
             <div class="mt-4 p-3 bg-white border border-slate-100 rounded-lg">
                 <p class="text-xs text-slate-500 font-medium">✨ <strong>AI 創作標籤：</strong> __RAW_PROMPT__</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="px-2 py-0.5 bg-blue-50 border border-blue-100 text-blue-600 rounded text-[10px] font-bold">精準語意通道</span>
+                    <a href="__IMAGE_URL__" target="_blank" class="text-[11px] text-blue-600 hover:underline font-semibold ml-auto">🔗 點此查看或下載高清原圖</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
+    # 安全取代
+    html_code = html_template.replace("__IMAGE_URL__", target_image_url).replace("__RAW_PROMPT__", st.session_state.current_prompt)
+    
+    # 渲染前端
+    components.html(html_code, height=700, scrolling=False)
