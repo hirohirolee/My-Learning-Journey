@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import io
 import time
+import urllib.parse
 from PIL import Image
 
 # ==========================================
@@ -10,7 +11,7 @@ from PIL import Image
 st.set_page_config(page_title="AI 圖像生成 Web App", page_icon="🎨", layout="wide")
 
 # ==========================================
-# 2. 安全地讀取系統預設 API Key
+# 2. 安全讀取密鑰
 # ==========================================
 try:
     system_hf_token = st.secrets["HF_TOKEN"]
@@ -18,33 +19,18 @@ except KeyError:
     system_hf_token = None
 
 # ==========================================
-# 3. 左側邊欄設計
+# 3. 左側邊欄
 # ==========================================
 with st.sidebar:
-    st.markdown("### 🛡️ 系統金鑰託管狀態")
+    st.markdown("### 🛡️ 系統狀態")
     if system_hf_token:
-        st.success("🟢 系統預設憑證：已安全託管")
+        st.success("🟢 後端密鑰託管：正常")
     else:
-        st.warning("⚠️ 系統預設憑證：未設定")
+        st.warning("⚠️ 後端密鑰託管：未設定")
         
     st.divider()
-    
-    user_hf_token = st.text_input(
-        "🔑 使用者自訂密鑰 (選填):",
-        type="password",
-        placeholder="hf_...",
-        help="留空將自動啟用系統後端託管憑證"
-    )
-    
-    # 決定最終使用的 Token
+    user_hf_token = st.text_input("🔑 自訂 Hugging Face Token (選填):", type="password")
     active_token = user_hf_token.strip() if user_hf_token.strip() else system_hf_token
-    
-    if active_token == user_hf_token.strip() and active_token:
-        st.info("🔐 已啟用您輸入的自訂密鑰")
-    elif active_token == system_hf_token and active_token:
-        st.info("🔒 已啟用後端自動託管憑證")
-    else:
-        st.error("❌ 無可用憑證，將無法生圖")
 
     st.divider()
     selected_model = st.selectbox(
@@ -52,74 +38,70 @@ with st.sidebar:
         (
             "black-forest-labs/FLUX.1-schnell",
             "stabilityai/sdxl-turbo",
-            "stabilityai/stable-diffusion-xl-base-1.0",
-            "prompthero/openjourney"  # 加入一個較快喚醒的經典模型備用
+            "stabilityai/stable-diffusion-xl-base-1.0"
         )
     )
 
 # ==========================================
-# 4. 主畫面設計
+# 4. 主畫面
 # ==========================================
 st.title("🎨 AI 圖像生成 Web App")
-st.markdown("**(✨ 最終穩定版：內建 Hugging Face 智能喚醒與重試引擎)**")
+st.markdown("**(✨ 具備 DNS 斷網容錯機制的終極版本)**")
 
-with st.container(border=True):
-    prompt = st.text_area("請輸入提示詞 (Prompt):", placeholder="A cat walking on the beach...", height=150)
-    submit_button = st.button("開始生成", type="primary")
+prompt = st.text_area("請輸入提示詞 (Prompt):", placeholder="A cat walking on the beach...", height=150)
+submit_button = st.button("開始生成", type="primary")
 
 # ==========================================
-# 5. Hugging Face 專屬智能連線邏輯
+# 5. 核心邏輯
 # ==========================================
 if submit_button:
     if not prompt.strip():
         st.warning("⚠️ 請輸入提示詞！")
     elif not active_token:
-        st.error("⚠️ 系統無可用金鑰，請在左側輸入 Hugging Face Token！")
+        st.error("⚠️ 無可用金鑰！")
     else:
         API_URL = f"https://api-inference.huggingface.co/models/{selected_model}"
         headers = {"Authorization": f"Bearer {active_token}"}
         payload = {"inputs": prompt.strip()}
         
-        max_retries = 6
+        status_msg = st.empty()
         success = False
         
-        # 建立一個動態更新狀態的區塊
-        status_msg = st.empty()
-        
-        for attempt in range(max_retries):
-            status_msg.info(f"🚀 正在連線 Hugging Face... (第 {attempt + 1}/{max_retries} 次嘗試)")
-            
+        # 嘗試連線 Hugging Face
+        for attempt in range(3):
+            status_msg.info(f"🚀 正在連線雲端模型... (第 {attempt + 1} 次嘗試)")
             try:
-                # 放寬超時限制至 40 秒
-                response = requests.post(API_URL, headers=headers, json=payload, timeout=40)
+                response = requests.post(API_URL, headers=headers, json=payload, timeout=30)
                 
                 if response.status_code == 200:
                     image = Image.open(io.BytesIO(response.content))
                     status_msg.success("🎉 圖片生成成功！")
-                    st.image(image, caption=f"✨ {prompt.strip()}", use_container_width=True)
+                    st.image(image, caption=f"✨ {prompt.strip()} (Hugging Face)", use_container_width=True)
                     success = True
                     break
-                    
                 elif response.status_code == 503:
-                    # 503 代表模型在休眠，讀取需要等待的時間
-                    data = response.json()
-                    wait_time = data.get("estimated_time", 20.0)
-                    sleep_time = min(wait_time, 15)  # 每次最多等 15 秒避免網頁完全卡死
-                    
-                    status_msg.warning(f"⏳ 遠端模型正在從休眠中喚醒... 系統將在 {sleep_time} 秒後自動重試。")
-                    time.sleep(sleep_time)
-                    
+                    wait_time = response.json().get("estimated_time", 15.0)
+                    status_msg.warning(f"⏳ 模型喚醒中，系統將等待 {min(wait_time, 15):.1f} 秒...")
+                    time.sleep(min(wait_time, 15))
                 else:
-                    status_msg.error(f"❌ API 發生錯誤 (狀態碼: {response.status_code}): {response.text}")
+                    status_msg.error(f"❌ API 錯誤: {response.status_code}")
                     break
                     
-            except requests.exceptions.Timeout:
-                status_msg.warning("⚠️ 連線超時，正在準備重試...")
-                time.sleep(3)
-            except Exception as e:
-                status_msg.error(f"❌ 發生異常錯誤: {str(e)}")
+            except requests.exceptions.ConnectionError:
+                # 抓到最致命的 DNS 斷網錯誤 (NameResolutionError)
+                status_msg.error("🚨 致命錯誤：Streamlit 雲端伺服器對外網路已斷線！")
                 break
-                
-        # 如果重試完畢依然失敗
-        if not success and 'response' in locals() and response.status_code == 503:
-            st.error("❌ 模型喚醒時間過長，已達到最大重試次數。建議稍後再試，或在左側更換其他模型。")
+            except Exception as e:
+                status_msg.warning("⚠️ 連線異常，準備重試...")
+                time.sleep(2)
+
+        # 如果後端徹底死機或超時，啟用瀏覽器物理繞道
+        if not success:
+            st.warning("📡 後端網路故障，已啟動【前端瀏覽器直連模式】渲染圖片！")
+            encoded_prompt = urllib.parse.quote(prompt.strip())
+            fallback_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?nologo=true"
+            
+            # 使用純 HTML 讓你的「瀏覽器」去下載圖片，完全不管 Streamlit 伺服器死活
+            html_img = f'<div style="display:flex;justify-content:center;"><img src="{fallback_url}" width="100%" style="border-radius:10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>'
+            st.markdown(html_img, unsafe_allow_html=True)
+            st.caption(f"✨ {prompt.strip()} (瀏覽器渲染備用通道)")
