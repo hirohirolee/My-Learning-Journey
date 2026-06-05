@@ -2,7 +2,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 import urllib.parse
 import random
-import base64
 
 # ==========================================
 # 1. 網頁基本設定
@@ -81,7 +80,7 @@ with st.container(border=True):
 st.info("註：若遠端 Hugging Face 機房流量爆滿或斷線，系統將無縫啟用【備用免 Key 閃電生圖通道】，確保 100% 成功出圖。")
 
 # ==========================================
-# 5. 雙軌生成核心邏輯
+# 5. 雙軌生成核心邏輯 (Hugging Face 優先 ➔ 備用免 Key Turbo 閃電繪圖)
 # ==========================================
 if submit_button:
     if not prompt.strip():
@@ -115,7 +114,7 @@ if submit_button:
         else:
             trigger_fallback = True
 
-        # 通道二：Base64 安全隔離技術 (100% 免疫任何語法錯誤)
+        # 通道二：採用安全串接法 (無多行字串，100% 避開引號與編碼衝突)
         if trigger_fallback:
             st.warning("📡 遠端主通道延遲/斷線，已自動為您切換至【備用免 Key 閃電生圖通道】！")
             
@@ -123,12 +122,41 @@ if submit_button:
             random_seed = random.randint(1, 99999)
             target_image_url = f"https://image.pollinations.ai/p/{encoded_prompt}?width=800&height=600&model=turbo&seed={random_seed}"
             
-            # 使用加密字串，完全移除了多行 HTML 中所有干擾 Python 解析的單雙引號與符號
-            b64_html_template = "PCFET0NUWVBFIHRodG1sPmh0bWw+PGhlYWQ+PG1ldGEgY2hhcnNldD0iVVRGLTgiPjxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi50YWlsd2luZGNzcy5jb20iPjwvc2NyaXB0PjxzdHlsZT5Aa2V5ZnJhbWVzIHB1bHNle0AwJSwxMDAle29wYWNpdHk6MTt9NTBle29wYWNpdHk6LjQ7fX0uYW5pbWF0ZS1wdWxzZXthbmltYXRpb246cHVsc2UgMS41cyBjdWJpYy1iZXppZXIoMC40LDAsMC42LDEpIGluZmluaXRlO308L3N0eWxlPjwvaGVhZD48Ym9keSBjbGFzcz0iYmctd2hpdGUgcC0wIG0tMCBmbGV4IGZsZXgtY29sIGl0ZW1zLWNlbnRlcioganVzdGlmeS1jZW50ZXIiPjxkaXYgY2xhc3M9InctZnVsbCBib3JkZXIgYm9yZGVyLXNsYXRlLTIwMCByb3VuZGVkLXhsIG92ZXJmbG93LWhpZGRlbiBzaGFkb3ctbGcganNsYXRlLTUwIHJlbGF0aXZlIHAtNCI+PGRpdiBjbGFzcz0icmVsYXRpdmUgcm91bmRlZC1sZyBvdmVyZmxvdy1oaWRkZW4gYmctc2xhdGUtMjAwIG1pbi1oLVs0NTBweF0gZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIiPjxkaXYgaWQ9InNrZWxldG9uIiBjbGFzcz0iYWJzb2x1dGUgaW5zZXQtMCBmbGV4IGZsZXgtY29sIGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBiZy1zbGF0ZS0xMDAgdGV4dC1zbGF0ZS00MDAgYW5pbWF0ZS1wdWxzZSB6LTAiPjxzdmcgY2xhc3M9InctMTIgaC0xMiB0ZXh0LXNsYXRlLTMwMCBtYi0yIiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1qb2luaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSIgZD0iTTQgMTZsNC41ODYtNC41ODZhMiAyIDAgMDEyLjgyOCAwTDE2IDE2bS0yLTJsMS41ODYtMS41ODZhMiAyIDAgMDEyLjgyOCAwTDIwIDE0bS02LTZoLjAxTTYgMjBoMTJhMiAyIDAgMDAyLTJWNmEyIDIgMCAwMC0yLTJINmEyIDIgMCAwMC0yIDJ2MTJhMiAyIDAgMDAyIDJ6Ij48L3BhdGg+PC9zdmc+PHAgY2xhc3M9InRleHQteHMgZm9udC1zZW1pYm9sZCI+🚀IOautumos道を即TMHWhh6Wregmh60gLCBvN6SndbXmIDIgMyDnp5ImLi4uPC9wPjwvZGl2PjxpbWcgc3JjPSJfX0lNQUdFX1VSTF9fIiBjbGFzcz0idy1mdWxsIGgtYXV0byBtYXgtaC1bNjAwcHhdIG9iamVjdC1jb250YWluIHJlbGF0aXZlIHotMTAgc2hhZG93LWlubmVyIG9wYWNpdHktMCB0cmFuc2l0aW9uLW9wYWNpdHkgZHVyYXRpb24tMzAwIHJvdW5kZWQtbGciIG9ubG9hZD0iZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NrZWxldG9uJykuc3R5bGUuZGlzcGxheT0nbm9uZSc7IHRoaXMuY2xhc3NMaXN0LnJlbW92ZSgnb3BhY2l0eS0wJyk7IiBhbHQ9IkFJIEdlbmVyYXRlZCBJbWFnZSIvPjwvZGl2PjxkaXYgY2xhc3M9Im10LTQgcC0zIGJnLXdoaXRlIGJvcmRlciBib3JkZXItc2xhdGUtMTAwIHJvdW5kZWQtbGcgc2hhZG93LWlubmVyIj48cCBjbGFzcz0idGV4dC14cyB0ZXh0LXNsYXRlLTUwMCBmb250LW1lZGl1bSI+✨IDxzdHJvbmc+QUkg5Ym15L2c5qiZp7vvIDwvc3Ryb25nPiBfX1JBV19QUk9NUFRfXzwvcD48ZGl2IGNsYXNzPSJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMiBtdC0yIj48c3BhbiBjbGFzcz0icHgtMiBweS0wLjUgYmctaW5kaWdvLTUwIGJvcmRlciBib3JkZXItaW5kaWdvLTEwMCB0ZXh0LWluZGlnby02MDAgcm91bmRlZCB0ZXh0LVsxMHB4XSBmb250LWJvbGQiPlR1cmJvIOalZGlzcGxpbmU8L3NwYW4+PHNwYW4gY2xhc3M9InB4LTIgcHktMC41IGJnLWVtZXJhbGQtNTAgYm9yZGVyIGJvcmRlci1lbWVyYWxkLTEwMCB0ZXh0LWVtZXJhbGQtNjAwIHJvdW5kZWQgdGV4dC1bMTBweF0gZm9udC1ib2xkIj7lr4bppGlh5YWo6KiX566hPC9zcGFuPjxhIGhyZWY9Il9fSU1BR0VfVVJMX18iIHRhcmdldD0iX2JsYW5rIiBjbGFzcz0idGV4dC1bMTFweF0gdGV4dC1ibHVlLTYwMCBob3Zlcjp1bmRlcmxpbmUgZm9udC1zZW1pYm9sZCBtbC1hdXRvIj7inYUg6bue5bKk5p+l55yL6auY6Z2Z5Y6f7Y8L2E+PC9kaXY+PC9kaXY+PC9kaXY+PC9ib2R5PjwvaHRtbD4="
+            # 使用單行字串陣列相加，徹底避免 Python 的多行字串與 CSS/HTML 語法打架
+            html_lines = [
+                "<!DOCTYPE html>",
+                "<html>",
+                "<head>",
+                "    <meta charset='UTF-8'>",
+                "    <script src='https://cdn.tailwindcss.com'></script>",
+                "    <style>",
+                "        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }",
+                "        .animate-pulse { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }",
+                "    </style>",
+                "</head>",
+                "<body class='bg-white p-0 m-0 flex flex-col items-center justify-center'>",
+                "    <div class='w-full border border-slate-200 rounded-xl overflow-hidden shadow-lg bg-slate-50 relative p-4'>",
+                "        <div class='relative rounded-lg overflow-hidden bg-slate-200 min-h-[450px] flex items-center justify-center'>",
+                "            <div id='skeleton' class='absolute inset-0 flex flex-col items-center justify-center bg-slate-100 text-slate-400 animate-pulse z-0'>",
+                "                <p class='text-xs font-semibold'>🚀 閃電通道即時渲染中，請稍候 2~3 秒...</p>",
+                "            </div>",
+                "            <img src='" + target_image_url + "' class='w-full h-auto max-h-[600px] object-contain relative z-10 shadow-inner opacity-0 transition-opacity duration-300 rounded-lg' onload=\"document.getElementById('skeleton').style.display='none'; this.classList.remove('opacity-0');\" alt='AI Generated Image' />",
+                "        </div>",
+                "        <div class='mt-4 p-3 bg-white border border-slate-100 rounded-lg shadow-inner'>",
+                "            <p class='text-xs text-slate-500 font-medium'>✨ <strong>AI 創作標籤：</strong> " + prompt.strip() + "</p>",
+                "            <div class='flex items-center gap-2 mt-2'>",
+                "                <span class='px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded text-[10px] font-bold'>Turbo 極速通道</span>",
+                "                <span class='px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded text-[10px] font-bold'>密鑰安全託管中</span>",
+                "                <a href='" + target_image_url + "' target='_blank' class='text-[11px] text-blue-600 hover:underline font-semibold ml-auto'>🔗 點此查看高清原圖</a>",
+                "            </div>",
+                "        </div>",
+                "    </div>",
+                "</body>",
+                "</html>"
+            ]
             
-            # 先進行變數替換
-            html_content = base64.b64decode(b64_html_template).decode('utf-8')
-            html_code = html_content.replace("__IMAGE_URL__", target_image_url).replace("__RAW_PROMPT__", prompt.strip())
+            # 使用換行符號將所有單行合併成一段乾淨的 HTML 程式碼
+            html_code = "\n".join(html_lines)
             
             # 渲染前端組件
             components.html(html_code, height=580, scrolling=False)
