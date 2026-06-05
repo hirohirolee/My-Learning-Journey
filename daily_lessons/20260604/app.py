@@ -1,104 +1,38 @@
 import streamlit as st
-import requests
-import io
-import time
-from PIL import Image
+import urllib.parse
 
-# ==========================================
-# 1. 網頁基本設定
-# ==========================================
-st.set_page_config(page_title="AI 圖像生成 Web App", page_icon="🎨", layout="wide")
+# 設定網頁標題與寬度
+st.set_page_config(page_title="AI 圖像生成 Web App", page_icon="🎨", layout="centered")
 
-# ==========================================
-# 2. 安全地讀取系統預設 API Key (後端自動託管)
-# ==========================================
-try:
-    system_hf_token = st.secrets["HF_TOKEN"]
-except KeyError:
-    system_hf_token = None
-
-# ==========================================
-# 3. 左側邊欄設計 (自訂密鑰雙軌機制)
-# ==========================================
+# 側邊欄設計 (讓畫面看起來更完整)
 with st.sidebar:
-    st.markdown("### 🛡️ 系統金鑰託管狀態")
-    if system_hf_token:
-        st.success("🟢 系統預設憑證：已安全託管")
-    else:
-        st.warning("⚠️ 系統預設憑證：未設定")
-        
-    st.divider()
-    user_hf_token = st.text_input("🔑 使用者自訂密鑰 (選填):", type="password", placeholder="hf_...")
-    active_token = user_hf_token.strip() if user_hf_token.strip() else system_hf_token
-    
-    if active_token:
-        st.info("🔐 憑證已就緒，準備連線")
-    else:
-        st.error("❌ 無可用憑證")
+    st.markdown("### 🛡️ 系統狀態")
+    st.success("🟢 系統連線正常")
+    st.info("本系統採用無金鑰 (Serverless) 架構，無需登入即可無限次生成。")
 
-    st.divider()
-    selected_model = st.selectbox(
-        "選擇 AI 模型:",
-        (
-            "black-forest-labs/FLUX.1-schnell",
-            "stabilityai/sdxl-turbo",
-            "stabilityai/stable-diffusion-xl-base-1.0"
-        )
-    )
-
-# ==========================================
-# 4. 主畫面設計
-# ==========================================
+# 主畫面標題
 st.title("🎨 AI 圖像生成 Web App")
 st.markdown("輸入一段文字，讓 AI 為你創作圖片。")
 
-with st.container(border=True):
-    prompt = st.text_area("請輸入提示詞 (Prompt):", placeholder="A cat walking on the beach...", height=150)
-    submit_button = st.button("開始生成", type="primary")
+# 提示詞輸入框
+prompt = st.text_area("請輸入提示詞 (Prompt):", "a cat walking on the beach")
 
-# ==========================================
-# 5. Hugging Face 智能喚醒重試核心
-# ==========================================
-if submit_button:
-    if not prompt.strip():
-        st.warning("⚠️ 請輸入提示詞！")
-    elif not active_token:
-        st.error("⚠️ 請提供有效金鑰！")
+# 生成按鈕
+if st.button("開始生成", type="primary"):
+    if prompt.strip() == "":
+        st.warning("⚠️ 請先輸入提示詞！")
     else:
-        API_URL = f"https://api-inference.huggingface.co/models/{selected_model}"
-        headers = {"Authorization": f"Bearer {active_token}"}
-        payload = {"inputs": prompt.strip()}
-        
-        # 建立動態訊息區
-        status_msg = st.empty()
-        success = False
-        
-        # 進行 3 次智能連線與喚醒嘗試
-        for attempt in range(3):
-            status_msg.info(f"🚀 正在連線 Hugging Face 算力池... (嘗試 {attempt + 1}/3)")
+        with st.spinner("✨ 雲端 AI 正在努力作畫中，請稍候..."):
             try:
-                response = requests.post(API_URL, headers=headers, json=payload, timeout=40)
+                # 將提示詞轉換為網址安全格式 (URL Encoding)
+                encoded_prompt = urllib.parse.quote(prompt)
                 
-                if response.status_code == 200:
-                    image = Image.open(io.BytesIO(response.content))
-                    status_msg.success("🎉 圖片生成成功！")
-                    st.image(image, caption=f"✨ {prompt.strip()}", use_container_width=True)
-                    success = True
-                    break
-                elif response.status_code == 503:
-                    # 503 代表遠端免費模型剛睡醒，正在載入
-                    wait_time = response.json().get("estimated_time", 15.0)
-                    status_msg.warning(f"⏳ 遠端 AI 模型正在從休眠中喚醒... 系統自動等待 {min(wait_time, 15):.1f} 秒後重試...")
-                    time.sleep(min(wait_time, 15))
-                else:
-                    status_msg.error(f"❌ API 回傳錯誤碼 {response.status_code}：{response.text}")
-                    break
-            except requests.exceptions.ConnectionError:
-                status_msg.error("🚨 雲端機房目前仍處於斷網狀態 (NameResolutionError)，請執行左下角 Reboot 重新分配伺服器。")
-                break
+                # 呼叫 Pollinations AI 的免金鑰開源 API
+                image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&nologo=true"
+                
+                # 在網頁上顯示生成的圖片
+                st.image(image_url, caption=f"Prompt: {prompt}", use_container_width=True)
+                st.success("🎉 圖片生成成功！您可以對圖片點擊右鍵「另存圖片」。")
+                
             except Exception as e:
-                status_msg.warning(f"⚠️ 連線異常 ({str(e)})，準備重試...")
-                time.sleep(2)
-                
-        if not success and 'response' in locals() and response.status_code == 503:
-            st.error("❌ 遠端模型喚醒超時，請再點擊一次按鈕重新發送指令。")
+                st.error(f"🚨 發生錯誤：{e}")
