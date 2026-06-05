@@ -89,5 +89,9 @@ if submit_button:
                     else:
                         st.write(error_msg)
             
-            except Exception as e:
-                st.error(f"發生未知錯誤：{e}")
+           # 把你程式碼最底部的 except 改成這樣：
+except Exception as e:
+    if "NameResolutionError" in str(e) or "HTTPSConnection" in str(e):
+        st.error("❌ 網路連線異常：目前 Streamlit 雲端伺服器與 Hugging Face 連線中斷，請稍等幾秒鐘並重新整理網頁再試一次！")
+    else:
+        st.error(f"發生未知錯誤：{e}")
