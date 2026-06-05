@@ -26,7 +26,7 @@
 2. 動態 AI 應用 (Streamlit Cloud)
      這些應用展示了您運用 API 串接與 AI 邊緣運算技術的實作成果，點擊即可即時體驗：
 
-     AI Image Generation Web App (v20260604)  整合 Puter.js 技術的穩定版生圖工作室。
+     AI Image App (v20260604)  整合 Puter.js 技術的穩定版生圖工作室。
          https://my-learning-journey-a9egpqgpvwec9kup8grj6x.streamlit.app/
 
      Linear AI App (v20260605)  課程練習與 AI 技術整合展示。
