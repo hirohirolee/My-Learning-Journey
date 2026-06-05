@@ -9,13 +9,16 @@ prompt = st.text_area("請輸入提示詞 (Prompt):", placeholder="A cat walking
 submit_button = st.button("開始生成", type="primary")
 
 if submit_button and prompt.strip():
-    # 這是最簡單的圖片網址，完全不需要後端連線，直接由瀏覽器發送請求
     encoded_prompt = urllib.parse.quote(prompt.strip())
     random_seed = random.randint(1, 99999)
-    # 使用 pollinations.ai 直接渲染，這是一個公開且無需驗證的通道
-    img_url = "https://image.pollinations.ai/prompt/" + encoded_prompt + "?seed=" + str(random_seed) + "&nologo=true&width=800&height=600"
+    img_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?seed={random_seed}&nologo=true"
     
-    st.success("✨ 圖片已由前端渲染引擎載入！")
-    # 直接由瀏覽器請求圖片，不經過 Streamlit 伺服器
-    st.image(img_url, use_container_width=True)
-    st.caption("若圖片無法顯示，請按右下角 Manage App -> Reboot App 後重新整理")
+    st.info("✨ 圖片正透過強制渲染模式注入...")
+    
+    # 這是最後的招式：使用 st.markdown 的 unsafe_allow_html=True
+    # 這會直接在頁面上寫入 HTML，完全跳過 Streamlit 的圖像驗證邏輯
+    st.markdown(
+        f'<img src="{img_url}" style="width:100%; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.2);">'
+        , unsafe_allow_html=True
+    )
+    st.caption("如果依然看不到圖，請點擊下方 Manage App -> Reboot App 進行最後的伺服器環境清理。")
