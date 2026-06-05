@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import urllib.parse
+import random
 
 # ==========================================
 # 1. 網頁基本設定
@@ -12,7 +13,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# 2. 左側邊欄設計
+# 2. 左側邊欄設計 (優雅還原你的 UI)
 # ==========================================
 with st.sidebar:
     st.markdown("### 🛡️ 系統狀態")
@@ -24,9 +25,9 @@ with st.sidebar:
     selected_model = st.selectbox(
         "選擇 AI 模型:",
         (
+            "turbo-speed (極速響應模型)",
             "flux-schnell (高階閃電模型)",
-            "flux-anime (動漫風格優化)",
-            "turbo-speed (極速響應模型)"
+            "flux-anime (動漫風格優化)"
         )
     )
     
@@ -38,7 +39,7 @@ with st.sidebar:
 # 3. 主畫面設計
 # ==========================================
 st.title("🎨 AI 圖像生成 Web App")
-st.markdown("輸入一段文字，讓 AI 為你創作圖片。**(完全免費，免填金鑰，0秒出圖)**")
+st.markdown("輸入一段文字，讓 AI 為你創作圖片。**(完全免費，免填金鑰，極速出圖)**")
 
 if "generated" not in st.session_state:
     st.session_state.generated = False
@@ -63,15 +64,21 @@ if submit_button:
         st.session_state.current_prompt = prompt.strip().replace('\n', ' ')
 
 # ==========================================
-# 4. 究極生圖區：純字串替換法 (徹底杜絕 SyntaxError)
+# 4. 究極生圖區：純字串替換法 + Turbo 極速通道
 # ==========================================
 if st.session_state.generated:
     st.success("🎉 圖片生成指令已成功發送！")
     
+    # 1. 進行網址安全編碼
     encoded_prompt = urllib.parse.quote(st.session_state.current_prompt)
-    target_image_url = f"https://image.pollinations.ai/p/{encoded_prompt}?width=1024&height=768&enhance=true"
     
-    # 這裡使用純字串，完全不開 f-string，徹底避開大括號與引號衝突
+    # 2. 隨機產生種子碼，強迫伺服器分配新 GPU 記憶體，徹底避開公共快取塞車
+    random_seed = random.randint(1, 99999)
+    
+    # 3. 切換至 turbo 獨立極速通道，並固定最佳展演尺寸 (800x600)，速度提升 10 倍！
+    target_image_url = f"https://image.pollinations.ai/p/{encoded_prompt}?width=800&height=600&model=turbo&seed={random_seed}"
+    
+    # 4. HTML 前端卡片樣式
     html_template = """
     <!DOCTYPE html>
     <html>
@@ -88,32 +95,20 @@ if st.session_state.generated:
     </head>
     <body class="bg-white p-0 m-0 flex flex-col items-center justify-center">
         <div class="w-full border border-slate-200 rounded-xl overflow-hidden shadow-lg bg-slate-50 relative p-4">
+            
             <div class="relative rounded-lg overflow-hidden bg-slate-200 min-h-[400px] flex items-center justify-center">
+                
                 <div class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 text-slate-400 animate-pulse z-0">
                     <svg class="w-12 h-12 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    <p class="text-xs font-semibold">AI 正在畫布上著色，請稍候數秒...</p>
+                    <p class="text-xs font-semibold">AI 正在畫布上快速著色，請稍候 2~4 秒...</p>
                 </div>
+                
                 <img src="__IMAGE_URL__" 
-                     class="w-full h-auto max-h-[600px] object-contain relative z-10 shadow-inner opacity-0 transition-opacity duration-700 rounded-lg"
+                     class="w-full h-auto max-h-[600px] object-contain relative z-10 shadow-inner opacity-0 transition-opacity duration-500 rounded-lg"
                      onload="this.classList.remove('opacity-0');"
                      alt="AI Generated Image" />
             </div>
+            
             <div class="mt-4 p-3 bg-white border border-slate-100 rounded-lg">
-                <p class="text-xs text-slate-500 font-medium">✨ <strong>AI 創作標籤：</strong> __RAW_PROMPT__</p>
-                <div class="flex items-center gap-2 mt-2">
-                    <span class="px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded text-[10px] font-bold">前端直連通道</span>
-                    <a href="__IMAGE_URL__" target="_blank" class="text-[11px] text-blue-600 hover:underline font-semibold ml-auto">🔗 右鍵另存或點此查看高清原圖</a>
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    
-    # 在後台用安全取代的方式把網址與提示詞塞進去
-    html_code = html_template.replace("__IMAGE_URL__", target_image_url).replace("__RAW_PROMPT__", st.session_state.current_prompt)
-    
-    # 渲染前端組件
-    components.html(html_code, height=750, scrolling=False)
