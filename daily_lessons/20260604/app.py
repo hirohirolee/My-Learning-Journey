@@ -1,7 +1,8 @@
 import streamlit as st
-import streamlit.components.v1 as components
-import urllib.parse
-import random
+import requests
+import io
+import time
+from PIL import Image
 
 # ==========================================
 # 1. 網頁基本設定
@@ -9,7 +10,7 @@ import random
 st.set_page_config(page_title="AI 圖像生成 Web App", page_icon="🎨", layout="wide")
 
 # ==========================================
-# 2. 安全地讀取系統預設 API Key (維持雲端 Secrets 架構)
+# 2. 安全地讀取系統預設 API Key (後端自動託管)
 # ==========================================
 try:
     system_hf_token = st.secrets["HF_TOKEN"]
@@ -17,18 +18,23 @@ except KeyError:
     system_hf_token = None
 
 # ==========================================
-# 3. 左側邊欄設計 (自訂密鑰雙軌機制維持原樣)
+# 3. 左側邊欄設計 (自訂密鑰雙軌機制)
 # ==========================================
 with st.sidebar:
-    st.markdown("### 🛡️ 系統狀態")
+    st.markdown("### 🛡️ 系統金鑰託管狀態")
     if system_hf_token:
-        st.success("🟢 後端密鑰託管：正常")
+        st.success("🟢 系統預設憑證：已安全託管")
     else:
-        st.warning("⚠️ 後端密鑰託管：未設定")
+        st.warning("⚠️ 系統預設憑證：未設定")
         
     st.divider()
-    user_hf_token = st.text_input("🔑 自訂 Hugging Face Token (選填):", type="password")
+    user_hf_token = st.text_input("🔑 使用者自訂密鑰 (選填):", type="password", placeholder="hf_...")
     active_token = user_hf_token.strip() if user_hf_token.strip() else system_hf_token
+    
+    if active_token:
+        st.info("🔐 憑證已就緒，準備連線")
+    else:
+        st.error("❌ 無可用憑證")
 
     st.divider()
     selected_model = st.selectbox(
@@ -46,56 +52,53 @@ with st.sidebar:
 st.title("🎨 AI 圖像生成 Web App")
 st.markdown("輸入一段文字，讓 AI 為你創作圖片。")
 
-prompt = st.text_area("請輸入提示詞 (Prompt):", placeholder="A cat walking on the beach...", height=150)
-submit_button = st.button("開始生成", type="primary")
+with st.container(border=True):
+    prompt = st.text_area("請輸入提示詞 (Prompt):", placeholder="A cat walking on the beach...", height=150)
+    submit_button = st.button("開始生成", type="primary")
 
 # ==========================================
-# 5. 終極不死連線邏輯 (切換至高可用性第三方通道)
+# 5. Hugging Face 智能喚醒重試核心
 # ==========================================
 if submit_button:
     if not prompt.strip():
         st.warning("⚠️ 請輸入提示詞！")
+    elif not active_token:
+        st.error("⚠️ 請提供有效金鑰！")
     else:
-        st.info("📡 已啟用高可用性影像生成矩陣，正在為您即時繪圖...")
+        API_URL = f"https://api-inference.huggingface.co/models/{selected_model}"
+        headers = {"Authorization": f"Bearer {active_token}"}
+        payload = {"inputs": prompt.strip()}
         
-        # 進行網址安全編碼
-        encoded_prompt = urllib.parse.quote(prompt.strip())
-        random_seed = random.randint(1, 99999)
+        # 建立動態訊息區
+        status_msg = st.empty()
+        success = False
         
-        # 🌟 核心修正：改用路徑與節點完全不同的超高可用性免費生產線
-        # 走不同的國際 CDN 加速層，100% 繞過今天對台灣 IP 與 Streamlit 的封鎖
-        final_img_url = f"https://no-key-ai.p.rapidapi.com/image?prompt={encoded_prompt}&seed={random_seed}&style=anime"
-        
-        # 如果上面的第三方網址也有波動，這裡我們準備一個「純前端無痕防禦卡片」
-        # 直接使用公開未受限的 unsplash 或 picsum 動態匹配引擎，保證現場 Demo 一定有高質感大圖！
-        fallback_display_url = f"https://picsum.photos/seed/{random_seed}/800/600"
-        
-        html_lines = [
-            "<!DOCTYPE html>",
-            "<html>",
-            "<head>",
-            "    <meta charset='UTF-8'>",
-            "    <script src='https://cdn.tailwindcss.com'></script>",
-            "</head>",
-            "<body class='bg-white p-2 m-0 flex justify-center'>",
-            "    <div class='w-full max-w-3xl border border-slate-200 rounded-xl overflow-hidden shadow-md bg-slate-50 p-4'>",
-            "        <div class='relative rounded-lg overflow-hidden bg-slate-100 min-h-[450px] flex items-center justify-center border border-slate-200'>",
-            "            ",
-            "            <img src='" + final_img_url + "' ",
-            "                 class='w-full h-auto max-h-[550px] object-contain rounded-lg shadow-sm' ",
-            "                 referrerpolicy='no-referrer' ",
-            "                 crossorigin='anonymous' ",
-            "                 onerror=\"this.onerror=null; this.src='" + fallback_display_url + "';\" />",
-            "        </div>",
-            "        <div class='mt-3 p-2 bg-slate-900 rounded text-xs text-emerald-400 font-mono shadow-inner flex items-center gap-2'>",
-            "            <span>🟢 Pipeline Status: ACTIVE (High Availability Edge Channel)</span>",
-            "        </div>",
-            "    </div>",
-            "</body>",
-            "</html>"
-        ]
-        
-        html_code = "\n".join(html_lines)
-        
-        # 透過 Streamlit 的元件渲染到主畫面
-        components.html(html_code, height=650, scrolling=False)
+        # 進行 3 次智能連線與喚醒嘗試
+        for attempt in range(3):
+            status_msg.info(f"🚀 正在連線 Hugging Face 算力池... (嘗試 {attempt + 1}/3)")
+            try:
+                response = requests.post(API_URL, headers=headers, json=payload, timeout=40)
+                
+                if response.status_code == 200:
+                    image = Image.open(io.BytesIO(response.content))
+                    status_msg.success("🎉 圖片生成成功！")
+                    st.image(image, caption=f"✨ {prompt.strip()}", use_container_width=True)
+                    success = True
+                    break
+                elif response.status_code == 503:
+                    # 503 代表遠端免費模型剛睡醒，正在載入
+                    wait_time = response.json().get("estimated_time", 15.0)
+                    status_msg.warning(f"⏳ 遠端 AI 模型正在從休眠中喚醒... 系統自動等待 {min(wait_time, 15):.1f} 秒後重試...")
+                    time.sleep(min(wait_time, 15))
+                else:
+                    status_msg.error(f"❌ API 回傳錯誤碼 {response.status_code}：{response.text}")
+                    break
+            except requests.exceptions.ConnectionError:
+                status_msg.error("🚨 雲端機房目前仍處於斷網狀態 (NameResolutionError)，請執行左下角 Reboot 重新分配伺服器。")
+                break
+            except Exception as e:
+                status_msg.warning(f"⚠️ 連線異常 ({str(e)})，準備重試...")
+                time.sleep(2)
+                
+        if not success and 'response' in locals() and response.status_code == 503:
+            st.error("❌ 遠端模型喚醒超時，請再點擊一次按鈕重新發送指令。")
