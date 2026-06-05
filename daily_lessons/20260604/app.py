@@ -1,7 +1,7 @@
 import streamlit as st
-import streamlit.components.v1 as components
-import urllib.parse
-import random
+import requests
+import io
+from PIL import Image
 
 # ==========================================
 # 1. 網頁基本設定
@@ -13,11 +13,20 @@ st.set_page_config(
 )
 
 # ==========================================
-# 2. 左側邊欄設計 (優雅專業 UI)
+# 2. 安全地讀取 API Key
+# ==========================================
+try:
+    hf_token = st.secrets["HF_TOKEN"]
+except KeyError:
+    st.error("系統錯誤：找不到後端憑證，請在本地設定 .streamlit/secrets.toml。")
+    hf_token = None
+
+# ==========================================
+# 3. 左側邊欄設計
 # ==========================================
 with st.sidebar:
     st.markdown("### 🛡️ 系統狀態")
-    st.success("分布式影像矩陣已啟動")
+    st.success("API 憑證已由後端安全接管")
     
     st.divider()
     
@@ -25,106 +34,51 @@ with st.sidebar:
     selected_model = st.selectbox(
         "選擇 AI 模型:",
         (
-            "flux-instant (高階即時渲染)",
-            "turbo-speed (極速響應模型)",
-            "flux-schnell (高階閃電模型)"
+            "black-forest-labs/FLUX.1-schnell",
+            "stabilityai/sdxl-turbo",
+            "stabilityai/stable-diffusion-xl-base-1.0",
+            "nvidia/Cosmos3-Super-Text2Image"
         )
     )
-    
-    st.divider()
-    st.markdown("### 🔍 系統診斷")
-    st.info("🟢 前端分布式渲染通道正常。已拔除貓咪預設圖庫，切換至「精準語意影像生成矩陣」，保證下指令畫出正確圖案。")
 
 # ==========================================
-# 3. 主畫面設計
+# 4. 主畫面設計
 # ==========================================
 st.title("🎨 AI 圖像生成 Web App")
-st.markdown("輸入一段文字，讓 AI 為你創作圖片。**(完全免費，免填金鑰，極速出圖)**")
-
-if "generated" not in st.session_state:
-    st.session_state.generated = False
-if "current_prompt" not in st.session_state:
-    st.session_state.current_prompt = ""
+st.markdown("輸入一段文字，讓 AI 為你創作圖片。")
 
 with st.container(border=True):
     prompt = st.text_area(
         "請輸入提示詞 (Prompt):",
-        placeholder="例如：a pig walking on the beach / an astronaut...",
+        placeholder="An astronaut riding a horse on mars...",
         height=150
     )
-    
     submit_button = st.button("開始生成", type="primary")
 
+# ==========================================
+# 5. 生成邏輯
+# ==========================================
 if submit_button:
-    if not prompt.strip():
-        st.warning("⚠️ 請輸入您想要生成的圖片提示詞 (Prompt)！")
-        st.session_state.generated = False
+    if not hf_token:
+        st.error("⚠️ 憑證遺失，請檢查 secrets 設定。")
+    elif not prompt.strip():
+        st.warning("⚠️ 請輸入提示詞！")
     else:
-        st.session_state.generated = True
-        st.session_state.current_prompt = prompt.strip().replace('\n', ' ')
-
-# ==========================================
-# 4. 精準語意分布式 AI 生成通道
-# ==========================================
-if st.session_state.generated:
-    st.success("🎉 圖片生成指令已成功發送！")
-    
-    # 進行網址安全編碼
-    encoded_prompt = urllib.parse.quote(st.session_state.current_prompt)
-    
-    # 隨機產生種子碼，確保每一次點擊都會觸發全新生成的圖片
-    random_seed = random.randint(1, 99999)
-    
-    # 換用真正的免費 AI 即時生成端點
-    target_image_url = f"https://image.pollinations.ai/p/{encoded_prompt}?width=800&height=600&model=flux&seed={random_seed}"
-
-    # 🌟 三個單引號完美包裹，並在結尾處確實閉合 (修正完畢)
-    html_template = '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-            @keyframes pulse {
-                0%, 100% { opacity: 1; }
-                50% { opacity: .4; }
-            }
-            .animate-pulse { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        </style>
-    </head>
-    <body class="bg-white p-0 m-0 flex flex-col items-center justify-center">
-        <div class="w-full border border-slate-200 rounded-xl overflow-hidden shadow-lg bg-slate-50 relative p-4">
-            
-            <div class="relative rounded-lg overflow-hidden bg-slate-200 min-h-[400px] flex items-center justify-center">
+        with st.spinner(f"正在使用 {selected_model} 模型生成圖片..."):
+            try:
+                API_URL = f"https://api-inference.huggingface.co/models/{selected_model}"
+                headers = {"Authorization": f"Bearer {hf_token.strip()}"}
+                payload = {"inputs": prompt.strip()}
                 
-                <div id="skeleton" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 text-slate-400 animate-pulse z-0">
-                    <svg class="w-12 h-12 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    <p class="text-xs font-semibold">AI 正在依據語意繪製專屬圖像，請稍候...</p>
-                </div>
+                response = requests.post(API_URL, headers=headers, json=payload, timeout=20)
                 
-                <img src="__IMAGE_URL__" 
-                     class="w-full h-auto max-h-[600px] object-contain relative z-10 shadow-inner opacity-0 transition-opacity duration-300 rounded-lg"
-                     onload="document.getElementById('skeleton').style.display='none'; this.classList.remove('opacity-0');"
-                     alt="Generated Image" />
-            </div>
-            
-            <div class="mt-4 p-3 bg-white border border-slate-100 rounded-lg">
-                <p class="text-xs text-slate-500 font-medium">✨ <strong>AI 創作標籤：</strong> __RAW_PROMPT__</p>
-                <div class="flex items-center gap-2 mt-2">
-                    <span class="px-2 py-0.5 bg-blue-50 border border-blue-100 text-blue-600 rounded text-[10px] font-bold">精準語意通道</span>
-                    <a href="__IMAGE_URL__" target="_blank" class="text-[11px] text-blue-600 hover:underline font-semibold ml-auto">🔗 點此查看或下載高清原圖</a>
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-    '''
-    
-    # 安全取代
-    html_code = html_template.replace("__IMAGE_URL__", target_image_url).replace("__RAW_PROMPT__", st.session_state.current_prompt)
-    
-    # 渲染前端
-    components.html(html_code, height=700, scrolling=False)
+                if response.status_code == 200:
+                    image_bytes = response.content
+                    image = Image.open(io.BytesIO(image_bytes))
+                    st.success("🎉 圖片生成成功！")
+                    st.image(image, caption=prompt.strip(), use_container_width=True)
+                else:
+                    st.error(f"❌ 生成失敗 (狀態碼: {response.status_code})")
+                    st.write(response.json())
+            except Exception as e:
+                st.error(f"發生連線錯誤：{e}")
