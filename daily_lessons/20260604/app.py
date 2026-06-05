@@ -22,7 +22,7 @@ except KeyError:
     hf_token = None
 
 # ==========================================
-# 3. 左側邊欄設計
+# 3. 左側邊欄設計 (包含模型選擇與憑證安全檢查)
 # ==========================================
 with st.sidebar:
     st.markdown("### 🛡️ 系統狀態")
@@ -40,6 +40,32 @@ with st.sidebar:
             "nvidia/Cosmos3-Super-Text2Image"
         )
     )
+    
+    st.divider()
+    
+    # 🌟 這裡加入了你需要的「API Key 連線自我檢查」功能
+    st.markdown("### 🔍 憑證安全自我檢查")
+    if st.button("檢查後端 API 連線狀態", use_container_width=True):
+        if not hf_token:
+            st.error("❌ 檢查結果：Secrets 中找不到 'HF_TOKEN' 欄位，請前往 Streamlit 後台存檔。")
+        elif not hf_token.strip().startswith("hf_"):
+            st.warning("⚠️ 檢查結果：偵測到金鑰，但格式似乎不是以 'hf_' 開頭，請檢查是否複製錯誤。")
+        else:
+            with st.spinner("正在安全發送測試封包至 Hugging Face..."):
+                try:
+                    # 發送一個微型請求至目前選定的模型來測試驗證
+                    test_url = f"https://api-inference.huggingface.co/models/{selected_model}"
+                    test_headers = {"Authorization": f"Bearer {hf_token.strip()}"}
+                    test_res = requests.post(test_url, headers=test_headers, json={"inputs": "test"})
+                    
+                    if test_res.status_code == 401:
+                        st.error("❌ 驗證失敗：Token 存在，但 Hugging Face 回報密碼無效 (401 Unauthorized)。請重新確認複製的金鑰。")
+                    elif test_res.status_code == 429:
+                        st.warning("⚠️ 密碼正確，但目前該帳號呼叫頻率已達上限 (429 Too Many Requests)。")
+                    else:
+                        st.success("🟢 檢查通過：後端憑證完全正確，且已成功與 Hugging Face 建立安全連線！")
+                except Exception as test_err:
+                    st.error(f"連線測試失敗，可能是雲端網路波動：{test_err}")
 
 # ==========================================
 # 4. 主畫面設計
@@ -59,7 +85,7 @@ with st.container(border=True):
 st.info("註：若生成失敗，可能是 Hugging Face 免費伺服器正在載入模型，請稍等一分鐘後再試。")
 
 # ==========================================
-# 5. 生成邏輯 (優化架構版)
+# 5. 生成邏輯
 # ==========================================
 if submit_button:
     if not hf_token:
@@ -67,11 +93,10 @@ if submit_button:
     elif not prompt.strip():
         st.warning("⚠️ 請輸入您想要生成的圖片提示詞 (Prompt)！")
     else:
-        # 將 try 區塊往外提，保護整個運算與渲染過程
         try:
             with st.spinner(f"正在使用 {selected_model} 模型生成圖片，請稍候..."):
                 API_URL = f"https://api-inference.huggingface.co/models/{selected_model}"
-                headers = {"Authorization": f"Bearer {hf_token}"}
+                headers = {"Authorization": f"Bearer {hf_token.strip()}"}
                 payload = {"inputs": prompt.strip()}
                 
                 response = requests.post(API_URL, headers=headers, json=payload)
@@ -85,13 +110,4 @@ if submit_button:
                     error_msg = response.json()
                     st.error(f"❌ 生成失敗 (狀態碼: {response.status_code})")
                     if isinstance(error_msg, dict) and "estimated_time" in error_msg:
-                        st.warning(f"⏳ 伺服器正在喚醒模型，大約需要 {error_msg['estimated_time']:.1f} 秒，請稍後再點擊一次生成。")
-                    else:
-                        st.write(error_msg)
-                        
-        except Exception as e:
-            # 完美的例外攔截
-            if "NameResolutionError" in str(e) or "HTTPSConnection" in str(e) or "connection" in str(e).lower():
-                st.error("❌ 網路連線異常：目前 Streamlit 雲端伺服器與 Hugging Face 連線中斷，請稍等幾秒鐘並重新整理網頁再試一次！")
-            else:
-                st.error(f"發生未知錯誤：{e}")
+                        st.warning(f"⏳ 伺服器正在喚醒模型，大約需要 {error_msg
