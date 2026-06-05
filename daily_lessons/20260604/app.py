@@ -64,22 +64,22 @@ if submit_button:
         st.session_state.current_prompt = prompt.strip().replace('\n', ' ')
 
 # ==========================================
-# 4. 究極生圖區：純字串替換法 + Turbo 極速通道
+# 4. 究極生圖區：改用三個單引號包裹 (徹底杜絕引號衝突)
 # ==========================================
 if st.session_state.generated:
     st.success("🎉 圖片生成指令已成功發送！")
     
-    # 1. 進行網址安全編碼
+    # 進行網址安全編碼
     encoded_prompt = urllib.parse.quote(st.session_state.current_prompt)
     
-    # 2. 隨機產生種子碼，強迫伺服器分配新 GPU 記憶體，徹底避開公共快取塞車
+    # 隨機產生種子碼，強迫伺服器分配新 GPU 記憶體，徹底避開公共快取塞車
     random_seed = random.randint(1, 99999)
     
-    # 3. 切換至 turbo 獨立極速通道，並固定最佳展演尺寸 (800x600)，速度提升 10 倍！
+    # 切換至 turbo 獨立極速通道，速度提升 10 倍！
     target_image_url = f"https://image.pollinations.ai/p/{encoded_prompt}?width=800&height=600&model=turbo&seed={random_seed}"
     
-    # 4. HTML 前端卡片樣式
-    html_template = """
+    # 🌟 關鍵改動：外層全面換成三個單引號 (''')，內文的雙引號與大括號從此完美相容
+    html_template = '''
     <!DOCTYPE html>
     <html>
     <head>
@@ -112,3 +112,19 @@ if st.session_state.generated:
             </div>
             
             <div class="mt-4 p-3 bg-white border border-slate-100 rounded-lg">
+                <p class="text-xs text-slate-500 font-medium">✨ <strong>AI 創作標籤：</strong> __RAW_PROMPT__</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded text-[10px] font-bold">Turbo 極速通道</span>
+                    <a href="__IMAGE_URL__" target="_blank" class="text-[11px] text-blue-600 hover:underline font-semibold ml-auto">🔗 右鍵另存或點此查看高清原圖</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+    
+    # 進行安全替換
+    html_code = html_template.replace("__IMAGE_URL__", target_image_url).replace("__RAW_PROMPT__", st.session_state.current_prompt)
+    
+    # 渲染前端組件
+    components.html(html_code, height=700, scrolling=False)
