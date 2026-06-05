@@ -60,7 +60,7 @@ with st.container(border=True):
 st.info("註：若生成失敗，可能是 Hugging Face 免費伺服器正在載入模型，請稍等一分鐘後再試。")
 
 # ==========================================
-# 5. 生成邏輯
+# 5. 生成邏輯 (請完全覆蓋這整個區塊)
 # ==========================================
 if submit_button:
     if not hf_token:
@@ -89,9 +89,10 @@ if submit_button:
                     else:
                         st.write(error_msg)
             
-           # 把你程式碼最底部的 except 改成這樣：
-except Exception as e:
-    if "NameResolutionError" in str(e) or "HTTPSConnection" in str(e):
-        st.error("❌ 網路連線異常：目前 Streamlit 雲端伺服器與 Hugging Face 連線中斷，請稍等幾秒鐘並重新整理網頁再試一次！")
-    else:
-        st.error(f"發生未知錯誤：{e}")
+            # 正確的例外處理區塊：只有一個 except
+            except Exception as e:
+                # 檢查錯誤訊息字串中是否包含網路連線解析問題
+                if "NameResolutionError" in str(e) or "HTTPSConnection" in str(e):
+                    st.error("❌ 網路連線異常：目前 Streamlit 雲端伺服器與 Hugging Face 連線中斷，請稍等幾秒鐘並重新整理網頁再試一次！")
+                else:
+                    st.error(f"發生未知錯誤：{e}")
