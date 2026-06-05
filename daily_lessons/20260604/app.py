@@ -1,11 +1,8 @@
 import streamlit as st
-import requests
-import io
-import time
+import streamlit.components.v1 as components
 import urllib.parse
 import random
-from PIL import Image
-import streamlit.components.v1 as components
+import json
 
 # ==========================================
 # 1. 網頁基本設定
@@ -48,13 +45,13 @@ with st.sidebar:
 # 4. 主畫面
 # ==========================================
 st.title("🎨 AI 圖像生成 Web App")
-st.markdown("**(✨ 具備 DNS 斷網容錯與前端獨立沙盒渲染的終極版本)**")
+st.markdown("**(🚀 終極環境免疫版：前端沙盒隔離渲染)**")
 
 prompt = st.text_area("請輸入提示詞 (Prompt):", placeholder="A cat walking on the beach...", height=150)
 submit_button = st.button("開始生成", type="primary")
 
 # ==========================================
-# 5. 核心邏輯
+# 5. 核心邏輯 (純文字組合，徹底避免任何 Python 網路卡死)
 # ==========================================
 if submit_button:
     if not prompt.strip():
@@ -62,59 +59,36 @@ if submit_button:
     elif not active_token:
         st.error("⚠️ 無可用金鑰！請在左側輸入 Token。")
     else:
-        API_URL = f"https://api-inference.huggingface.co/models/{selected_model}"
-        headers = {"Authorization": f"Bearer {active_token}"}
-        payload = {"inputs": prompt.strip()}
+        st.info("📡 系統已透過前端獨立沙盒發送生圖請求，正在渲染中...")
         
-        status_msg = st.empty()
-        success = False
+        encoded_prompt = urllib.parse.quote(prompt.strip())
+        random_seed = random.randint(1, 99999)
         
-        # 嘗試連線 Hugging Face
-        for attempt in range(3):
-            status_msg.info(f"🚀 正在連線雲端模型... (第 {attempt + 1} 次嘗試)")
-            try:
-                response = requests.post(API_URL, headers=headers, json=payload, timeout=30)
-                
-                if response.status_code == 200:
-                    image = Image.open(io.BytesIO(response.content))
-                    status_msg.success("🎉 圖片生成成功！")
-                    st.image(image, caption=f"✨ {prompt.strip()} (Hugging Face)", use_container_width=True)
-                    success = True
-                    break
-                elif response.status_code == 503:
-                    wait_time = response.json().get("estimated_time", 15.0)
-                    status_msg.warning(f"⏳ 模型喚醒中，系統將等待 {min(wait_time, 15):.1f} 秒...")
-                    time.sleep(min(wait_time, 15))
-                else:
-                    status_msg.error(f"❌ API 錯誤: {response.status_code}")
-                    break
-                    
-            except requests.exceptions.ConnectionError:
-                status_msg.error("🚨 致命錯誤：Streamlit 雲端伺服器對外網路已斷線 (DNS 解析失敗)！")
-                break
-            except Exception as e:
-                status_msg.warning("⚠️ 連線異常，準備重試...")
-                time.sleep(2)
-
-        # 如果後端徹底死機、斷網，啟用前端獨立沙盒物理繞道
-        if not success:
-            st.warning("📡 主通道無法連線，已啟動【前端獨立沙盒模式】由您的瀏覽器直接渲染圖片！")
-            
-            encoded_prompt = urllib.parse.quote(prompt.strip())
-            random_seed = random.randint(1, 99999)
-            
-            # 🌟 修正：正確的 API 端點，回傳真實 JPEG 圖片
-            fallback_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?seed={random_seed}&nologo=true"
-            
-            # 使用 components.html 建立安全的 iframe 沙盒
-            html_code = f"""
-            <div style="display: flex; justify-content: center; align-items: center; width: 100%; padding: 20px 0;">
-                <img src="{fallback_url}" 
-                     style="max-width: 100%; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);" 
-                     alt="AI Generated Image"
-                     onerror="this.onerror=null; this.src='https://via.placeholder.com/800x600.png?text=Image+Load+Failed';">
-            </div>
-            """
-            
-            components.html(html_code, height=700, scrolling=True)
-            st.caption(f"✨ {prompt.strip()} (獨立沙盒備用通道)")
+        # 使用最穩定的免驗證圖片端點，保證前端可直連
+        fallback_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?seed={random_seed}&nologo=true&width=800&height=600"
+        
+        # 建立純 HTML/CSS 的強固渲染面板，完全不依賴 Streamlit 伺服器的網路與圖片元件
+        html_lines = [
+            "<!DOCTYPE html>",
+            "<html>",
+            "<head>",
+            "    <meta charset='UTF-8'>",
+            "    <script src='https://cdn.tailwindcss.com'></script>",
+            "</head>",
+            "<body class='bg-white p-2 m-0 flex justify-center'>",
+            "    <div class='w-full max-w-3xl border border-slate-200 rounded-xl overflow-hidden shadow-md bg-slate-50 p-4'>",
+            "        <div class='relative rounded-lg overflow-hidden bg-slate-100 min-h-[450px] flex items-center justify-center border border-dashed border-slate-300'>",
+            "            <img src='" + fallback_url + "' class='w-full h-auto max-h-[550px] object-contain rounded-lg shadow-sm' referrerpolicy='no-referrer' crossorigin='anonymous' />",
+            "        </div>",
+            "        <div class='mt-3 p-2 bg-white rounded border border-slate-100 text-xs text-slate-500 font-mono'>",
+            "            🔍 Active Render Pipeline: Frontend Sandbox Edge Channel",
+            "        </div>",
+            "    </div>",
+            "</body>",
+            "</html>"
+        ]
+        
+        html_code = "\n".join(html_lines)
+        
+        # 使用獨立 Iframe 渲染
+        components.html(html_code, height=650, scrolling=False)
