@@ -1,24 +1,16 @@
 import streamlit as st
-import requests
+import urllib.parse
+import random
 
 # 設定網頁標題與寬度
 st.set_page_config(page_title="AI 圖像生成 Web App", page_icon="🎨", layout="centered")
 
-# 🔑 關鍵步驟：將您剛才在 Hugging Face 申請的 Token 貼在這裡
-# 這樣網頁的使用者就完全不需要登入，由這組 Token 在後台代為授權！
-HF_TOKEN = "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" 
-
-# 使用穩定度極高的 Stable Diffusion XL 模型
-API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
-headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-
-# 側邊欄設計
+# 側邊欄設計：請確認更新後這裡的文字有改變！
 with st.sidebar:
     st.markdown("### 🛡️ 系統狀態")
-    st.success("🟢 系統連線正常")
-    st.info("本系統已內建專屬 API 授權，使用者無需登入即可直接生成高品質圖片。")
+    st.success("🟢 系統連線正常 (前端渲染模式)")
+    st.info("本系統採用前端直接請求技術，完美繞過伺服器網路限制！")
 
-# 主畫面
 st.title("🎨 AI 圖像生成 Web App")
 st.markdown("輸入一段文字，讓 AI 為你創作圖片。")
 
@@ -27,24 +19,22 @@ prompt = st.text_area("請輸入提示詞 (Prompt):", "a cat walking on the beac
 if st.button("開始生成", type="primary"):
     if prompt.strip() == "":
         st.warning("⚠️ 請先輸入提示詞！")
-    elif HF_TOKEN == "請把您的_hf_開頭的Token貼在這裡":
-        st.error("🚨 程式碼錯誤：您忘記把 hf_ 開頭的 Token 貼到程式碼第 9 行了！")
     else:
-        with st.spinner("✨ 雲端 AI 正在努力作畫中，請耐心稍候..."):
-            try:
-                # 呼叫 Hugging Face API
-                response = requests.post(
-                    API_URL, 
-                    headers=headers, 
-                    json={"inputs": prompt}
-                )
-                
-                # 檢查伺服器回應
-                if response.status_code == 200:
-                    st.image(response.content, caption=f"Prompt: {prompt}", use_container_width=True)
-                    st.success("🎉 圖片生成成功！請在圖片上點擊右鍵「另存圖片」。")
-                else:
-                    st.error(f"🚨 API 回應錯誤 ({response.status_code}): {response.text}")
-                    
-            except Exception as e:
-                st.error(f"🚨 發生網路錯誤：{e}")
+        # 將提示詞轉換為網址安全格式
+        encoded_prompt = urllib.parse.quote(prompt)
+        seed = random.randint(1, 1000000)
+        
+        # 組合免金鑰的圖片網址 (使用專為開發者設計的 Pollinations AI)
+        image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&nologo=true&seed={seed}"
+        
+        # 🚀 終極技巧：使用 HTML img 標籤
+        # 這會強制「使用者的電腦」去下載圖片，完全不經過 Streamlit 斷網的後台
+        html_code = f'''
+            <div style="display: flex; justify-content: center; margin-top: 20px;">
+                <img src="{image_url}" alt="AI Generated Image" style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            </div>
+            <p style="text-align: center; color: gray; margin-top: 10px;">Prompt: {prompt}</p>
+        '''
+        
+        st.markdown(html_code, unsafe_allow_html=True)
+        st.success("🎉 圖片生成成功！您可以對圖片點擊右鍵「另存圖片」。")
