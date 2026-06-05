@@ -2,6 +2,10 @@ import streamlit as st
 import streamlit.components.v1 as components
 import urllib.parse
 import random
+import time
+import requests
+import io
+from PIL import Image
 
 # ==========================================
 # 1. 網頁基本設定
@@ -13,7 +17,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# 2. 安全地讀取系統預設 API Key (後端自動託管)
+# 2. 安全地讀取系統預設 API Key
 # ==========================================
 try:
     system_hf_token = st.secrets["HF_TOKEN"]
@@ -48,7 +52,7 @@ with st.sidebar:
         if system_hf_token:
             st.info("🔒 當前連線狀態：已啟用後端自動託管憑證")
         else:
-            st.error("❌ 當前連線狀態：無可用憑證，將使用備用免 Key 通道出圖")
+            st.error("❌ 當前連線狀態：無可用憑證，將使用備用通道出圖")
 
     st.divider()
     st.markdown("### ⚙️ 模型設定")
@@ -77,10 +81,10 @@ with st.container(border=True):
     
     submit_button = st.button("開始生成", type="primary")
 
-st.info("註：若遠端 Hugging Face 機房流量爆滿或斷線，系統將無縫啟用【備用免 Key 閃電生圖通道】，確保 100% 成功出圖。")
+st.info("💡 提示：Hugging Face 免費模型若處於休眠狀態，首次連線喚醒可能需要 20~60 秒，系統將為您自動重試。")
 
 # ==========================================
-# 5. 雙軌生成核心邏輯 (Hugging Face 優先 ➔ 備用免 Key Turbo 閃電繪圖)
+# 5. 生成核心邏輯 (Hugging Face 智能重試喚醒機制)
 # ==========================================
 if submit_button:
     if not prompt.strip():
@@ -88,41 +92,75 @@ if submit_button:
     else:
         trigger_fallback = False
         
-        # 通道一：嘗試連線 Hugging Face 官方 API
+        # 優先使用 Hugging Face
         if active_token:
-            with st.spinner(f"正在嘗試連線遠端伺服器使用 {selected_model} 生成圖片..."):
-                try:
-                    import requests
-                    import io
-                    from PIL import Image
-                    
-                    API_URL = f"https://api-inference.huggingface.co/models/{selected_model}"
-                    headers = {"Authorization": f"Bearer {active_token}"}
-                    payload = {"inputs": prompt.strip()}
-                    
-                    response = requests.post(API_URL, headers=headers, json=payload, timeout=6)
-                    
-                    if response.status_code == 200:
-                        image_bytes = response.content
-                        image = Image.open(io.BytesIO(image_bytes))
-                        st.success("🎉 [通道一] Hugging Face 圖片生成成功！")
-                        st.image(image, caption=prompt.strip(), use_container_width=True)
-                    else:
+            with st.spinner(f"🚀 正在連線 Hugging Face [{selected_model}]... (若遇模型休眠，請耐心等候)"):
+                API_URL = f"https://api-inference.huggingface.co/models/{selected_model}"
+                headers = {"Authorization": f"Bearer {active_token}"}
+                payload = {"inputs": prompt.strip()}
+                
+                max_retries = 5  # 最多嘗試 5 次喚醒
+                success = False
+                
+                for attempt in range(max_retries):
+                    try:
+                        # 將超時時間大幅拉長至 60 秒，給模型足夠的時間繪圖
+                        response = requests.post(API_URL, headers=headers, json=payload, timeout=60)
+                        
+                        if response.status_code == 200:
+                            # 成功出圖！
+                            image_bytes = response.content
+                            image = Image.open(io.BytesIO(image_bytes))
+                            st.success("🎉 [主通道成功] Hugging Face 官方 API 圖片生成完畢！")
+                            st.image(image, caption=prompt.strip(), use_container_width=True)
+                            success = True
+                            break
+                            
+                        elif response.status_code == 503:
+                            # 遇到 503 代表模型正在睡覺，提取需要等待的秒數
+                            error_data = response.json()
+                            wait_time = error_data.get("estimated_time", 20)
+                            
+                            # 在畫面上發出提示，讓你知道系統正在努力
+                            st.toast(f"⏳ 遠端模型喚醒中... 預計需 {wait_time:.1f} 秒，系統自動重試中 ({attempt+1}/{max_retries})")
+                            
+                            # 暫停執行並等待模型載入
+                            time.sleep(min(wait_time, 20))
+                            
+                        else:
+                            # 其他嚴重錯誤 (如 Token 權限不足、請求格式錯誤)
+                            st.error(f"❌ Hugging Face 發生錯誤 (狀態碼: {response.status_code}): {response.text}")
+                            trigger_fallback = True
+                            break
+                            
+                    except requests.exceptions.Timeout:
+                        st.toast(f"⚠️ 連線超時，正在重新嘗試 ({attempt+1}/{max_retries})...")
+                    except requests.exceptions.ConnectionError:
+                        st.error("❌ 嚴重錯誤：Streamlit 雲端伺服器對外網路中斷 (NameResolutionError)！")
                         trigger_fallback = True
-                except Exception:
+                        break
+                    except Exception as e:
+                        st.error(f"❌ 發生未知的連線錯誤: {e}")
+                        trigger_fallback = True
+                        break
+                
+                # 如果重試了 5 次都失敗，再切換到備用通道
+                if not success and not trigger_fallback:
+                    st.warning("⚠️ Hugging Face 伺服器滿載或喚醒失敗，正在自動切換至備用通道...")
                     trigger_fallback = True
         else:
             trigger_fallback = True
 
-        # 通道二：採用安全串接法 (無多行字串，100% 避開引號與編碼衝突)
+        # ==========================================
+        # 通道二：備用免 Key 閃電生圖通道 (安全保底)
+        # ==========================================
         if trigger_fallback:
-            st.warning("📡 遠端主通道延遲/斷線，已自動為您切換至【備用免 Key 閃電生圖通道】！")
+            st.warning("📡 遠端主通道無法連線，已自動為您切換至【備用免 Key 閃電生圖通道】！")
             
             encoded_prompt = urllib.parse.quote(prompt.strip().replace('\n', ' '))
             random_seed = random.randint(1, 99999)
             target_image_url = f"https://image.pollinations.ai/p/{encoded_prompt}?width=800&height=600&model=turbo&seed={random_seed}"
             
-            # 使用單行字串陣列相加，徹底避免 Python 的多行字串與 CSS/HTML 語法打架
             html_lines = [
                 "<!DOCTYPE html>",
                 "<html>",
@@ -155,8 +193,5 @@ if submit_button:
                 "</html>"
             ]
             
-            # 使用換行符號將所有單行合併成一段乾淨的 HTML 程式碼
             html_code = "\n".join(html_lines)
-            
-            # 渲染前端組件
             components.html(html_code, height=580, scrolling=False)
