@@ -3,6 +3,7 @@ import requests
 import io
 import time
 import urllib.parse
+import random
 from PIL import Image
 
 # ==========================================
@@ -46,7 +47,7 @@ with st.sidebar:
 # 4. 主畫面
 # ==========================================
 st.title("🎨 AI 圖像生成 Web App")
-st.markdown("**(✨ 具備 DNS 斷網容錯機制的終極版本)**")
+st.markdown("**(✨ 具備 DNS 斷網容錯與防盜鏈破解的終極版本)**")
 
 prompt = st.text_area("請輸入提示詞 (Prompt):", placeholder="A cat walking on the beach...", height=150)
 submit_button = st.button("開始生成", type="primary")
@@ -58,7 +59,7 @@ if submit_button:
     if not prompt.strip():
         st.warning("⚠️ 請輸入提示詞！")
     elif not active_token:
-        st.error("⚠️ 無可用金鑰！")
+        st.error("⚠️ 無可用金鑰！請在左側輸入 Token。")
     else:
         API_URL = f"https://api-inference.huggingface.co/models/{selected_model}"
         headers = {"Authorization": f"Bearer {active_token}"}
@@ -95,13 +96,20 @@ if submit_button:
                 status_msg.warning("⚠️ 連線異常，準備重試...")
                 time.sleep(2)
 
-        # 如果後端徹底死機或超時，啟用瀏覽器物理繞道
+        # 如果後端徹底死機、超時，啟用瀏覽器無痕物理繞道
         if not success:
-            st.warning("📡 後端網路故障，已啟動【前端瀏覽器直連模式】渲染圖片！")
+            st.warning("📡 主通道無法連線，已啟動【前端無痕直連模式】渲染圖片！")
             encoded_prompt = urllib.parse.quote(prompt.strip())
-            fallback_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?nologo=true"
+            random_seed = random.randint(1, 99999)
             
-            # 使用純 HTML 讓你的「瀏覽器」去下載圖片，完全不管 Streamlit 伺服器死活
-            html_img = f'<div style="display:flex;justify-content:center;"><img src="{fallback_url}" width="100%" style="border-radius:10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>'
+            # 使用 pollinations 備用網址，並加上隨機種子
+            fallback_url = f"https://pollinations.ai/p/{encoded_prompt}?width=800&height=600&seed={random_seed}"
+            
+            # 加上 referrerpolicy="no-referrer" 完美破解防盜鏈機制
+            html_img = f'''
+            <div style="display:flex;justify-content:center;">
+                <img src="{fallback_url}" width="100%" style="border-radius:10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" referrerpolicy="no-referrer" crossorigin="anonymous">
+            </div>
+            '''
             st.markdown(html_img, unsafe_allow_html=True)
-            st.caption(f"✨ {prompt.strip()} (瀏覽器渲染備用通道)")
+            st.caption(f"✨ {prompt.strip()} (無痕瀏覽器渲染通道)")
