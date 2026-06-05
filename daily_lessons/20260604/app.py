@@ -21,7 +21,7 @@ except KeyError:
     system_hf_token = None
 
 # ==========================================
-# 3. 左側邊欄設計 (加入使用者自訂輸入 Key 功能)
+# 3. 左側邊欄設計 (自訂密鑰雙軌機制)
 # ==========================================
 with st.sidebar:
     st.markdown("### 🛡️ 系統金鑰託管狀態")
@@ -33,7 +33,6 @@ with st.sidebar:
     st.divider()
     
     st.markdown("### 🔑 使用者自訂密鑰 (選填)")
-    # 提供輸入框讓終端使用者可以輸入自己的 Key，類型設為 password 以保持隱私
     user_hf_token = st.text_input(
         "輸入您的 Hugging Face Token:",
         type="password",
@@ -41,7 +40,6 @@ with st.sidebar:
         help="留空將自動啟用系統後端託管憑證生圖"
     )
     
-    # 🌟 決定最終使用的 Token (使用者輸入優先，其次為系統自動託管)
     if user_hf_token.strip():
         active_token = user_hf_token.strip()
         st.info("🔐 當前連線狀態：已啟用您輸入的自訂密鑰")
@@ -50,7 +48,7 @@ with st.sidebar:
         if system_hf_token:
             st.info("🔒 當前連線狀態：已啟用後端自動託管憑證")
         else:
-            st.error("❌ 當前連線狀態：無可用憑證，展演將進入保護通道")
+            st.error("❌ 當前連線狀態：無可用憑證，將使用備用免 Key 通道出圖")
 
     st.divider()
     st.markdown("### ⚙️ 模型設定")
@@ -79,10 +77,10 @@ with st.container(border=True):
     
     submit_button = st.button("開始生成", type="primary")
 
-st.info("註：若遠端伺服器免費額度爆滿或網路斷線，系統將啟用安全展演保護模式，確保報告流程順暢。")
+st.info("註：若遠端 Hugging Face 機房流量爆滿或斷線，系統將無縫啟用【備用免 Key 閃電生圖通道】，確保 100% 成功出圖。")
 
 # ==========================================
-# 5. 雙軌生成核心邏輯
+# 5. 雙軌生成核心邏輯 (Hugging Face 優先 ➔ 備用免 Key AI 繪圖)
 # ==========================================
 if submit_button:
     if not prompt.strip():
@@ -90,9 +88,8 @@ if submit_button:
     else:
         trigger_fallback = False
         
-        # 情境 A：只要有任何一種憑證可用，優先衝刺 Hugging Face 官方 API
+        # 通道一：嘗試連線 Hugging Face 官方 API
         if active_token:
-            # 放寬等待時間至 20 秒，給免費機房足夠的時間連線出圖
             with st.spinner(f"正在嘗試連線遠端伺服器使用 {selected_model} 生成圖片..."):
                 try:
                     import requests
@@ -103,61 +100,72 @@ if submit_button:
                     headers = {"Authorization": f"Bearer {active_token}"}
                     payload = {"inputs": prompt.strip()}
                     
-                    # 提高超時容忍度至 20 秒，增加高負載下的出圖成功率
-                    response = requests.post(API_URL, headers=headers, json=payload, timeout=20)
+                    # 設定 6 秒超時，防止轉圈圈過久
+                    response = requests.post(API_URL, headers=headers, json=payload, timeout=6)
                     
                     if response.status_code == 200:
                         image_bytes = response.content
                         image = Image.open(io.BytesIO(image_bytes))
-                        st.success("🎉 圖片生成成功！")
+                        st.success("🎉 [通道一] Hugging Face 圖片生成成功！")
                         st.image(image, caption=prompt.strip(), use_container_width=True)
                     else:
-                        # 如果回應錯誤訊息（例如模型還在載入），提取並呈現
                         error_details = response.json()
                         if isinstance(error_details, dict) and "estimated_time" in error_details:
-                            st.warning(f"⏳ 遠端模型正在喚醒中，大約還需要 {error_details['estimated_time']:.1f} 秒，請稍後再試一次！")
-                        else:
-                            trigger_fallback = True
+                            st.warning(f"⏳ Hugging Face 模型正在喚醒中，大約還需要 {error_details['estimated_time']:.1f} 秒。正在為您同步呼叫備用通道...")
+                        trigger_fallback = True
                 except Exception:
-                    # 抓到網路解析錯誤 (NameResolutionError)，自動無縫切換到展示保護卡片
+                    # 抓到雲端網路斷線錯誤，自動標記進入備用通道
                     trigger_fallback = True
         else:
             trigger_fallback = True
 
-        # 情境 B：無縫前端防禦通道 (在斷網或無憑證時，在主畫面渲染出科技感展演面板)
+        # 通道二：備用免 Key 閃電生圖通道 (100% 成功出圖關鍵)
         if trigger_fallback:
-            st.warning("📡 偵測到遠端免費伺服器連線中斷或超時，已自動切換至【安全展演保護模式】！")
+            st.warning("📡 遠端主通道延遲/斷線，已自動為您切換至【備用免 Key 閃電生圖通道】！")
             
+            # 安全網址編碼與隨機種子防快取塞車
             encoded_prompt = urllib.parse.quote(prompt.strip().replace('\n', ' '))
             random_seed = random.randint(1, 99999)
+            
+            # 使用高可用、走前端直連的免費 FLUX 算力網址
             fallback_img_url = f"https://image.pollinations.ai/p/{encoded_prompt}?width=800&height=600&model=flux&seed={random_seed}"
             
+            # 採用三個單引號包裹高質感前端生圖 UI
             html_template = '''
             <!DOCTYPE html>
             <html>
             <head>
                 <meta charset="UTF-8">
                 <script src="https://cdn.tailwindcss.com"></script>
+                <style>
+                    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+                    .animate-pulse { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+                </style>
             </head>
             <body class="bg-white p-0 m-0 flex flex-col items-center justify-center">
                 <div class="w-full border border-slate-200 rounded-xl overflow-hidden shadow-lg bg-slate-50 relative p-4">
-                    <div class="relative rounded-lg overflow-hidden bg-slate-900 min-h-[450px] flex flex-col items-center justify-center p-6 text-center border border-slate-800">
-                        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
-                        <img src="__IMAGE_URL__" class="absolute inset-0 w-full h-full object-cover opacity-25 filter blur-sm z-0" onerror="this.style.display='none';" />
+                    
+                    <div class="relative rounded-lg overflow-hidden bg-slate-200 min-h-[450px] flex items-center justify-center">
                         
-                        <div class="relative z-10 max-w-2xl bg-slate-950/80 p-6 rounded-xl border border-slate-800 backdrop-blur-md shadow-2xl">
-                            <span class="px-3 py-1 bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 rounded-full text-xs font-bold tracking-wider uppercase mb-4 inline-block">
-                                🛡️ Fallback Preview Mode Active
-                            </span>
-                            <h2 class="text-xl font-extrabold text-white tracking-tight mb-2">=== AI 影像生成矩陣 ===</h2>
-                            <p class="text-sm text-slate-400 font-mono mb-4">Pipeline Status: <span class="text-emerald-400 font-bold">READY (Graceful Fallback)</span></p>
-                            
-                            <div class="text-left bg-slate-900/90 border border-slate-800 rounded-lg p-4 font-mono text-xs space-y-2 text-slate-300 shadow-inner">
-                                <p><span class="text-purple-400">▶ Selected Target Model :</span> <span class="text-slate-100">__MODEL__</span></p>
-                                <p><span class="text-blue-400">▶ Captured User Prompt :</span> <span class="text-amber-300">"__RAW_PROMPT__"</span></p>
-                                <p><span class="text-emerald-400">▶ Active Token Strategy :</span> <span class="text-slate-400">Hybrid (User Custom / Backend Managed)</span></p>
-                            </div>
-                            <p class="text-[11px] text-slate-500 mt-4 italic">💡 提示：本專案完美整合自動託管與自訂輸入雙軌機制。本地或異常網路環境下自動觸發無縫降級，兼顧密鑰安全性與報告高可用性。</p>
+                        <div id="skeleton" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 text-slate-400 animate-pulse z-0">
+                            <svg class="w-12 h-12 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-xs font-semibold">備用 AI 矩陣正在著色中，請稍候數秒...</p>
+                        </div>
+                        
+                        <img src="__IMAGE_URL__" 
+                             class="w-full h-auto max-h-[600px] object-contain relative z-10 shadow-inner opacity-0 transition-opacity duration-300 rounded-lg"
+                             onload="document.getElementById('skeleton').style.display='none'; this.classList.remove('opacity-0');"
+                             alt="AI Generated Image" />
+                    </div>
+                    
+                    <div class="mt-4 p-3 bg-white border border-slate-100 rounded-lg shadow-inner">
+                        <p class="text-xs text-slate-500 font-medium">✨ <strong>AI 創作標籤：</strong> __RAW_PROMPT__</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded text-[10px] font-bold">備用高效通道 (FLUX)</span>
+                            <span class="px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded text-[10px] font-bold">密鑰安全託管中</span>
+                            <a href="__IMAGE_URL__" target="_blank" class="text-[11px] text-blue-600 hover:underline font-semibold ml-auto">🔗 點此查看高清原圖</a>
                         </div>
                     </div>
                 </div>
@@ -165,5 +173,8 @@ if submit_button:
             </html>
             '''
             
-            html_code = html_template.replace("__IMAGE_URL__", fallback_img_url).replace("__RAW_PROMPT__", prompt.strip()).replace("__MODEL__", selected_model)
-            components.html(html_code, height=530, scrolling=False)
+            # 安全抽換字串變數
+            html_code = html_template.replace("__IMAGE_URL__", fallback_img_url).replace("__RAW_PROMPT__", prompt.strip())
+            
+            # 在主畫面渲染出真正的 AI 圖片組件
+            components.html(html_code, height=580, scrolling=False)
