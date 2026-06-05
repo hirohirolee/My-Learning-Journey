@@ -5,6 +5,7 @@ import time
 import urllib.parse
 import random
 from PIL import Image
+import streamlit.components.v1 as components
 
 # ==========================================
 # 1. 網頁基本設定
@@ -47,7 +48,7 @@ with st.sidebar:
 # 4. 主畫面
 # ==========================================
 st.title("🎨 AI 圖像生成 Web App")
-st.markdown("**(✨ 具備 DNS 斷網容錯與防盜鏈破解的終極版本)**")
+st.markdown("**(✨ 具備 DNS 斷網容錯與前端獨立沙盒渲染的終極版本)**")
 
 prompt = st.text_area("請輸入提示詞 (Prompt):", placeholder="A cat walking on the beach...", height=150)
 submit_button = st.button("開始生成", type="primary")
@@ -89,27 +90,31 @@ if submit_button:
                     break
                     
             except requests.exceptions.ConnectionError:
-                # 抓到最致命的 DNS 斷網錯誤 (NameResolutionError)
-                status_msg.error("🚨 致命錯誤：Streamlit 雲端伺服器對外網路已斷線！")
+                status_msg.error("🚨 致命錯誤：Streamlit 雲端伺服器對外網路已斷線 (DNS 解析失敗)！")
                 break
             except Exception as e:
                 status_msg.warning("⚠️ 連線異常，準備重試...")
                 time.sleep(2)
 
-        # 如果後端徹底死機、超時，啟用瀏覽器無痕物理繞道
+        # 如果後端徹底死機、斷網，啟用前端獨立沙盒物理繞道
         if not success:
-            st.warning("📡 主通道無法連線，已啟動【前端無痕直連模式】渲染圖片！")
+            st.warning("📡 主通道無法連線，已啟動【前端獨立沙盒模式】由您的瀏覽器直接渲染圖片！")
+            
             encoded_prompt = urllib.parse.quote(prompt.strip())
             random_seed = random.randint(1, 99999)
             
-            # 使用 pollinations 備用網址，並加上隨機種子
-            fallback_url = f"https://pollinations.ai/p/{encoded_prompt}?width=800&height=600&seed={random_seed}"
+            # 🌟 修正：正確的 API 端點，回傳真實 JPEG 圖片
+            fallback_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?seed={random_seed}&nologo=true"
             
-            # 加上 referrerpolicy="no-referrer" 完美破解防盜鏈機制
-            html_img = f'''
-            <div style="display:flex;justify-content:center;">
-                <img src="{fallback_url}" width="100%" style="border-radius:10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" referrerpolicy="no-referrer" crossorigin="anonymous">
+            # 使用 components.html 建立安全的 iframe 沙盒
+            html_code = f"""
+            <div style="display: flex; justify-content: center; align-items: center; width: 100%; padding: 20px 0;">
+                <img src="{fallback_url}" 
+                     style="max-width: 100%; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);" 
+                     alt="AI Generated Image"
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/800x600.png?text=Image+Load+Failed';">
             </div>
-            '''
-            st.markdown(html_img, unsafe_allow_html=True)
-            st.caption(f"✨ {prompt.strip()} (無痕瀏覽器渲染通道)")
+            """
+            
+            components.html(html_code, height=700, scrolling=True)
+            st.caption(f"✨ {prompt.strip()} (獨立沙盒備用通道)")
