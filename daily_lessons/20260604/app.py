@@ -1,51 +1,97 @@
 import streamlit as st
-import urllib.parse
+import requests
+import io
+from PIL import Image
 
-# 1. 網頁基本設定
+# ==========================================
+# 1. 網頁基本設定 (Page Config)
+# ==========================================
 st.set_page_config(
-    page_title="AI 魔法生圖器",
-    page_icon="✨",
-    layout="centered"
+    page_title="AI 圖像生成 Web App",
+    page_icon="🎨",
+    layout="wide" # 使用寬螢幕佈局
 )
 
-# 2. 標題與簡介
-st.title("✨ AI 魔法生圖器")
-st.caption("HW3 作業展示版 (免 Key 穩定修復版)")
-
-# 3. 輸入區域
-prompt = st.text_area("你想畫些什麼？", placeholder="例如：貓睡覺 喝可樂...", height=100)
-
-# 4. 生成按鈕與邏輯
-if st.button("✨ 立即生成圖片", type="primary"):
-    # 關鍵防錯：使用 .strip() 去除前後的換行與空白
-    clean_prompt = prompt.strip()
+# ==========================================
+# 2. 左側邊欄設計 (Sidebar)
+# ==========================================
+with st.sidebar:
+    st.markdown("### 🔑 安全設定")
+    # 使用 type="password" 讓輸入的 Token 變成隱碼
+    hf_token = st.text_input("輸入 Hugging Face Token:", type="password", help="請輸入您的 Hugging Face Access Token")
     
-    if clean_prompt != "":
-        with st.spinner("魔法施展中，後端伺服器運算中..."):
-            try:
-                # 關鍵防錯二：將內文所有的換行字元 \n 全部替換成標準空白，徹底杜絕 %0A 造成的 404 錯誤
-                clean_prompt = clean_prompt.replace('\n', ' ')
-                
-                # 將清洗後的中文提示詞轉為網址編碼
-                encoded_prompt = urllib.parse.quote(clean_prompt)
-                
-                # 組裝 Pollinations 繪圖 API 網址
-                image_url = f"https://image.pollinations.ai/p/{encoded_prompt}?width=800&height=600&enhance=true"
-                
-                # 展示圖片
-                st.success("圖片生成成功！")
-                st.image(image_url, caption=f"AI 根據「{clean_prompt}」生成的作品", use_container_width=True)
-                
-                # 提供圖片網址
-                st.info(f"🔗 圖片直連網址：{image_url}")
-                
-            except Exception as e:
-                st.error(f"遭遇未知錯誤：{str(e)}")
-    else:
-        st.warning("請填寫你想畫的內容描述喔！")
+    # 藍色提示框
+    st.info("提示：此 Token 僅用於此次請求，不會被儲存。")
+    
+    st.divider() # 分隔線
+    
+    st.markdown("### ⚙️ 模型設定")
+    # 下拉式選單選擇模型
+    selected_model = st.selectbox(
+        "選擇 AI 模型:",
+        (
+            "black-forest-labs/FLUX.1-schnell",
+            "stabilityai/sdxl-turbo",
+            "stabilityai/stable-diffusion-xl-base-1.0",
+            "nvidia/Cosmos3-Super-Text2Image"
+        )
+    )
 
-# 5. 系統狀態報告
-st.markdown("---")
-with st.expander("💡 系統狀態報告"):
-    st.write("● 本 Web App 已補上文字清洗機制，自動過濾掉干擾網址解析的換行符號 (%0A)。")
-    st.write("● 毋需綁定任何信用卡或 API Key，適合展示與學術作業使用。")
+# ==========================================
+# 3. 主畫面設計 (Main Content)
+# ==========================================
+st.title("🎨 AI 圖像生成 Web App")
+st.markdown("輸入一段文字，讓 AI 為你創作圖片。")
+
+# 使用 container 建立一個帶有邊框的輸入區塊 (Streamlit 1.30+ 支援 border=True)
+with st.container(border=True):
+    prompt = st.text_area(
+        "請輸入提示詞 (Prompt):",
+        placeholder="An astronaut riding a horse on mars, hd, dramatic lighting",
+        height=150
+    )
+    
+    # 生成按鈕
+    submit_button = st.button("開始生成")
+
+# 藍色提示說明
+st.info("註：若生成失敗，可能是 Hugging Face 免費伺服器正在載入模型，請稍等一分鐘後再試。")
+
+# ==========================================
+# 4. 生成邏輯 (Backend Logic)
+# ==========================================
+if submit_button:
+    # 防呆機制：檢查是否輸入了 Token 與提示詞
+    if not hf_token:
+        st.error("⚠️ 請先在左側邊欄輸入您的 Hugging Face Token！")
+    elif not prompt.strip():
+        st.warning("⚠️ 請輸入您想要生成的圖片提示詞 (Prompt)！")
+    else:
+        # 顯示載入動畫
+        with st.spinner(f"正在使用 {selected_model} 模型生成圖片，請稍候..."):
+            try:
+                # 設定 API 網址與標頭
+                API_URL = f"https://api-inference.huggingface.co/models/{selected_model}"
+                headers = {"Authorization": f"Bearer {hf_token}"}
+                payload = {"inputs": prompt.strip()}
+                
+                # 發送請求至 Hugging Face
+                response = requests.post(API_URL, headers=headers, json=payload)
+                
+                # 判斷是否成功
+                if response.status_code == 200:
+                    image_bytes = response.content
+                    image = Image.open(io.BytesIO(image_bytes))
+                    st.success("🎉 圖片生成成功！")
+                    st.image(image, caption=prompt, use_container_width=True)
+                else:
+                    # 處理伺服器正在載入模型 (Model loading) 或其他錯誤
+                    error_msg = response.json()
+                    st.error(f"❌ 生成失敗 (狀態碼: {response.status_code})")
+                    if "estimated_time" in error_msg:
+                        st.warning(f"⏳ 伺服器正在喚醒模型，大約需要 {error_msg['estimated_time']:.1f} 秒，請稍後再點擊一次生成。")
+                    else:
+                        st.write(error_msg)
+            
+            except Exception as e:
+                st.error(f"發生未知錯誤：{e}")
