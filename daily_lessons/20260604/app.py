@@ -109,9 +109,6 @@ if submit_button:
                         st.success("🎉 [通道一] Hugging Face 圖片生成成功！")
                         st.image(image, caption=prompt.strip(), use_container_width=True)
                     else:
-                        error_details = response.json()
-                        if isinstance(error_details, dict) and "estimated_time" in error_details:
-                            st.warning(f"⏳ Hugging Face 模型正在喚醒中，大約還需要 {error_details['estimated_time']:.1f} 秒。正在為您同步呼叫備用通道...")
                         trigger_fallback = True
                 except Exception:
                     # 抓到雲端網路斷線錯誤，自動標記進入備用通道
@@ -127,7 +124,7 @@ if submit_button:
             encoded_prompt = urllib.parse.quote(prompt.strip().replace('\n', ' '))
             random_seed = random.randint(1, 99999)
             
-            # 🌟 換用真正的極速 turbo 通道，速度增快 10 倍！
+            # 換用真正的極速 turbo 通道，速度增快 10 倍！
             target_image_url = f"https://image.pollinations.ai/p/{encoded_prompt}?width=800&height=600&model=turbo&seed={random_seed}"
             
             # 採用三個單引號包裹高質感前端生圖 UI
@@ -147,4 +144,4 @@ if submit_button:
                     
                     <div class="relative rounded-lg overflow-hidden bg-slate-200 min-h-[450px] flex items-center justify-center">
                         
-                        <div id="skeleton" class="absolute inset
+                        <div id="skeleton" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 text
