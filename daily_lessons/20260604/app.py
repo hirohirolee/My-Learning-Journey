@@ -43,7 +43,7 @@ with st.sidebar:
     
     st.divider()
     
-    # 🌟 這裡加入了你需要的「API Key 連線自我檢查」功能
+    # 憑證安全自我檢查功能
     st.markdown("### 🔍 憑證安全自我檢查")
     if st.button("檢查後端 API 連線狀態", use_container_width=True):
         if not hf_token:
@@ -109,5 +109,15 @@ if submit_button:
                 else:
                     error_msg = response.json()
                     st.error(f"❌ 生成失敗 (狀態碼: {response.status_code})")
+                    # 這裡已完美修正閉合大括號的語法錯誤
                     if isinstance(error_msg, dict) and "estimated_time" in error_msg:
-                        st.warning(f"⏳ 伺服器正在喚醒模型，大約需要 {error_msg
+                        st.warning(f"⏳ 伺服器正在喚醒模型，大約需要 {error_msg['estimated_time']:.1f} 秒，請稍後再點擊一次生成。")
+                    else:
+                        st.write(error_msg)
+                        
+        except Exception as e:
+            # 完美的網路異常攔截機制
+            if "NameResolutionError" in str(e) or "HTTPSConnection" in str(e) or "connection" in str(e).lower():
+                st.error("❌ 網路連線異常：目前 Streamlit 雲端伺服器與 Hugging Face 連線中斷，請稍等幾秒鐘並重新整理網頁再試一次！")
+            else:
+                st.error(f"發生未知錯誤：{e}")
