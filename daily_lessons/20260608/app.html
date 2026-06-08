@@ -2791,6 +2791,34 @@
             "hi": `您好！很高興為您服務。我是您的 AI 機器學習導師。您可以問我關於十大演算法的任何問題，例如：『什麼是決策樹的基尼係數？』、『SVM 的邊際是什麼？』，或者直接點擊上方的小標籤快速提問！`
         };
 
+        function getLocalResponse(question) {
+            const q = question.toLowerCase();
+            const rules = [
+                { keys: ["svm", "向量機", "margin", "邊界", "楚河漢界", "超平面"], tag: "svm" },
+                { keys: ["隨機森林", "random forest", "森林", "stump"], tag: "隨機森林" },
+                { keys: ["決策樹", "gini", "基尼", "不純", "樹"], tag: "樹" },
+                { keys: ["貝氏", "bayes", "獨立", "垃圾郵件"], tag: "貝氏" },
+                { keys: ["過擬合", "overfit", "死背"], tag: "過擬合" },
+                { keys: ["線性迴歸", "linear", "最小平方", "趨勢線"], tag: "線性迴歸" },
+                { keys: ["邏輯迴歸", "logistic", "sigmoid", "二分"], tag: "邏輯迴歸" },
+                { keys: ["knn", "最近鄰", "距離", "鄰居"], tag: "knn" },
+                { keys: ["kmeans", "分群", "群心"], tag: "kmeans" },
+                { keys: ["pca", "降維", "主成分", "協方差"], tag: "pca" },
+                { keys: ["神經網路", "深度學習", "神經元", "人臉", "表情"], tag: "神經網路" },
+                { keys: ["助教", "功能", "你好", "哈囉", "誰", "hi", "hello"], tag: "助教" }
+            ];
+
+            let matchedTag = "";
+            for (const rule of rules) {
+                if (rule.keys.some(k => q.includes(k))) {
+                    matchedTag = rule.tag;
+                    break;
+                }
+            }
+
+            return localAnswers[matchedTag] || `我收到您的提問了！目前我沒有在我的本地知識庫中找到與這項提問精確符合的演算法說明。\n\n💡 **您可以嘗試提問包含這些關鍵字的問題：**\n* 決策樹、隨機森林、SVM、單純貝氏、KNN、線性迴歸、邏輯迴歸、KMeans、PCA、神經網路。\n* 或詢問關於 **過擬合 (Overfitting)** 等概念。\n\n*(如果您想要不受限制的任意 AI 聊天，可以點擊右上角 ⚙️ 設定並貼上您的 **Gemini API Key**！)*`;
+        }
+
         async function fetchGeminiResponse(question) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             const sysInstruction = "You are a helpful, encouraging, and highly knowledgeable AI Machine Learning Tutor for NCHU AI Training program. Explain machine learning algorithms in a friendly, dynamic way, using Chinese (zh-Hant). Provide short code blocks or clear analogies if asked. Keep responses concise and clean so they fit nicely in a small chat window.";
