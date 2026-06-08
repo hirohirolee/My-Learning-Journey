@@ -2,47 +2,309 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Innovation Studio | Hiro Lee</title>
-    <!-- 字體引用與主頁一致 -->
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { font-family: 'Montserrat', sans-serif; background-color: #f8f9fa; margin: 0; color: #334155; }
-        .back-nav { padding: 20px; }
-        .back-link { color: #2C3E50; text-decoration: none; font-weight: 600; font-size: 14px; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 20px 20px 60px 20px; }
+        :root {
+            --primary-color: #1e293b;
+            --secondary-color: #f8fafc;
+            --accent-color: #d97706;
+            --text-color: #334155;
+            --background-color: #ffffff;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            --card-hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
         
-        .section-title { font-family: 'Cormorant Garamond', serif; font-size: 48px; text-align: center; margin-bottom: 50px; color: #1e293b; }
+        body, html {
+            margin: 0; padding: 0;
+            font-family: 'Montserrat', 'Noto Sans TC', sans-serif;
+            color: var(--text-color);
+            background-color: var(--secondary-color);
+            scroll-behavior: smooth;
+        }
         
-        /* App 展示區塊設計 */
-        .app-section { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 50px; }
-        .app-title { font-size: 26px; margin-bottom: 10px; color: #1e293b; border-left: 4px solid #E67E22; padding-left: 15px; }
-        .app-desc { margin-bottom: 25px; color: #64748b; font-size: 15px; }
-        iframe { border-radius: 8px; border: 1px solid #e2e8f0; width: 100%; height: 600px; }
+        /* Navigation Bar */
+        header {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 15px 0; position: fixed; width: 100%; top: 0; z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.3s ease;
+        }
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            max-width: 1200px; margin: 0 auto; padding: 0 20px;
+            box-sizing: border-box;
+        }
+        .logo {
+            font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 700;
+            color: var(--primary-color); text-decoration: none; letter-spacing: 2px;
+        }
+        .nav-links { list-style: none; display: flex; margin: 0; padding: 0; }
+        .nav-links li { margin-left: 25px; }
+        .nav-links a {
+            text-decoration: none; color: var(--primary-color); font-weight: 600;
+            font-size: 13px; text-transform: uppercase; transition: color 0.3s ease;
+        }
+        .nav-links a:hover { color: var(--accent-color); }
+        
+        /* Main Container */
+        .studio-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 140px 20px 80px 20px;
+            box-sizing: border-box;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 48px;
+            color: var(--primary-color);
+            margin: 0 0 15px 0;
+            font-weight: 700;
+        }
+        
+        .section-subtitle {
+            font-size: 16px;
+            color: #64748b;
+            margin: 0 auto;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+        
+        /* Grid and Cards Layout */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 35px;
+        }
+        
+        .card {
+            background: var(--background-color);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            text-align: center;
+            border-top: 5px solid var(--primary-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--card-hover-shadow);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 5px;
+            background-color: var(--accent-color);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+            transform-origin: left;
+            z-index: 10;
+        }
+        
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .card-icon {
+            font-size: 44px;
+            color: var(--accent-color);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover .card-icon {
+            transform: scale(1.1);
+        }
+        
+        .card h3 {
+            font-size: 22px;
+            margin: 0 0 15px 0;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .card p {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.7;
+            margin: 0 0 20px 0;
+            flex-grow: 1;
+        }
+        
+        /* Tech Tags styling */
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .tech-tags span {
+            background-color: #f1f5f9;
+            color: #475569;
+            padding: 5px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 50px;
+            letter-spacing: 0.5px;
+        }
+        
+        /* CTA Button styling */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 13px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(217, 119, 6, 0.2);
+        }
+        
+        .btn i {
+            font-size: 12px;
+        }
+        
+        /* Footer styling */
+        footer {
+            background-color: var(--primary-color);
+            color: #94a3b8;
+            text-align: center;
+            padding: 40px 0;
+            font-size: 14px;
+            margin-top: 80px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="back-nav">
-        <a href="index.html" class="back-link">← 回到主頁</a>
+    <!-- Header Navigation -->
+    <header>
+        <nav>
+            <a href="index.html" class="logo">HIRO LEE</a>
+            <ul class="nav-links">
+                <li><a href="index.html#management">Management</a></li>
+                <li><a href="index.html#certifications">Certifications</a></li>
+                <li><a href="index.html#esg">ESG</a></li>
+                <li><a href="ai-studio.html">AI STUDIO</a></li>
+                <li><a href="index.html#about">About</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="studio-container">
+        <div class="section-header">
+            <h1 class="section-title">AI Innovation Studio</h1>
+            <p class="section-subtitle">
+                探索由無伺服器架構與先進前端技術構建的 AI 與數據科學互動式應用程式集
+            </p>
+        </div>
+
+        <div class="grid-container">
+            <!-- App 1: AI 圖像生成 -->
+            <div class="card">
+                <div>
+                    <div class="card-icon">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h3>AI Image Generation</h3>
+                    <p>整合 Puter.js 前端渲染與無伺服器技術，實現免 API 金鑰、高穩定性與極速回應的 AI 圖像生成體驗。</p>
+                </div>
+                <div>
+                    <div class="tech-tags">
+                        <span>Puter.js</span>
+                        <span>Stable Diffusion</span>
+                        <span>Serverless</span>
+                    </div>
+                    <a href="https://my-learning-journey-a9egpqgpvwec9kup8grj6x.streamlit.app/" target="_blank" rel="noopener noreferrer" class="btn">
+                        啟動應用 <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- App 2: 線性迴歸分析 -->
+            <div class="card">
+                <div>
+                    <div class="card-icon">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h3>Linear Regression & Analytics</h3>
+                    <p>自適應線上數據擬合與線性迴歸分析，提供實作動態趨勢預測、殘差分析與資料視覺化的科學沙盒。</p>
+                </div>
+                <div>
+                    <div class="tech-tags">
+                        <span>Python</span>
+                        <span>Data Science</span>
+                        <span>Matplotlib</span>
+                        <span>Streamlit</span>
+                    </div>
+                    <a href="https://hiro-linear-regression.streamlit.app/" target="_blank" rel="noopener noreferrer" class="btn">
+                        啟動應用 <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- App 3: 十大機器學習演算法與表情感知 AI 助教 -->
+            <div class="card">
+                <div>
+                    <div class="card-icon">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <h3>ML Models & Emotion AI</h3>
+                    <p>結合 client-side 臉部表情偵測與互動式數學沙盒，動態分析讀書專注力與困惑度，並由 AI 導師進行解說。</p>
+                </div>
+                <div>
+                    <div class="tech-tags">
+                        <span>Face API</span>
+                        <span>Gemini API</span>
+                        <span>Tailwind CSS</span>
+                        <span>Streamlit</span>
+                    </div>
+                    <a href="https://my-learning-journey-fa32pwgnj5bn8ccq2gabte.streamlit.app/" target="_blank" rel="noopener noreferrer" class="btn">
+                        啟動應用 <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="container">
-        <h1 class="section-title">AI Innovation Studio</h1>
-
-        <!-- 第一個 App：AI 圖像生成 -->
-        <section class="app-section">
-            <h2 class="app-title">AI Image Generation Web App</h2>
-            <p class="app-desc">整合 Puter.js 前端渲染技術，實現免金鑰、高穩定性的 AI 圖像生成體驗。</p>
-            <iframe src="https://my-learning-journey-a9egpqgpvwec9kup8grj6x.streamlit.app/?embed=true"></iframe>
-        </section>
-
-        <!-- 第二個 App：線性回歸模型 -->
-        <section class="app-section">
-            <h2 class="app-title">Linear Regression & Data Analytics</h2>
-            <p class="app-desc">從簡單線性回歸到自動回歸模型，展示資料分析與預測的 AI 應用實務。</p>
-            <iframe src="https://hiro-linear-regression.streamlit.app/?embed=true"></iframe>
-        </section>
-    </div>
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 by Hiro Lee. Executive Manager & PMP. All rights reserved.</p>
+    </footer>
 
 </body>
 </html>
