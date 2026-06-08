@@ -32,6 +32,9 @@
      Linear AI App (v20260605)  課程練習與 AI 技術整合展示。
          https://hiro-linear-regression.streamlit.app/
 
+     ML Algorithms & Emotion AI App (v20260608)  結合臉部表情偵測與互動式數學沙盒，動態偵測專注與困惑度，由 AI 導師進行演算法解說。
+         https://my-learning-journey-fa32pwgnj5bn8ccq2gabte.streamlit.app/
+
 ### 🔗 專案原始碼
 * **GitHub Repo**: [https://github.com/hirohirolee/My-Learning-Journey](https://github.com/hirohirolee/My-Learning-Journey)
 
