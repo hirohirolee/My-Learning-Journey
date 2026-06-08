@@ -6,6 +6,8 @@
 
 | 日期 | 學習主題重點 |
 | :--- | :--- |
+| **2026-06-08** | **十大機器學習演算法：全方位動態互動學習報告與表情感知 AI 助教** |
+ Livedemo: https://my-learning-journey-fa32pwgnj5bn8ccq2gabte.streamlit.app/
 | **2026-06-05** | **CRISP-DM 應用：線性回歸建模與異常值偵測** |
  Livedemo: https://hiro-linear-regression.streamlit.app/
 | **2026-06-04** | 進階邏輯處理與檔案結構優化 |
@@ -15,6 +17,9 @@
 | **2026-05-27** | 基礎語法與環境搭建 |
 
 ## 💡 學習筆記摘要
+- **邊緣運算與 Face API**：在前端實現基於 WebCam 的人臉特徵追蹤與表情分類（專注、開心、困惑等），打造適應性學習（Adaptive Learning）體驗。
+- **Streamlit 進階架構整合**：利用 MutationObserver 解決 iframe 跨域安全沙盒中的 `camera` 權限阻擋政策，並鎖定 dynamic viewport 消除雙滾動條與白屏閃爍。
+- **AI 雙引擎問答設計**：實作本地特徵匹配離線引擎與 Gemini 1.5 Flash 雲端 API 雙引擎，並使用 LocalStorage 保護 API 金鑰不洩漏。
 - **CRISP-DM 方法論**：將數據科學專案流程標準化，從商業理解到部署，確保開發有條不紊。
 - **線性回歸實作**：應用 `scikit-learn` 進行迴歸建模，並針對誤差值進行排序，成功標記出前 20 個異常值（Outliers）。
 - **模組化管理**：每日練習與作品集分開存放，確保專案擴充性。
@@ -23,11 +28,19 @@
 
 ---
 
-## 🛠️ 專案實作亮點：線性回歸與異常值偵測
+## 🛠️ 專案實作亮點 1：線性回歸與異常值偵測
 * **技術棧**：`numpy`, `pandas`, `scikit-learn`, `matplotlib`
 * **實作內容**：
     1. 使用 `numpy` 產生含有雜訊的線性數據。
     2. 執行線性回歸模型並計算殘差 (Residuals)。
     3. 自動化偵測誤差最大的 20 個點，並於圖表上以紅色標記其名次，提升模型評估的可視化效果。
 
+## 🛠️ 專案實作亮點 2：十大機器學習演算法沙盒與情緒感知
+* **技術棧**：`Tailwind CSS`, `face-api.js`, `canvas-confetti`, `Gemini API`, `Streamlit`
+* **實作內容**：
+    1. 前端原生 Canvas 動態擬合演算法邊界（如 SVM 支援向量標註、隨機森林多數決、單純貝氏高斯雲圖）。
+    2. 使用 `face-api.js` 偵測表情並進行專注與困惑分析，動態觸發 AI 助教的客製化教學指引或答題回饋。
+    3. 全方位克服 Streamlit 容器的 iframe 寬高溢出與相機授權政策限制，達到 100% 滿版原生 Web App 的使用體驗。
+
 *持續累積中，透過每日的小進步，建構 AI 應用開發的能力。*
+
