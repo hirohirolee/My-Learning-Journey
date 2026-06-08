@@ -20,9 +20,16 @@ hide_style = """
             padding-bottom: 0rem !important;
             padding-left: 0rem !important;
             padding-right: 0rem !important;
+            max-width: 100% !important;
         }
         iframe {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
             border: none !important;
+            z-index: 999999 !important;
         }
     </style>
 """
