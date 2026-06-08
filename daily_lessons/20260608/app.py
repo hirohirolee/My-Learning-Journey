@@ -28,12 +28,17 @@ hide_style = """
 """
 st.markdown(hide_style, unsafe_allow_html=True)
 
-# Read app.html content
+import os
+
+# Read app.html content relative to this script's directory
 try:
-    with open("app.html", "r", encoding="utf-8") as f:
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    html_path = os.path.join(dir_path, "app.html")
+    with open(html_path, "r", encoding="utf-8") as f:
         html_content = f.read()
     
     # Embed the HTML single-page app
     components.html(html_content, height=1450, scrolling=True)
 except FileNotFoundError:
     st.error("找不到 app.html 檔案，請確認與 app.py 放在同個資料夾。")
+
