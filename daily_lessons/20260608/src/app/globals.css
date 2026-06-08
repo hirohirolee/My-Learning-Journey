@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@300;400;600;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #020617; /* slate-950 */
+  --foreground: #f8fafc; /* slate-50 */
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+  scroll-behavior: smooth;
+}
+
+code, pre, .font-mono {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Custom Glassmorphism styles */
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Keyframes for slide-up animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Print Stylesheet */
+@media print {
+  .no-print,
+  aside,
+  button,
+  input[type="range"],
+  .fixed,
+  iframe {
+    display: none !important;
+  }
+  
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-family: 'Noto Sans TC', sans-serif !important;
+  }
+
+  main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .print-container {
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #0f172a !important;
+  }
+
+  .print-header {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-bottom: 3px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    padding: 1.5rem !important;
+    border-radius: 12px !important;
+  }
+
+  .print-header h1,
+  .print-header p,
+  .print-header span {
+    color: #0f172a !important;
+  }
+
+  article, section {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin-bottom: 2rem !important;
+    padding: 1.5rem !important;
+    border-radius: 12px !important;
+  }
+
+  h2, h3, h4, h5 {
+    color: #0f172a !important;
+    border-bottom-color: #cbd5e1 !important;
+  }
+
+  p, span, li, td {
+    color: #334155 !important;
+  }
+
+  .bg-slate-950, 
+  .bg-slate-900, 
+  .bg-slate-900\/20, 
+  .bg-slate-900\/40, 
+  .bg-slate-950\/60,
+  .bg-emerald-950\/20,
+  .bg-rose-950\/20 {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  tr {
+    border-bottom: 1px solid #e2e8f0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  th {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+  }
+
+  td {
+    color: #334155 !important;
+  }
+}
