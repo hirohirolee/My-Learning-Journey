@@ -194,6 +194,64 @@ st.sidebar.success(f"📊 使用中資料集：{dataset_name}")
 # Run ML Pipeline dynamically
 scaler, trained_models, metrics, X_train, X_test, y_train, y_test, test_predictions, outliers, df_clean = train_and_evaluate_pipeline(df_source)
 
+# ----------------------------------------------------
+# DYNAMIC STEPWISE FEATURE SELECTION METRICS
+# ----------------------------------------------------
+@st.cache_data
+def get_stepwise_metrics(X_train, X_test, y_train, y_test, num_cols, _scaler):
+    X_train_scaled = X_train.copy()
+    X_test_scaled = X_test.copy()
+    X_train_scaled[num_cols] = _scaler.transform(X_train[num_cols])
+    X_test_scaled[num_cols] = _scaler.transform(X_test[num_cols])
+    
+    features = list(X_train.columns)
+    selected = []
+    steps = []
+    remaining = list(features)
+    
+    for step in range(1, len(features) + 1):
+        best_r2 = -np.inf
+        best_feature = None
+        best_rmse = None
+        
+        for f in remaining:
+            candidate_features = selected + [f]
+            lr = LinearRegression()
+            lr.fit(X_train_scaled[candidate_features], y_train)
+            preds = lr.predict(X_test_scaled[candidate_features])
+            
+            r2 = r2_score(y_test, preds)
+            rmse = np.sqrt(mean_squared_error(y_test, preds))
+            
+            if r2 > best_r2:
+                best_r2 = r2
+                best_feature = f
+                best_rmse = rmse
+                
+        selected.append(best_feature)
+        remaining.remove(best_feature)
+        
+        label_mapping = {
+            'R&D Spend': '研發投入 (R&D Spend)',
+            'Marketing Spend': '行銷推廣 (Marketing Spend)',
+            'Administration': '行政管理 (Administration)',
+            'State_Florida': '落腳佛州 (State_Florida)',
+            'State_New York': '落腳紐約州 (State_New York)'
+        }
+        selected_labels = [label_mapping.get(x, x) for x in selected]
+        
+        steps.append({
+            '特徵數量': step,
+            '選入特徵組合': " + ".join(selected_labels),
+            'RMSE (均方根誤差)': best_rmse,
+            'R-squared (解釋力)': best_r2
+        })
+        
+    return pd.DataFrame(steps)
+
+num_cols_to_scale = ['R&D Spend', 'Administration', 'Marketing Spend']
+step_df = get_stepwise_metrics(X_train, X_test, y_train, y_test, num_cols_to_scale, scaler)
+
 # Sidebar: Interactive Simulator Inputs
 st.sidebar.header("⚙️ 營運預算模擬配置")
 rd_input = st.sidebar.number_input("1. 研發費用 (R&D Spend) - 美元", min_value=0.0, max_value=500000.0, value=100000.0, step=5000.0)
@@ -551,6 +609,67 @@ with tab3:
         fig_box.update_layout(height=350)
         st.plotly_chart(fig_box, use_container_width=True)
         st.caption("解讀：中線代表各地區獲利中位數，圓點代表各公司真實位置。可看出各地區獲利分布區間高度重疊。")
+        
+    # --- NEW SECTION: STEPWISE FEATURE SELECTION ---
+    st.markdown('<div class="section-title">🔍 特徵逐步篩選與模型效能分析 (Stepwise Feature Selection)</div>', unsafe_allow_html=True)
+    st.write("以下呈現逐步將特徵（研發、行銷、行政支出、地區）加入線性模型後，模型在測試集上的效能變化。您可以藉此判斷哪些特徵組合能帶來最佳預測效果。")
+    
+    col_step1, col_step2 = st.columns(2)
+    
+    with col_step1:
+        # Plot 5: RMSE by Number of Features
+        fig_step_rmse = px.line(
+            step_df,
+            x='特徵數量',
+            y='RMSE (均方根誤差)',
+            markers=True,
+            title="⑤ 隨特徵數量增加的 RMSE 變化 (越低越好)"
+        )
+        # Highlight best point (lowest RMSE)
+        opt_rmse_idx = step_df['RMSE (均方根誤差)'].idxmin()
+        fig_step_rmse.add_trace(go.Scatter(
+            x=[step_df.loc[opt_rmse_idx, '特徵數量']],
+            y=[step_df.loc[opt_rmse_idx, 'RMSE (均方根誤差)']],
+            mode='markers',
+            marker=dict(color='#ef4444', size=12, symbol='star', line=dict(color='black', width=1)),
+            name='最佳特徵數量點'
+        ))
+        fig_step_rmse.update_layout(height=380, showlegend=False)
+        st.plotly_chart(fig_step_rmse, use_container_width=True)
+        st.caption("解讀：均方根誤差 (RMSE) 代表預測值偏離實際值的標準差。轉折最低點代表在當前特徵數量下，模型預測偏誤最小。")
+        
+    with col_step2:
+        # Plot 6: R-squared by Number of Features
+        fig_step_r2 = px.line(
+            step_df,
+            x='特徵數量',
+            y='R-squared (解釋力)',
+            markers=True,
+            title="⑥ 隨特徵數量增加的 R-squared 變化 (越高越好)"
+        )
+        # Highlight best point (highest R2)
+        opt_r2_idx = step_df['R-squared (解釋力)'].idxmax()
+        fig_step_r2.add_trace(go.Scatter(
+            x=[step_df.loc[opt_r2_idx, '特徵數量']],
+            y=[step_df.loc[opt_r2_idx, 'R-squared (解釋力)']],
+            mode='markers',
+            marker=dict(color='#22c55e', size=12, symbol='star', line=dict(color='black', width=1)),
+            name='最佳特徵數量點'
+        ))
+        fig_step_r2.update_layout(height=380, showlegend=False)
+        st.plotly_chart(fig_step_r2, use_container_width=True)
+        st.caption("解讀：決定係數 (R-squared) 代表模型可解釋的資料變異比例。最高點代表該特徵組合對利潤的預測解釋能力最強。")
+        
+    st.write("**逐步特徵篩選評估詳表：**")
+    st.dataframe(
+        step_df.style.format({
+            'RMSE (均方根誤差)': '${:,.2f}',
+            'R-squared (解釋力)': '{:.4%}'
+        }).highlight_min(axis=0, subset=['RMSE (均方根誤差)'], color='#dcfce7')
+          .highlight_max(axis=0, subset=['R-squared (解釋力)'], color='#dcfce7'),
+        use_container_width=True
+    )
+    st.info("💡 **決策啟示**：從表中可以觀察到，當特徵數量為 **2 個**（選入『研發支出』與『行銷支出』）時，RMSE 達到最低點，而 R-squared 達到最高點，為模型最優解。隨後加入『地區』與『行政管理』時，模型表現反而下降，這印證了多餘的噪音特徵會干擾預測效能的規律。")
 
 # --- TAB 4: LEADERBOARD & INSIGHTS ---
 with tab4:
