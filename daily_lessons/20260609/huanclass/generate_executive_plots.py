@@ -101,4 +101,22 @@ plt.tight_layout()
 plt.savefig('images/executive_actual_vs_predicted.png', dpi=300, bbox_inches='tight')
 plt.close()
 
+# Chart 3: R&D Spend vs Profit Scatter Plot with Regression Line
+plt.figure(figsize=(7, 5))
+sns.regplot(data=df_clean, x='R&D Spend', y='Profit', color='#0d9488', 
+            scatter_kws={'alpha':0.6, 's':60}, line_kws={'color':'#ef4444', 'ls':'--'})
+plt.title('R&D Spend vs Profit (with Regression Line)', fontsize=13, fontweight='bold', pad=12)
+plt.xlabel('R&D Spend ($)')
+plt.ylabel('Profit ($)')
+plt.tight_layout()
+plt.savefig('images/rd_vs_profit_regplot.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# Chart 4: Seaborn Pairplot colored by State
+pairplot_fig = sns.pairplot(df_clean, hue='State', palette='viridis', 
+                            vars=['R&D Spend', 'Administration', 'Marketing Spend', 'Profit'])
+pairplot_fig.savefig('images/pairplot.png', dpi=300)
+plt.close()
+
 print("Executive plots generated successfully!")
+

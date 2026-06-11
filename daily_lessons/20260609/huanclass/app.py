@@ -191,6 +191,9 @@ else:
 
 st.sidebar.success(f"📊 使用中資料集：{dataset_name}")
 
+st.sidebar.header("⚙️ 模式設定")
+simplified_mode = st.sidebar.checkbox("簡化分析模式 (僅顯示核心特徵 R&D 與 Marketing)", value=False)
+
 # Run ML Pipeline dynamically
 scaler, trained_models, metrics, X_train, X_test, y_train, y_test, test_predictions, outliers, df_clean = train_and_evaluate_pipeline(df_source)
 
@@ -487,41 +490,102 @@ with tab2:
 
 # --- TAB 3: INTERACTIVE VISUALIZATIONS ---
 with tab3:
-    st.markdown('<div class="section-title">📊 互動式數據視覺化分析 (Plotly)</div>', unsafe_allow_html=True)
-    st.write("所有圖表均為動態生成，支援滑鼠懸停看數據、拉近放大及雙擊重設。")
+    st.markdown('<div class="section-title">📊 5 大數據科學關鍵圖表互動分析</div>', unsafe_allow_html=True)
+    st.write("本分頁整合了機器學習與探索性數據分析（EDA）中最核心的 5 大圖表。所有 Plotly 圖表皆支援滑鼠懸停看數據、拉近放大及雙擊重設。")
     
+    # ------------------ Row 1: Heatmap & R&D Scatter ------------------
     col_vis1, col_vis2 = st.columns(2)
     
     with col_vis1:
         # Plot 1: Heatmap
-        corr = df_clean[['R&D Spend', 'Administration', 'Marketing Spend', 'Profit']].corr()
+        if simplified_mode:
+            corr_cols = ['R&D Spend', 'Marketing Spend', 'Profit']
+        else:
+            corr_cols = ['R&D Spend', 'Administration', 'Marketing Spend', 'Profit']
+        corr = df_clean[corr_cols].corr()
+        
         fig_heat = px.imshow(
             corr,
             text_auto=".3f",
             color_continuous_scale='RdBu_r',
             zmin=-1, zmax=1,
-            title="① 數值型欄位相關性互動熱力圖"
+            title="① 數值型欄位相關性熱力圖 (Correlation Heatmap)"
         )
-        fig_heat.update_layout(height=400)
+        fig_heat.update_layout(height=380, margin=dict(t=40, b=20, l=20, r=20))
         st.plotly_chart(fig_heat, use_container_width=True)
-        st.caption("解讀：相關度越接近 1.000 代表正相關越強。可見研發支出 (0.973) 與行銷支出 (0.748) 是利潤的強相關特徵。")
+        st.caption("解讀：紅藍顏色深淺代表相關係數大小。研發支出與利潤有極強正相關，而行政支出相關性極低。")
         
     with col_vis2:
-        # Plot 2: Actual vs Predicted
-        pred_df = pd.DataFrame({
-            '真實利潤': y_test.values,
-            '預估利潤': test_predictions[best_model_name],
-            '研發投入': X_test['R&D Spend'].values,
-            '行銷推廣': X_test['Marketing Spend'].values,
-            '行政管理': X_test['Administration'].values
-        })
+        # Plot 2: R&D Spend vs Profit Scatter with Regression Line (Numpy Polyfit)
+        x_vals = df_clean['R&D Spend']
+        y_vals = df_clean['Profit']
+        coefs = np.polyfit(x_vals, y_vals, 1)
+        poly1d_fn = np.poly1d(coefs)
+        
+        fig_rd = px.scatter(
+            df_clean, 
+            x='R&D Spend', 
+            y='Profit', 
+            hover_data=['State', 'Marketing Spend'] if not simplified_mode else ['Marketing Spend'],
+            title="② 研發投入 vs 利潤散佈與線性趨勢線"
+        )
+        # Add regression line
+        x_line = np.linspace(x_vals.min(), x_vals.max(), 100)
+        fig_rd.add_trace(go.Scatter(
+            x=x_line, 
+            y=poly1d_fn(x_line), 
+            mode='lines', 
+            name='線性迴歸趨勢線', 
+            line=dict(color='#ef4444', dash='dash', width=2)
+        ))
+        fig_rd.update_layout(height=380, margin=dict(t=40, b=20, l=20, r=20))
+        st.plotly_chart(fig_rd, use_container_width=True)
+        st.caption("解讀：點群非常緊密地圍繞在向上的紅色虛線迴歸線周圍，直觀證實「研發投入是獲利的核心拉動力」。")
+
+    st.markdown("---")
+    
+    # ------------------ Row 2: Actual vs Predicted & Box Plot ------------------
+    col_vis3, col_vis4 = st.columns(2)
+    
+    with col_vis3:
+        # Plot 3: Actual vs Predicted
+        if simplified_mode:
+            pred_df = pd.DataFrame({
+                '真實利潤': y_test.values,
+                '預估利潤': test_predictions[best_model_name],
+                '研發投入': X_test['R&D Spend'].values,
+                '行銷推廣': X_test['Marketing Spend'].values
+            })
+            hover_keys = ['研發投入', '行銷推廣']
+            sim_hovertemplate = (
+                f"<b>您的模擬公司預估點</b><br>"
+                f"預估利潤: ${pred_best:,.2f}<br>"
+                f"研發投入: ${rd_input:,.2f}<br>"
+                f"行銷費用: ${mkt_input:,.2f}<extra></extra>"
+            )
+        else:
+            pred_df = pd.DataFrame({
+                '真實利潤': y_test.values,
+                '預估利潤': test_predictions[best_model_name],
+                '研發投入': X_test['R&D Spend'].values,
+                '行銷推廣': X_test['Marketing Spend'].values,
+                '行政管理': X_test['Administration'].values
+            })
+            hover_keys = ['研發投入', '行銷推廣', '行政管理']
+            sim_hovertemplate = (
+                f"<b>您的模擬公司預估點</b><br>"
+                f"預估利潤: ${pred_best:,.2f}<br>"
+                f"研發投入: ${rd_input:,.2f}<br>"
+                f"行銷費用: ${mkt_input:,.2f}<br>"
+                f"行政管理: ${admin_input:,.2f}<extra></extra>"
+            )
         
         fig_scatter = px.scatter(
             pred_df,
             x='真實利潤',
             y='預估利潤',
-            hover_data=['研發投入', '行銷推廣', '行政管理'],
-            title=f"② 預估利潤 vs 真實利潤散佈圖 ({best_model_name})"
+            hover_data=hover_keys,
+            title=f"③ 預估利潤 vs 真實利潤散佈圖 ({best_model_name})"
         )
         # Add 45 degree line
         min_v = min(y_test.min(), test_predictions[best_model_name].min()) * 0.95
@@ -539,24 +603,73 @@ with tab3:
             name='👈 您當前設定的模擬公司',
             text=['您當前的模擬預估點'],
             textposition='top center',
-            hovertemplate=(
-                f"<b>您的模擬公司預估點</b><br>"
-                f"預估利潤: ${pred_best:,.2f}<br>"
-                f"研發投入: ${rd_input:,.2f}<br>"
-                f"行銷費用: ${mkt_input:,.2f}<br>"
-                f"行政管理: ${admin_input:,.2f}<extra></extra>"
-            )
+            hovertemplate=sim_hovertemplate
         ))
-        fig_scatter.update_layout(height=400)
+        fig_scatter.update_layout(height=380, margin=dict(t=40, b=20, l=20, r=20))
         st.plotly_chart(fig_scatter, use_container_width=True)
-        st.caption("解讀：虛線代表完美預測基準線。藍點越靠近紅虛線，代表模型的預估精準度越高。")
+        st.caption("解讀：紅色虛線代表完美預測對角線。藍點越貼近對角線，代表模型預估利潤越精準。")
         
+    with col_vis4:
+        # Plot 4: Boxplot of clean data
+        fig_box = px.box(
+            df_clean,
+            x='State',
+            y='Profit',
+            color='State',
+            points="all",
+            color_discrete_sequence=['#1e3b8a', '#0d9488', '#f59e0b'],
+            title="④ 各地區利潤分布箱型圖 (已清洗極端值)"
+        )
+        # Add horizontal dashed line for user's predicted profit
+        fig_box.add_hline(
+            y=pred_best, 
+            line_dash="dash", 
+            line_color="#f59e0b", 
+            line_width=2.5,
+            annotation_text=f"👈 您的模擬公司預估利潤: ${pred_best:,.2f}", 
+            annotation_position="top right"
+        )
+        fig_box.update_layout(height=380, margin=dict(t=40, b=20, l=20, r=20))
+        st.plotly_chart(fig_box, use_container_width=True)
+        st.caption("解讀：此箱型圖展示了不同州別的獲利分布。中位數高度接近，且區間高度重合，表明設點州別無顯著獲利影響。")
+
+    st.markdown("---")
+
+    # ------------------ Row 3: Expander for Large Interactive Pairplot Matrix ------------------
+    with st.expander("🗺️ 展開全景探索：⑤ 全景特徵配對互動矩陣 (Plotly Scatter Matrix)", expanded=False):
+        if simplified_mode:
+            pair_dims = ['R&D Spend', 'Marketing Spend', 'Profit']
+        else:
+            pair_dims = ['R&D Spend', 'Administration', 'Marketing Spend', 'Profit']
+            
+        fig_pair = px.scatter_matrix(
+            df_clean,
+            dimensions=pair_dims,
+            color='State',
+            color_discrete_sequence=['#1e3b8a', '#0d9488', '#f59e0b'],
+            labels={
+                'R&D Spend': '研發投入',
+                'Administration': '行政管理',
+                'Marketing Spend': '行銷推廣',
+                'Profit': '年利潤'
+            },
+            title="⑤ 全景特徵配對互動矩陣 (支援多重選取拉近)"
+        )
+        fig_pair.update_layout(
+            height=580, 
+            margin=dict(t=40, b=20, l=20, r=20),
+            dragmode='select'
+        )
+        st.plotly_chart(fig_pair, use_container_width=True)
+        st.caption("使用說明：此矩陣圖展示了所有變數兩兩之間的關係。您可以使用滑鼠框選任何小散佈圖中的數據點，其他子圖會連動高亮標記該點！")
+
     st.markdown("---")
     
-    col_vis3, col_vis4 = st.columns(2)
+    # ------------------ Row 4: Feature Importance & Stepwise RMSE ------------------
+    col_vis5, col_vis6 = st.columns(2)
     
-    with col_vis3:
-        # Plot 3: Feature Importances
+    with col_vis5:
+        # Plot 6: Feature Importances
         if hasattr(best_model, 'feature_importances_'):
             importances = best_model.feature_importances_
             labels = {
@@ -579,51 +692,22 @@ with tab3:
                 color='決定權重',
                 color_continuous_scale='Viridis',
                 text_auto='.1%',
-                title="③ 利潤決定因子權重排行 (隨機森林)"
+                title=f"⑥ 利潤決定因子權重排行 ({best_model_name})"
             )
-            fig_imp.update_layout(showlegend=False, height=350)
+            fig_imp.update_layout(showlegend=False, height=380, margin=dict(t=40, b=20, l=20, r=20))
             st.plotly_chart(fig_imp, use_container_width=True)
-            st.caption("解讀：長條占比越大，代表該項支出在分割決策樹時對預測利潤的影響力越大。")
+            st.caption("解慢：展示當前模型在進行迴歸或決策樹分裂時，各特徵的決策權重。研發通常擁有壓倒性的影響力。")
         else:
             st.info("當前最佳模型不支援特徵重要性評估（例如 SVR）。")
             
-    with col_vis4:
-        # Plot 4: Boxplot of clean data
-        fig_box = px.box(
-            df_clean,
-            x='State',
-            y='Profit',
-            color='State',
-            points="all",
-            title="④ 各地區利潤分布箱型圖 (已清洗極端值)"
-        )
-        # Add horizontal dashed line for user's predicted profit
-        fig_box.add_hline(
-            y=pred_best, 
-            line_dash="dash", 
-            line_color="#f59e0b", 
-            line_width=2.5,
-            annotation_text=f"👈 您的模擬公司預估利潤: ${pred_best:,.2f}", 
-            annotation_position="top right"
-        )
-        fig_box.update_layout(height=350)
-        st.plotly_chart(fig_box, use_container_width=True)
-        st.caption("解讀：中線代表各地區獲利中位數，圓點代表各公司真實位置。可看出各地區獲利分布區間高度重疊。")
-        
-    # --- NEW SECTION: STEPWISE FEATURE SELECTION ---
-    st.markdown('<div class="section-title">🔍 特徵逐步篩選與模型效能分析 (Stepwise Feature Selection)</div>', unsafe_allow_html=True)
-    st.write("以下呈現逐步將特徵（研發、行銷、行政支出、地區）加入線性模型後，模型在測試集上的效能變化。您可以藉此判斷哪些特徵組合能帶來最佳預測效果。")
-    
-    col_step1, col_step2 = st.columns(2)
-    
-    with col_step1:
-        # Plot 5: RMSE by Number of Features
+    with col_vis6:
+        # Plot 7: RMSE by Number of Features
         fig_step_rmse = px.line(
             step_df,
             x='特徵數量',
             y='RMSE (均方根誤差)',
             markers=True,
-            title="⑤ 隨特徵數量增加的 RMSE 變化 (越低越好)"
+            title="⑦ 隨特徵數量增加的 RMSE 變化 (越低越好)"
         )
         # Highlight best point (lowest RMSE)
         opt_rmse_idx = step_df['RMSE (均方根誤差)'].idxmin()
@@ -634,18 +718,23 @@ with tab3:
             marker=dict(color='#ef4444', size=12, symbol='star', line=dict(color='black', width=1)),
             name='最佳特徵數量點'
         ))
-        fig_step_rmse.update_layout(height=380, showlegend=False)
+        fig_step_rmse.update_layout(height=380, showlegend=False, margin=dict(t=40, b=20, l=20, r=20))
         st.plotly_chart(fig_step_rmse, use_container_width=True)
         st.caption("解讀：均方根誤差 (RMSE) 代表預測值偏離實際值的標準差。轉折最低點代表在當前特徵數量下，模型預測偏誤最小。")
-        
-    with col_step2:
-        # Plot 6: R-squared by Number of Features
+
+    st.markdown("---")
+
+    # ------------------ Row 5: Stepwise R2 & Stepwise Table ------------------
+    col_vis7, col_vis8 = st.columns(2)
+    
+    with col_vis7:
+        # Plot 8: R-squared by Number of Features
         fig_step_r2 = px.line(
             step_df,
             x='特徵數量',
             y='R-squared (解釋力)',
             markers=True,
-            title="⑥ 隨特徵數量增加的 R-squared 變化 (越高越好)"
+            title="⑧ 隨特徵數量增加的 R-squared 變化 (越高越好)"
         )
         # Highlight best point (highest R2)
         opt_r2_idx = step_df['R-squared (解釋力)'].idxmax()
@@ -656,20 +745,22 @@ with tab3:
             marker=dict(color='#22c55e', size=12, symbol='star', line=dict(color='black', width=1)),
             name='最佳特徵數量點'
         ))
-        fig_step_r2.update_layout(height=380, showlegend=False)
+        fig_step_r2.update_layout(height=380, showlegend=False, margin=dict(t=40, b=20, l=20, r=20))
         st.plotly_chart(fig_step_r2, use_container_width=True)
         st.caption("解讀：決定係數 (R-squared) 代表模型可解釋的資料變異比例。最高點代表該特徵組合對利潤的預測解釋能力最強。")
         
-    st.write("**逐步特徵篩選評估詳表：**")
-    st.dataframe(
-        step_df.style.format({
-            'RMSE (均方根誤差)': '${:,.2f}',
-            'R-squared (解釋力)': '{:.4%}'
-        }).highlight_min(axis=0, subset=['RMSE (均方根誤差)'], color='#dcfce7')
-          .highlight_max(axis=0, subset=['R-squared (解釋力)'], color='#dcfce7'),
-        use_container_width=True
-    )
-    st.info("💡 **決策啟示**：從表中可以觀察到，當特徵數量為 **2 個**（選入『研發支出』與『行銷支出』）時，RMSE 達到最低點，而 R-squared 達到最高點，為模型最優解。隨後加入『地區』與『行政管理』時，模型表現反而下降，這印證了多餘的噪音特徵會干擾預測效能的規律。")
+    with col_vis8:
+        st.markdown("<h5 style='text-align: center; margin-bottom: 15px;'>逐步特徵篩選評估詳表</h5>", unsafe_allow_html=True)
+        st.dataframe(
+            step_df.style.format({
+                'RMSE (均方根誤差)': '${:,.2f}',
+                'R-squared (解釋力)': '{:.4%}'
+            }).highlight_min(axis=0, subset=['RMSE (均方根誤差)'], color='#dcfce7')
+              .highlight_max(axis=0, subset=['R-squared (解釋力)'], color='#dcfce7'),
+            use_container_width=True,
+            height=300
+        )
+        st.info("💡 **決策啟示**：從表中可以觀察到，當特徵數量為 **2 個**（選入『研發支出』與『行銷支出』）時，RMSE 達到最低點，而 R-squared 達到最高點，為模型最優解。")
 
 # --- TAB 4: LEADERBOARD & INSIGHTS ---
 with tab4:
