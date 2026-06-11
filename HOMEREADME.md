@@ -35,6 +35,8 @@
      ML Algorithms & Emotion AI App (v20260608)  結合臉部表情偵測與互動式數學沙盒，動態偵測專注與困惑度，由 AI 導師進行演算法解說。
          https://my-learning-journey-fa32pwgnj5bn8ccq2gabte.streamlit.app/
 
+     50 Startups Profit Regression App (v20260609)  基於 CRISP-DM 的新創公司利潤預測與多模型效能分析（可於本地以 `streamlit run app.py` 運行）。
+
 ### 🔗 專案原始碼
 * **GitHub Repo**: [https://github.com/hirohirolee/My-Learning-Journey](https://github.com/hirohirolee/My-Learning-Journey)
 
@@ -56,26 +58,35 @@
 4. **排版設計**: 使用 Flexbox 進行響應式排版與現代化配色方案。
 5. **部署優化**: 解決 GitHub Pages 快取同步問題，建立開發部署工作流（將檔案遷移至 `portfolio/` 資料夾並部署）。
 
-### 2026/05/31 開發日誌：架構優化與功能整合
+### 2026/05/31：架構優化與功能整合
+* **工作目標**：優化目錄結構與路徑，實作即時時鐘與頭像整合。
+* **資源載入除錯**：修復檔案移動後的相對路徑，將 `assets/avatar.jpg` 改為 `../assets/avatar.jpg` 解決 404 破圖。
+* **Git 實戰別名**：設定 `git config --global alias.pushall '!git add . && commit -m "update" && git push'` 簡化同步。
 
-#### 1. 工作目標
-* 優化目錄結構，將專案檔案分類整理。
-* 實作即時時鐘功能至首頁。
-* 將個人頭像整合至 Hero Section。
-* 解決因路徑變更導致的資源載入錯誤。
+### 2026/06/04：AI 影像生成與相依套件部署
+* **實作技術**：Streamlit + Hugging Face Inference API (`nvidia/Cosmos3-Super-Text2Image`)。
+* **安全機制**：實作雙重 API Key 驗證機制（優先讀取系統 Secret `st.secrets.get`，若無則降級為網頁 Password Input），並設定 `.gitignore` 防止敏感金鑰外洩。
 
-#### 2. 開發流程與技術筆記
-* **目錄架構重構**：執行目錄結構調整，將專案檔案歸類至 `assets/`, `portfolio/`, `daily_lessons/` 資料夾。使用 Git 進行版本控制：`git add .` -> `git commit` -> `git push`。
-* **解決「資源載入失敗 (404)」問題**：
-    * *問題描述*：檔案移動後，網頁無法正確讀取圖片，顯示破圖。
-    * *除錯過程*：利用瀏覽器開發者工具 (F12) 的 Console 查看錯誤紀錄，確認是因為相對路徑指向錯誤。
-    * *解決方案*：將圖片路徑從 `assets/avatar.jpg` 修改為 `../assets/avatar.jpg`，成功跳出當前目錄並正確指向根目錄的資源。
-* **即時時鐘功能**：
-    * 在 HTML 的 `hero-content` 中新增 `<div id="clock">` 區塊。
-    * 透過 JavaScript 定時更新顯示時間。
-    * 透過「清空快取並強制重新整理」解決瀏覽器快取導致的更新延遲。
+### 2026/06/05：線性迴歸分析與異常值偵測
+* **實作技術**：`numpy`, `pandas`, `scikit-learn`, `matplotlib`。
+* **核心挑戰**：對隨機生成的線性資料進行建模，並利用殘差 (Residuals) 分析自動過濾出偏離最大的前 20 個極端值，在圖表上用紅點標記排名，以可視化評估模型。
 
-#### 3. 執行指令速查 (Git 實戰)
-為了提升效率，已設定 Git 別名：
-```bash
-git config --global alias.pushall '!git add . && git commit -m "update" && git push'
+### 2026/06/08：十大機器學習演算法與表情感知 AI
+* **實作技術**：`face-api.js` + `Gemini API` + `Streamlit`。
+* **亮點功能**：
+  * 在前端利用 Canvas 動態繪製與互動演算法邊界（如 SVM、KNN、K-Means 等）。
+  * 引入 `face-api.js` 追蹤表情以分析專注度與困惑度，動態觸發 AI 助教的語意引導。
+  * 利用 `MutationObserver` 解決 Streamlit 跨域 `iframe` 的相機與麥克風授權阻擋政策，完美實現全版流暢體驗。
+
+### 2026/06/09：CRISP-DM 50 Startups 利潤預測與重構
+* **實作技術**：`plotly` + 多迴歸模型（Linear, Ridge, SVR, Random Forest, Gradient Boosting）。
+* **極端值處理**：利用四分位距 (IQR) 分析剔除 Index 49 利潤極端值（\$14,681.40），並對地區進行 One-Hot 編碼（`drop_first=True`）以防止虛擬變數陷阱。
+* **效能重構**：將原本耗時 2 秒的單筆迴圈搜尋演算法改寫為**向量化批量運算 (Vectorized Batch Processing)**，將響應時間降低至 **5 毫秒以內**，徹底消除 UI 卡頓。
+* **自訂上傳與重訓**：整合側邊欄上傳功能，支援動態重訓 5 種模型並實時更新 Plotly 互動圖表。
+
+### 2026/06/10：Python 邏輯控制與演算法練習
+* **實作內容**：
+  * **凱薩密碼加密**：以 `random.seed(10)` 對大小寫英文字母表進行洗牌，實作位移加密與循環回繞邏輯。
+  * **座位座位編排**：支援每排 2~7 人的自訂座位編排，並以格式化對齊字串輸出座位表。
+  * **質數判斷與迴圈**：實作質數檢驗演算法，並使用平方根 `val ** 0.5` 進行因數尋找範圍優化。
+  * **二分搜尋猜數字**：開發 1~100 猜數字遊戲，具備輸入錯誤防護機制，並動態縮小上下限區間。
