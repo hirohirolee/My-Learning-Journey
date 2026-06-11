@@ -168,9 +168,51 @@ while True:  # 進入無限迴圈，直到輸入的整數為質數才會結束�
         print("該整數為質數")
         break  # 跳出 while 迴圈，結束整個程式
 
-    """
-    """
-    猜數字遊戲1~100
-    
+"""
+"""
+猜數字遊戲1~100
+"""
+import random
 
-    """
+# ① 設定初始範圍
+low = 1
+high = 100
+
+# ② 產生一個隨機正解
+answer = random.randint(low, high)
+
+print("============ 猜數字遊戲開始 ============")
+print(f"答案已經產生！請猜一個 {low} 到 {high} 之間的數字。")
+
+# 因為不知道使用者要猜幾次才會答對，所以使用 while 迴圈最適合！
+while True:
+    # ③ 讓用戶輸入猜測值
+    # 使用 try-except 可以避免使用者輸入非數字時程式當掉（可選，但對初學者很有幫助）
+    try:
+        guess = int(input(f"請輸入 {low} ~ {high} 之間的數字："))
+    except ValueError:
+        print("請輸入有效的整數數字！")
+        continue
+
+    # ④ 檢查是否範圍外
+    if guess < low or guess > high:
+        print(f"輸入錯誤！請輸入符合範圍 {low} ~ {high} 的數字。")
+        continue # 跳過本次迴圈剩餘部分，重新輸入
+
+    # ⑤ 檢查是否不正確（小於、大於）
+    if guess == answer:
+        # ⑥ 正解結束
+        print(f"恭喜答對！答案就是 {answer}！")
+        break # 答對了，跳出 while 迴圈結束遊戲
+        
+    elif guess < answer:
+        print("太小了！")
+        # 修改範圍：因為比答案小，所以新的下限變成 guess + 1
+        low = guess + 1
+        
+    else:
+        print("太大了！")
+        # 修改範圍：因為比答案大，所以新的上限變成 guess - 1
+        high = guess - 1
+
+print("============ 遊戲結束 ============")
