@@ -99,7 +99,7 @@ st.markdown("本系統基於 **CRISP-DM** 流程，提供資料上傳、動態�
 # DATA LOADING & DYNAMIC ML PIPELINE
 # ----------------------------------------------------
 @st.cache_data
-def train_and_evaluate_pipeline(df):
+def train_and_evaluate_pipeline(df, alpha_val, n_est, svr_c):
     # 1. IQR Outlier detection on Profit
     Q1 = df['Profit'].quantile(0.25)
     Q3 = df['Profit'].quantile(0.75)
@@ -141,10 +141,10 @@ def train_and_evaluate_pipeline(df):
     # 5. Train 5 models for comparison
     models = {
         "多元線性迴歸 (Linear Regression)": LinearRegression(),
-        "脊迴歸 (Ridge Regression)": Ridge(alpha=1.0),
-        "支持向量迴歸 (SVR)": SVR(C=100000, epsilon=10.0),
-        "隨機森林迴歸 (Random Forest)": RandomForestRegressor(n_estimators=100, random_state=42),
-        "梯度提升迴歸 (Gradient Boosting)": GradientBoostingRegressor(n_estimators=100, random_state=42)
+        "脊迴歸 (Ridge Regression)": Ridge(alpha=alpha_val),
+        "支持向量迴歸 (SVR)": SVR(C=svr_c, epsilon=10.0),
+        "隨機森林迴歸 (Random Forest)": RandomForestRegressor(n_estimators=n_est, random_state=42),
+        "梯度提升迴歸 (Gradient Boosting)": GradientBoostingRegressor(n_estimators=n_est, random_state=42)
     }
     
     trained_models = {}
@@ -194,8 +194,19 @@ st.sidebar.success(f"📊 使用中資料集：{dataset_name}")
 st.sidebar.header("⚙️ 模式設定")
 simplified_mode = st.sidebar.checkbox("簡化分析模式 (僅顯示核心特徵 R&D 與 Marketing)", value=False)
 
+# Sidebar: ML Hyperparameters Tuning
+st.sidebar.header("🧪 機器學習超參數與圖表設定")
+alpha_val = st.sidebar.slider("Regularization Alpha (Lasso/Ridge/ElasticNet)", 0.01, 10.0, 1.0, 0.1)
+n_est = st.sidebar.slider("Random Forest / Extra Trees Estimators", 10, 200, 100, 10)
+svr_c = st.sidebar.slider("SVR Regularization C", 100, 500000, 100000, 10000)
+
+# Interactive Chart Controls
+use_log_y = st.sidebar.checkbox("Y 軸使用對數尺度 (Log Scale)", value=True, help="開啟後可拉開不同模型在低 MSE 區間的重疊線條")
+all_algorithms = ["Linear Regression", "Ridge", "Lasso", "ElasticNet", "Decision Tree", "Random Forest", "Gradient Boosting", "AdaBoost", "Extra Trees", "SVR"]
+selected_algos = st.sidebar.multiselect("選擇要顯示的演算法 (Select Algorithms)", options=all_algorithms, default=all_algorithms)
+
 # Run ML Pipeline dynamically
-scaler, trained_models, metrics, X_train, X_test, y_train, y_test, test_predictions, outliers, df_clean = train_and_evaluate_pipeline(df_source)
+scaler, trained_models, metrics, X_train, X_test, y_train, y_test, test_predictions, outliers, df_clean = train_and_evaluate_pipeline(df_source, alpha_val, n_est, svr_c)
 
 # ----------------------------------------------------
 # DYNAMIC STEPWISE FEATURE SELECTION METRICS
@@ -254,6 +265,53 @@ def get_stepwise_metrics(X_train, X_test, y_train, y_test, num_cols, _scaler):
 
 num_cols_to_scale = ['R&D Spend', 'Administration', 'Marketing Spend']
 step_df = get_stepwise_metrics(X_train, X_test, y_train, y_test, num_cols_to_scale, scaler)
+
+@st.cache_data
+def get_top_10_algorithms_metrics(X_train, X_test, y_train, y_test, num_cols, _scaler, alpha_val, n_est, svr_c):
+    X_train_scaled = X_train.copy()
+    X_test_scaled = X_test.copy()
+    X_train_scaled[num_cols] = _scaler.transform(X_train[num_cols])
+    X_test_scaled[num_cols] = _scaler.transform(X_test[num_cols])
+    
+    from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
+    from sklearn.tree import DecisionTreeRegressor
+    from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor, ExtraTreesRegressor
+    from sklearn.svm import SVR
+    
+    models = {
+        "Linear Regression": LinearRegression(),
+        "Ridge": Ridge(alpha=alpha_val),
+        "Lasso": Lasso(alpha=alpha_val),
+        "ElasticNet": ElasticNet(alpha=alpha_val),
+        "Decision Tree": DecisionTreeRegressor(random_state=42),
+        "Random Forest": RandomForestRegressor(n_estimators=n_est, random_state=42),
+        "Gradient Boosting": GradientBoostingRegressor(random_state=42),
+        "AdaBoost": AdaBoostRegressor(random_state=42),
+        "Extra Trees": ExtraTreesRegressor(n_estimators=n_est, random_state=42),
+        "SVR": SVR(C=svr_c)
+    }
+    
+    # Sort features by absolute Pearson correlation with y_train
+    corr_series = X_train_scaled.apply(lambda col: np.abs(np.corrcoef(col, y_train)[0, 1]))
+    sorted_features = corr_series.sort_values(ascending=False).index.tolist()
+    
+    results = []
+    for k in range(1, len(sorted_features) + 1):
+        selected_features = sorted_features[:k]
+        X_tr = X_train_scaled[selected_features]
+        X_te = X_test_scaled[selected_features]
+        
+        for name, model in models.items():
+            model.fit(X_tr, y_train)
+            preds = model.predict(X_te)
+            mse = mean_squared_error(y_test, preds)
+            results.append({
+                "Algorithm": name,
+                "Number of Features": k,
+                "MSE": mse
+            })
+            
+    return pd.DataFrame(results)
 
 # Sidebar: Interactive Simulator Inputs
 st.sidebar.header("⚙️ 營運預算模擬配置")
@@ -493,54 +551,69 @@ with tab3:
     st.markdown('<div class="section-title">📊 5 大數據科學關鍵圖表互動分析</div>', unsafe_allow_html=True)
     st.write("本分頁整合了機器學習與探索性數據分析（EDA）中最核心的 5 大圖表。所有 Plotly 圖表皆支援滑鼠懸停看數據、拉近放大及雙擊重設。")
     
-    # ------------------ Row 1: Heatmap & R&D Scatter ------------------
-    col_vis1, col_vis2 = st.columns(2)
+    # ------------------ Row 1: Top 10 ML Algorithms: MSE vs. Feature Count ------------------
+    col_left, col_mid, col_right = st.columns([0.1, 0.8, 0.1])
     
-    with col_vis1:
-        # Plot 1: Heatmap
-        if simplified_mode:
-            corr_cols = ['R&D Spend', 'Marketing Spend', 'Profit']
+    with col_mid:
+        # Calculate Top 10 ML Algorithms metrics
+        top10_df = get_top_10_algorithms_metrics(X_train, X_test, y_train, y_test, num_cols_to_scale, scaler, alpha_val, n_est, svr_c)
+        
+        # Filter by selected algorithms
+        filtered_df = top10_df[top10_df['Algorithm'].isin(selected_algos)]
+        
+        if filtered_df.empty:
+            st.warning("⚠️ 請在左側「機器學習超參數與圖表設定」選取至少一個演算法以進行顯示。")
         else:
-            corr_cols = ['R&D Spend', 'Administration', 'Marketing Spend', 'Profit']
-        corr = df_clean[corr_cols].corr()
-        
-        fig_heat = px.imshow(
-            corr,
-            text_auto=".3f",
-            color_continuous_scale='RdBu_r',
-            zmin=-1, zmax=1,
-            title="① 數值型欄位相關性熱力圖 (Correlation Heatmap)"
-        )
-        fig_heat.update_layout(height=380, margin=dict(t=40, b=20, l=20, r=20))
-        st.plotly_chart(fig_heat, use_container_width=True)
-        st.caption("解讀：紅藍顏色深淺代表相關係數大小。研發支出與利潤有極強正相關，而行政支出相關性極低。")
-        
-    with col_vis2:
-        # Plot 2: R&D Spend vs Profit Scatter with Regression Line (Numpy Polyfit)
-        x_vals = df_clean['R&D Spend']
-        y_vals = df_clean['Profit']
-        coefs = np.polyfit(x_vals, y_vals, 1)
-        poly1d_fn = np.poly1d(coefs)
-        
-        fig_rd = px.scatter(
-            df_clean, 
-            x='R&D Spend', 
-            y='Profit', 
-            hover_data=['State', 'Marketing Spend'] if not simplified_mode else ['Marketing Spend'],
-            title="② 研發投入 vs 利潤散佈與線性趨勢線"
-        )
-        # Add regression line
-        x_line = np.linspace(x_vals.min(), x_vals.max(), 100)
-        fig_rd.add_trace(go.Scatter(
-            x=x_line, 
-            y=poly1d_fn(x_line), 
-            mode='lines', 
-            name='線性迴歸趨勢線', 
-            line=dict(color='#ef4444', dash='dash', width=2)
-        ))
-        fig_rd.update_layout(height=380, margin=dict(t=40, b=20, l=20, r=20))
-        st.plotly_chart(fig_rd, use_container_width=True)
-        st.caption("解讀：點群非常緊密地圍繞在向上的紅色虛線迴歸線周圍，直觀證實「研發投入是獲利的核心拉動力」。")
+            # Plot 1 & 2 replacement: Dominant Top 10 ML Algorithms Line Plot
+            fig_top10 = px.line(
+                filtered_df,
+                x="Number of Features",
+                y="MSE",
+                color="Algorithm",
+                markers=True,
+                log_y=use_log_y,
+                title="Top 10 ML Algorithms: MSE vs. Feature Count"
+            )
+            
+            # Large projector font layout
+            fig_top10.update_layout(
+                title=dict(
+                    text="Top 10 ML Algorithms: MSE vs. Feature Count",
+                    font=dict(size=26, family="Arial", color="black"),
+                    x=0.5,
+                    xanchor="center"
+                ),
+                xaxis=dict(
+                    title=dict(text="Number of Features", font=dict(size=20, family="Arial", color="black")),
+                    tickfont=dict(size=16, family="Arial", color="black"),
+                    tickmode='linear',
+                    dtick=1
+                ),
+                yaxis=dict(
+                    title=dict(text="MSE" + (" (Log Scale)" if use_log_y else ""), font=dict(size=20, family="Arial", color="black")),
+                    tickfont=dict(size=16, family="Arial", color="black")
+                ),
+                legend=dict(
+                    title=dict(text="Algorithms", font=dict(size=16, family="Arial", color="black")),
+                    font=dict(size=14, family="Arial", color="black"),
+                    orientation="v",
+                    yanchor="top",
+                    y=0.99,
+                    xanchor="right",
+                    x=0.99,
+                    bgcolor="rgba(255, 255, 255, 0.85)",
+                    bordercolor="Black",
+                    borderwidth=1
+                ),
+                hovermode="x unified",
+                height=600,
+                margin=dict(t=80, b=50, l=80, r=50)
+            )
+            # Thicker lines
+            fig_top10.update_traces(line=dict(width=3.5))
+            
+            st.plotly_chart(fig_top10, use_container_width=True)
+            st.caption("解讀：本圖表展示了所選機器學習模型在不同特徵子集數量下的均方誤差（MSE）表現。藉此評估特徵增加對預測偏誤的收斂效果。在左側側邊欄，您可以點選隱藏特定的線段，或切換 Y 軸對數尺度 (Log Scale) 展開重疊部分。")
 
     st.markdown("---")
     
@@ -665,7 +738,7 @@ with tab3:
 
     st.markdown("---")
     
-    # ------------------ Row 4: Feature Importance & Stepwise RMSE ------------------
+    # ------------------ Row 4: Feature Importance & Heatmap ------------------
     col_vis5, col_vis6 = st.columns(2)
     
     with col_vis5:
@@ -696,58 +769,60 @@ with tab3:
             )
             fig_imp.update_layout(showlegend=False, height=380, margin=dict(t=40, b=20, l=20, r=20))
             st.plotly_chart(fig_imp, use_container_width=True)
-            st.caption("解慢：展示當前模型在進行迴歸或決策樹分裂時，各特徵的決策權重。研發通常擁有壓倒性的影響力。")
+            st.caption("解讀：展示當前模型在進行迴歸或決策樹分裂時，各特徵的決策權重。研發通常擁有壓倒性的影響力。")
         else:
             st.info("當前最佳模型不支援特徵重要性評估（例如 SVR）。")
             
     with col_vis6:
-        # Plot 7: RMSE by Number of Features
-        fig_step_rmse = px.line(
-            step_df,
-            x='特徵數量',
-            y='RMSE (均方根誤差)',
-            markers=True,
-            title="⑦ 隨特徵數量增加的 RMSE 變化 (越低越好)"
+        # Plot 7: Heatmap
+        if simplified_mode:
+            corr_cols = ['R&D Spend', 'Marketing Spend', 'Profit']
+        else:
+            corr_cols = ['R&D Spend', 'Administration', 'Marketing Spend', 'Profit']
+        corr = df_clean[corr_cols].corr()
+        
+        fig_heat = px.imshow(
+            corr,
+            text_auto=".3f",
+            color_continuous_scale='RdBu_r',
+            zmin=-1, zmax=1,
+            title="⑦ 數值型欄位相關性熱力圖 (Correlation Heatmap)"
         )
-        # Highlight best point (lowest RMSE)
-        opt_rmse_idx = step_df['RMSE (均方根誤差)'].idxmin()
-        fig_step_rmse.add_trace(go.Scatter(
-            x=[step_df.loc[opt_rmse_idx, '特徵數量']],
-            y=[step_df.loc[opt_rmse_idx, 'RMSE (均方根誤差)']],
-            mode='markers',
-            marker=dict(color='#ef4444', size=12, symbol='star', line=dict(color='black', width=1)),
-            name='最佳特徵數量點'
-        ))
-        fig_step_rmse.update_layout(height=380, showlegend=False, margin=dict(t=40, b=20, l=20, r=20))
-        st.plotly_chart(fig_step_rmse, use_container_width=True)
-        st.caption("解讀：均方根誤差 (RMSE) 代表預測值偏離實際值的標準差。轉折最低點代表在當前特徵數量下，模型預測偏誤最小。")
+        fig_heat.update_layout(height=380, margin=dict(t=40, b=20, l=20, r=20))
+        st.plotly_chart(fig_heat, use_container_width=True)
+        st.caption("解讀：紅藍顏色深淺代表相關係數大小。研發支出與利潤有極強正相關，而行政支出相關性極低。")
 
     st.markdown("---")
 
-    # ------------------ Row 5: Stepwise R2 & Stepwise Table ------------------
+    # ------------------ Row 5: R&D Scatter & Stepwise Table ------------------
     col_vis7, col_vis8 = st.columns(2)
     
     with col_vis7:
-        # Plot 8: R-squared by Number of Features
-        fig_step_r2 = px.line(
-            step_df,
-            x='特徵數量',
-            y='R-squared (解釋力)',
-            markers=True,
-            title="⑧ 隨特徵數量增加的 R-squared 變化 (越高越好)"
+        # Plot 8: R&D Spend vs Profit Scatter with Regression Line (Numpy Polyfit)
+        x_vals = df_clean['R&D Spend']
+        y_vals = df_clean['Profit']
+        coefs = np.polyfit(x_vals, y_vals, 1)
+        poly1d_fn = np.poly1d(coefs)
+        
+        fig_rd = px.scatter(
+            df_clean, 
+            x='R&D Spend', 
+            y='Profit', 
+            hover_data=['State', 'Marketing Spend'] if not simplified_mode else ['Marketing Spend'],
+            title="⑧ 研發投入 vs 利潤散佈與線性趨勢線"
         )
-        # Highlight best point (highest R2)
-        opt_r2_idx = step_df['R-squared (解釋力)'].idxmax()
-        fig_step_r2.add_trace(go.Scatter(
-            x=[step_df.loc[opt_r2_idx, '特徵數量']],
-            y=[step_df.loc[opt_r2_idx, 'R-squared (解釋力)']],
-            mode='markers',
-            marker=dict(color='#22c55e', size=12, symbol='star', line=dict(color='black', width=1)),
-            name='最佳特徵數量點'
+        # Add regression line
+        x_line = np.linspace(x_vals.min(), x_vals.max(), 100)
+        fig_rd.add_trace(go.Scatter(
+            x=x_line, 
+            y=poly1d_fn(x_line), 
+            mode='lines', 
+            name='線性迴歸趨勢線', 
+            line=dict(color='#ef4444', dash='dash', width=2)
         ))
-        fig_step_r2.update_layout(height=380, showlegend=False, margin=dict(t=40, b=20, l=20, r=20))
-        st.plotly_chart(fig_step_r2, use_container_width=True)
-        st.caption("解讀：決定係數 (R-squared) 代表模型可解釋的資料變異比例。最高點代表該特徵組合對利潤的預測解釋能力最強。")
+        fig_rd.update_layout(height=380, margin=dict(t=40, b=20, l=20, r=20))
+        st.plotly_chart(fig_rd, use_container_width=True)
+        st.caption("解讀：點群非常緊密地圍繞在向上的紅色虛線迴歸線周圍，直觀證實「研發投入是獲利的核心拉動力」。")
         
     with col_vis8:
         st.markdown("<h5 style='text-align: center; margin-bottom: 15px;'>逐步特徵篩選評估詳表</h5>", unsafe_allow_html=True)
