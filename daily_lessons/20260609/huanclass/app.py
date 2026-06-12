@@ -169,6 +169,10 @@ def train_and_evaluate_pipeline(df, alpha_val, n_est, svr_c):
 st.sidebar.header("📁 資料庫設定")
 uploaded_file = st.sidebar.file_uploader("上傳您的自訂新創 CSV 資料集", type="csv")
 
+# Resolve path to 50_Startups.csv relative to this app.py file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+csv_path = os.path.join(BASE_DIR, '50_Startups.csv')
+
 if uploaded_file is not None:
     try:
         raw_df = pd.read_csv(uploaded_file)
@@ -176,17 +180,17 @@ if uploaded_file is not None:
         req_cols = {'R&D Spend', 'Administration', 'Marketing Spend', 'State', 'Profit'}
         if not req_cols.issubset(raw_df.columns):
             st.sidebar.error("❌ CSV 欄位不符！必須包含：R&D Spend, Administration, Marketing Spend, State, Profit")
-            df_source = pd.read_csv('50_Startups.csv')
+            df_source = pd.read_csv(csv_path)
             dataset_name = "預設 50_Startups.csv 資料集"
         else:
             df_source = raw_df
             dataset_name = f"已上傳資料集 ({uploaded_file.name})"
     except Exception as e:
         st.sidebar.error(f"❌ 載入失敗: {e}")
-        df_source = pd.read_csv('50_Startups.csv')
+        df_source = pd.read_csv(csv_path)
         dataset_name = "預設 50_Startups.csv 資料集"
 else:
-    df_source = pd.read_csv('50_Startups.csv')
+    df_source = pd.read_csv(csv_path)
     dataset_name = "預設 50_Startups.csv 資料集"
 
 st.sidebar.success(f"📊 使用中資料集：{dataset_name}")
