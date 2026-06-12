@@ -29,13 +29,47 @@
      AI Image App (v20260604)  整合 Puter.js 技術的穩定版生圖工作室。
          https://my-learning-journey-a9egpqgpvwec9kup8grj6x.streamlit.app/
 
+# 🚀 My Learning Journey
+
+歡迎來到我的學習歷程庫！這是我參加 **2026 NCHU AI 創產培訓班** 期間，所有開發專案與課程練習的歸檔。本專案由 Gemini (Antigravity) 協助規劃與開發，紀錄了我從網頁開發新手到建立專業技術形象的成長歷程與專案實踐。
+
+---
+
+## 📂 專案架構與目錄說明
+為了保持專案的可維護性與擴充性，專案內容進行了模組化管理：
+
+| 資料夾/檔案名稱 | 內容說明 |
+| :--- | :--- |
+| **`/portfolio/`** | 存放各階段的網頁作品集與個人展示區。 |
+| **`/assets/`** | 存放所有網站使用的素材（如大頭貼、課程圖示、背景圖片等）。 |
+| **`/daily/`** 或 **`/[YYYYMMDD]/`** | 每日課程練習代碼與學習紀錄，依日期分層管理（YYYY-MM-DD）。 |
+
+---
+
+## 🌐 網站連結與作品預覽 (Portfolio)
+1. 目前我的網頁專案包含多個演進版本與練習作品：
+
+     * **[基礎學習頁面 / Hello Web Page](https://hirohirolee.github.io/My-Learning-Journey/portfolio/index.html)**
+         * 初始網頁架構與 JavaScript 基礎功能練習（用於完成 HW1 作業）。
+     * **[個人介紹網頁 (Personal Web)](https://hirohirolee.github.io/My-Learning-Journey/portfolio/person-web/)**
+         * 運用 HTML/CSS 打造的專業 Fusion 風格作品集。
+ 
+2. 動態 AI 應用 (Streamlit Cloud)
+     這些應用展示了您運用 API 串接與 AI 邊緣運算技術的實作成果，點擊即可即時體驗：
+
+     AI Image App (v20260604)  整合 Puter.js 技術的穩定版生圖工作室。
+         https://my-learning-journey-a9egpqgpvwec9kup8grj6x.streamlit.app/
+
      Linear AI App (v20260605)  課程練習與 AI 技術整合展示。
          https://hiro-linear-regression.streamlit.app/
 
      ML Algorithms & Emotion AI App (v20260608)  結合臉部表情偵測與互動式數學沙盒，動態偵測專注與困惑度，由 AI 導師進行演算法解說。
          https://my-learning-journey-fa32pwgnj5bn8ccq2gabte.streamlit.app/
 
-     50 Startups Profit Regression App (v20260609)  基於 CRISP-DM 的新創公司利潤預測與多模型效能分析（可於本地以 `streamlit run app.py` 運行）。
+     50 Startups Profit Regression App (v20260609)  基於 CRISP-DM 的新創公司利潤預測與多模型效能分析，已優化為投影級大圖表、對數尺度與多選演算法過濾（可於本地以 `streamlit run app.py` 運行，已完成 Cloud 部署路徑相容性設定）。
+
+3. 多媒體與音訊轉換應用 (Multimedia)
+     * **PDF to Voice Video (v20260612)**：使用 Python 結合 gTTS 語音生成與 pdf2image 投影片擷取，運用 moviepy 自動合成動態簡報播放 `.mp4` 影片。
 
 ### 🔗 專案原始碼
 * **GitHub Repo**: [https://github.com/hirohirolee/My-Learning-Journey](https://github.com/hirohirolee/My-Learning-Journey)
@@ -90,3 +124,11 @@
   * **座位座位編排**：支援每排 2~7 人的自訂座位編排，並以格式化對齊字串輸出座位表。
   * **質數判斷與迴圈**：實作質數檢驗演算法，並使用平方根 `val ** 0.5` 進行因數尋找範圍優化。
   * **二分搜尋猜數字**：開發 1~100 猜數字遊戲，具備輸入錯誤防護機制，並動態縮小上下限區間。
+
+### 2026/06/12：投影級大圖表重構、互動優化與多媒體音訊影片轉換
+* **Streamlit AI 平台優化**：
+  * **投影大圖表重構**：重構頂部為單一佔寬 80% 的 **"Top 10 ML Algorithms: MSE vs. Feature Count"** 主圖表，配置投影幕特大字級與右上圖例。
+  * **線條擠壓與互動防護**：加入 **Log Scale 對數尺度** 切換（預設開啟）與 **演算法多選篩選器**，完美分離 SVR 高 MSE 所擠壓的其餘 9 種算法線段；加粗折線至 `3.5`，配置 `x unified` 提示對照。
+  * **路徑相容性修復**：改採與腳本檔案同目錄的絕對路徑讀取 `50_Startups.csv`，防止 Streamlit Cloud 部署發生 FileNotFoundError。
+* **PDF 語音視訊動畫化**（多媒體轉換）：
+  * **音視訊合成**：整合 `gTTS`（文字轉語音）與 `pdf2image`（投影片擷取），使用 `moviepy` 自動合成配有語音導讀與切換動畫的 `.mp4` 簡報影片。
