@@ -67,8 +67,9 @@
          https://my-learning-journey-fa32pwgnj5bn8ccq2gabte.streamlit.app/
 
      50 Startups Profit Regression App (v20260609)  基於 CRISP-DM 的新創公司利潤預測與多模型效能分析，已優化為投影級大圖表、對數尺度與多選演算法過濾（可於本地以 `streamlit run app.py` 運行，已完成 Cloud 部署路徑相容性設定）。
+         https://my-learning-journey-x3iuqegsphhxdmrvrzvfry.streamlit.app/
 
-3. 多媒體與音訊轉換應用 (Multimedia)
+4. 多媒體與音訊轉換應用 (Multimedia)
      * **PDF to Voice Video (v20260612)**：使用 Python 結合 gTTS 語音生成與 pdf2image 投影片擷取，運用 moviepy 自動合成動態簡報播放 `.mp4` 影片。
 
 ### 🔗 專案原始碼
