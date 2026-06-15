@@ -6,13 +6,14 @@ from flask import Flask, request, jsonify, render_template
 
 from sklearn.model_selection import train_test_split, cross_val_score, KFold
 from sklearn.preprocessing import StandardScaler
-from sklearn.feature_selection import SelectKBest, mutual_info_regression
-from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
+from sklearn.feature_selection import f_regression, mutual_info_regression, RFE, SelectKBest
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LassoCV
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor
 from sklearn.svm import SVR
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import mean_squared_error, r2_score
+from scipy.stats import spearmanr
 
 try:
     from xgboost import XGBRegressor
@@ -27,8 +28,6 @@ DATA_PATH = Path(r"D:\H\0615\archive\HousingData.csv")
 def load_data():
     df = pd.read_csv(DATA_PATH)
     # Clean standard NA representations
-    df = df.replace("NA", np.nan).astype(float)
-    # Impute missing values with column mean to keep data size stable for interactive sliders
     for col in df.columns:
         if df[col].isnull().any():
             df[col] = df[col].fillna(df[col].mean())
@@ -77,7 +76,7 @@ def train_model():
         max_depth = int(max_depth) if max_depth != 'None' else None
     
     df = load_data()
-    y = np.log1p(df['MEDV'])
+    y = df['MEDV']  # Raw target scale (no log)
     X = df.drop(columns=['MEDV'])
     
     # Train / Test split
@@ -89,13 +88,12 @@ def train_model():
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
-    X_train_scaled_df = pd.DataFrame(X_train_scaled, columns=X.columns)
-    X_test_scaled_df = pd.DataFrame(X_test_scaled, columns=X.columns)
+    X_train_scaled_df = pd.DataFrame(X_train_scaled, columns=X.columns, index=X_train.index)
+    X_test_scaled_df = pd.DataFrame(X_test_scaled, columns=X.columns, index=X_test.index)
     
-    # Select K Best using Mutual Information
+    # Select K Best using Mutual Information (for active model training)
     selector = SelectKBest(score_func=mutual_info_regression, k=k_features)
     selector.fit(X_train_scaled, y_train)
-    
     selected_mask = selector.get_support()
     selected_cols = X.columns[selected_mask].tolist()
     
@@ -139,22 +137,16 @@ def train_model():
     model.fit(X_train_sel, y_train)
     
     # Predictions
-    pred_train_log = model.predict(X_train_sel)
-    pred_test_log = model.predict(X_test_sel)
-    
-    # Convert predictions back to original MEDV scale (expm1)
-    y_train_orig = np.expm1(y_train)
-    y_test_orig = np.expm1(y_test)
-    pred_train_orig = np.expm1(pred_train_log)
-    pred_test_orig = np.expm1(pred_test_log)
+    pred_train_raw = model.predict(X_train_sel)
+    pred_test_raw = model.predict(X_test_sel)
     
     # Metrics
-    train_rmse = float(np.sqrt(mean_squared_error(y_train_orig, pred_train_orig)))
-    test_rmse = float(np.sqrt(mean_squared_error(y_test_orig, pred_test_orig)))
-    train_r2 = float(r2_score(y_train_orig, pred_train_orig))
-    test_r2 = float(r2_score(y_test_orig, pred_test_orig))
+    train_rmse = float(np.sqrt(mean_squared_error(y_train, pred_train_raw)))
+    test_rmse = float(np.sqrt(mean_squared_error(y_test, pred_test_raw)))
+    train_r2 = float(r2_score(y_train, pred_train_raw))
+    test_r2 = float(r2_score(y_test, pred_test_raw))
     
-    # Calculate feature importances if the model supports it
+    # Calculate feature importances
     importances = {}
     if hasattr(model, 'feature_importances_'):
         for col, val in zip(selected_cols, model.feature_importances_):
@@ -163,43 +155,88 @@ def train_model():
         for col, val in zip(selected_cols, model.coef_):
             importances[col] = float(abs(val))
             
-    # Sort importances
     sorted_importances = sorted(
         [{'name': k, 'importance': v} for k, v in importances.items()],
         key=lambda x: x['importance'], reverse=True
     )
     
-    # Benchmark loop for multi-model performance tracking (MSE line chart)
-    # We benchmark K from 1 to 10 using exactly 10 models
-    benchmark_models = {
-        'LinearRegression': LinearRegression(),
-        'Ridge': Ridge(random_state=42),
-        'Lasso': Lasso(alpha=0.001, random_state=42),
-        'ElasticNet': ElasticNet(alpha=0.001, random_state=42),
-        'DecisionTree': DecisionTreeRegressor(random_state=42),
-        'RandomForest': RandomForestRegressor(n_estimators=30, random_state=42, n_jobs=-1),
-        'GradientBoosting': GradientBoostingRegressor(n_estimators=30, random_state=42),
-        'AdaBoost': AdaBoostRegressor(n_estimators=30, random_state=42),
-        'SVR': SVR(C=1.0)
-    }
-    if _xgb_available:
-        benchmark_models['XGBoost'] = XGBRegressor(n_estimators=30, random_state=42, n_jobs=-1, objective='reg:squarederror')
-    else:
-        benchmark_models['KNeighbors'] = KNeighborsRegressor()
-        
-    benchmark_results = []
-    cv = KFold(n_splits=3, shuffle=True, random_state=42) # Fast CV for UX responsiveness
+    # -------------------------- Stepwise Feature Selector Benchmark --------------------------
+    total_features = X.shape[1]
     
-    for k_val in range(1, 11):
-        selector_k = SelectKBest(score_func=mutual_info_regression, k=k_val)
-        X_train_k = selector_k.fit_transform(X_train_scaled, y_train)
-        
-        for name, bench_model in benchmark_models.items():
-            neg_mse = cross_val_score(bench_model, X_train_k, y_train, scoring='neg_mean_squared_error', cv=cv, n_jobs=-1)
+    # 1. Pearson Correlation
+    pearson_scores = [np.abs(np.corrcoef(X_train_scaled[:, i], y_train)[0, 1]) for i in range(total_features)]
+    pearson_rank = np.argsort(pearson_scores)[::-1]
+
+    # 2. Spearman Correlation
+    spearman_scores = [np.abs(spearmanr(X_train_scaled[:, i], y_train).correlation) for i in range(total_features)]
+    spearman_rank = np.argsort(spearman_scores)[::-1]
+
+    # 3. F-test Regression
+    f_scores, _ = f_regression(X_train_scaled, y_train)
+    f_rank = np.argsort(f_scores)[::-1]
+
+    # 4. Mutual Information
+    mi_scores_cv = mutual_info_regression(X_train_scaled, y_train, random_state=42)
+    mi_rank = np.argsort(mi_scores_cv)[::-1]
+
+    # 5. RFE
+    rfe = RFE(estimator=LinearRegression(), n_features_to_select=1)
+    rfe.fit(X_train_scaled, y_train)
+    rfe_rank = np.argsort(rfe.ranking_)
+
+    # 6. Lasso L1 Coefficient Magnitudes
+    lasso = LassoCV(cv=3, random_state=42).fit(X_train_scaled, y_train)
+    lasso_coefs = np.abs(lasso.coef_)
+    lasso_rank = np.argsort(lasso_coefs)[::-1]
+
+    # 7. Random Forest Feature Importances
+    rf = RandomForestRegressor(n_estimators=30, random_state=42, n_jobs=-1).fit(X_train_scaled, y_train)
+    rf_rank = np.argsort(rf.feature_importances_)[::-1]
+
+    # 8. SFS Forward Selection
+    selected_sfs = []
+    remaining = list(range(total_features))
+    while remaining:
+        best_score = -np.inf
+        best_feat = None
+        for f in remaining:
+            candidate = selected_sfs + [f]
+            score = np.mean(cross_val_score(LinearRegression(), X_train_scaled[:, candidate], y_train, cv=3, scoring='r2'))
+            if score > best_score:
+                best_score = score
+                best_feat = f
+        selected_sfs.append(best_feat)
+        remaining.remove(best_feat)
+    sfs_rank = selected_sfs
+
+    selectors = {
+        "Pearson Corr": pearson_rank,
+        "Spearman Corr": spearman_rank,
+        "F-test Reg": f_rank,
+        "Mutual Info": mi_rank,
+        "RFE": rfe_rank,
+        "Lasso (L1)": lasso_rank,
+        "Random Forest": rf_rank,
+        "SFS (Forward)": sfs_rank
+    }
+
+    benchmark_results = []
+    for name, rank in selectors.items():
+        for k_val in range(1, total_features + 1):
+            selected_indices = rank[:k_val]
+            model_eval = LinearRegression()
+            model_eval.fit(X_train_scaled[:, selected_indices], y_train)
+            
+            # Predict on test
+            preds = model_eval.predict(X_test_scaled[:, selected_indices])
+            r2_val = r2_score(y_test, preds)
+            mse_val = mean_squared_error(y_test, preds)
+            
             benchmark_results.append({
-                'Algorithm': name,
+                'Selector': name,
                 'Number of Features': k_val,
-                'MSE': float(-neg_mse.mean())
+                'R2': float(r2_val),
+                'MSE': float(mse_val)
             })
             
     return jsonify({
@@ -210,8 +247,8 @@ def train_model():
         'selected_features': selected_cols,
         'feature_scores': feature_scores,
         'importances': sorted_importances,
-        'test_actual': y_test_orig.tolist(),
-        'test_predicted': pred_test_orig.tolist(),
+        'test_actual': y_test.tolist(),
+        'test_predicted': pred_test_raw.tolist(),
         'benchmark_data': benchmark_results
     })
 
@@ -227,7 +264,7 @@ def predict():
         max_depth = int(max_depth) if max_depth != 'None' else None
         
     df = load_data()
-    y = np.log1p(df['MEDV'])
+    y = df['MEDV']
     X = df.drop(columns=['MEDV'])
     
     # Prepare input vector
@@ -250,7 +287,7 @@ def predict():
     
     input_scaled = scaler.transform(input_df)
     input_scaled_df = pd.DataFrame(input_scaled, columns=X.columns)
-    X_train_scaled_df = pd.DataFrame(X_train_scaled, columns=X.columns)
+    X_train_scaled_df = pd.DataFrame(X_train_scaled, columns=X.columns, index=X_train.index)
     
     # Select K
     selector = SelectKBest(score_func=mutual_info_regression, k=k_features)
@@ -287,8 +324,8 @@ def predict():
         model = Ridge(alpha=alpha, random_state=42)
         
     model.fit(X_train_sel, y_train)
-    pred_log = model.predict(input_sel)[0]
-    pred_orig = float(np.expm1(pred_log))
+    pred_raw = model.predict(input_sel)[0]
+    pred_orig = float(pred_raw)
     
     return jsonify({
         'prediction': pred_orig

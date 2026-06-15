@@ -282,34 +282,63 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function plotModelComparison(benchmarkData) {
-        const algorithms = [...new Set(benchmarkData.map(d => d.Algorithm))];
-        const traces = algorithms.map(algo => {
-            const algoData = benchmarkData.filter(d => d.Algorithm === algo);
-            algoData.sort((a, b) => a['Number of Features'] - b['Number of Features']);
+        const selectors = [...new Set(benchmarkData.map(d => d.Selector))];
+        const traces = [];
+        
+        // Custom color palette to match teacher's plot
+        const colors = {
+            "Pearson Corr": "#1f77b4",
+            "Spearman Corr": "#aec7e8",
+            "F-test Reg": "#ff7f0e",
+            "Mutual Info": "#ffbb78",
+            "RFE": "#2ca02c",
+            "Lasso (L1)": "#98df8a",
+            "Random Forest": "#d62728",
+            "SFS (Forward)": "#ff9896"
+        };
+
+        selectors.forEach(sel => {
+            const selData = benchmarkData.filter(d => d.Selector === sel);
+            selData.sort((a, b) => a['Number of Features'] - b['Number of Features']);
             
-            return {
-                x: algoData.map(d => d['Number of Features']),
-                y: algoData.map(d => d.MSE),
+            // R2 trace (Left subplot)
+            traces.push({
+                x: selData.map(d => d['Number of Features']),
+                y: selData.map(d => d.R2),
                 type: 'scatter',
                 mode: 'lines+markers',
-                name: algo
-            };
+                name: sel,
+                xaxis: 'x1',
+                yaxis: 'y1',
+                legendgroup: sel,
+                line: { color: colors[sel] || '#888' }
+            });
+            
+            // MSE trace (Right subplot)
+            traces.push({
+                x: selData.map(d => d['Number of Features']),
+                y: selData.map(d => d.MSE),
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: sel,
+                xaxis: 'x2',
+                yaxis: 'y2',
+                legendgroup: sel,
+                showlegend: false,
+                line: { color: colors[sel] || '#888' }
+            });
         });
 
         const layout = {
             ...commonLayout,
-            title: '演算法 MSE vs. 特徵數量 (3-Fold CV Log-Scale Sampled)',
-            xaxis: { 
-                title: '特徵選取數量', 
-                dtick: 1,
-                gridcolor: 'rgba(255,255,255,0.05)'
-            },
-            yaxis: { 
-                title: '交叉驗證平均 MSE (對數刻度)', 
-                type: 'log',
-                gridcolor: 'rgba(255,255,255,0.05)'
-            },
-            showlegend: true
+            title: 'Feature Selection Stepwise Evaluation Plot',
+            grid: { rows: 1, columns: 2, pattern: 'independent' },
+            xaxis1: { title: 'Number of Features in Model', dtick: 1, gridcolor: 'rgba(255,255,255,0.05)' },
+            xaxis2: { title: 'Number of Features in Model', dtick: 1, gridcolor: 'rgba(255,255,255,0.05)' },
+            yaxis1: { title: 'Test R-squared', gridcolor: 'rgba(255,255,255,0.05)' },
+            yaxis2: { title: 'Test Mean Squared Error (MSE)', gridcolor: 'rgba(255,255,255,0.05)' },
+            showlegend: true,
+            legend: { orientation: 'h', y: 1.15 }
         };
 
         Plotly.newPlot('plot-comparison', traces, layout, {responsive: true});
