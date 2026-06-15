@@ -108,7 +108,7 @@ with col1:
     fig.add_shape(type="path", path=f"M {low_sum_limit},0 L {high_sum_limit},0 L 0,{high_sum_limit} L 0,{low_sum_limit} Z", fillcolor="#fef3c7", opacity=0.6, line_width=0, layer="below")
     fig.add_shape(type="path", path=f"M {high_sum_limit},0 L 10,0 L 10,10 L 0,10 L 0,{high_sum_limit} Z", fillcolor="#ebd5fc", opacity=0.6, line_width=0, layer="below")
 
-    # 6. 新增背景區域文字標籤 (已修正 font 設定，移除錯誤的 bold 參數)
+    # 6. 新增背景區域文字標籤
     fig.add_annotation(x=low_sum_limit/4, y=low_sum_limit/4, text="<b>低度重大</b>", showarrow=False, font=dict(size=14, color="#4b5563"))
     fig.add_annotation(x=(low_sum_limit+high_sum_limit)/4, y=(low_sum_limit+high_sum_limit)/4, text="<b>中度重大</b>", showarrow=False, font=dict(size=14, color="#b45309"))
     fig.add_annotation(x=(high_sum_limit+20)/4, y=(high_sum_limit+20)/4, text="<b>高度重大</b>", showarrow=False, font=dict(size=14, color="#6d28d9"))
@@ -127,7 +127,7 @@ with col1:
                 marker=dict(size=12, color=color_map.get(name, "#757575"), line=dict(width=1.5, color='white')),
                 text=group["重大議題"],
                 textposition="top right",
-                font=dict(size=11),
+                textfont=dict(size=11),  # 🎯 修正處：將 font 改為 textfont
                 hovertemplate="<b>%{text}</b><br>營運影響度: %{x}<br>關心度: %{y}<extra></extra>"
             ))
 
