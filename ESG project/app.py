@@ -104,21 +104,20 @@ with col1:
     fig = go.Figure()
 
     # 5. 繪製背景分區 (低、中、高)
-    # 利用形狀 (Shapes) 來畫出背後的切分區域
     fig.add_shape(type="path", path=f"M 0,0 L {low_sum_limit},0 L 0,{low_sum_limit} Z", fillcolor="#f3f4f6", opacity=0.6, line_width=0, layer="below")
     fig.add_shape(type="path", path=f"M {low_sum_limit},0 L {high_sum_limit},0 L 0,{high_sum_limit} L 0,{low_sum_limit} Z", fillcolor="#fef3c7", opacity=0.6, line_width=0, layer="below")
     fig.add_shape(type="path", path=f"M {high_sum_limit},0 L 10,0 L 10,10 L 0,10 L 0,{high_sum_limit} Z", fillcolor="#ebd5fc", opacity=0.6, line_width=0, layer="below")
 
-    # 6. 新增背景區域文字標籤 (天生支援中文)
-    fig.add_annotation(x=low_sum_limit/4, y=low_sum_limit/4, text="低度重大", showarrow=False, font=dict(size=14, color="#4b5563", bold=True))
-    fig.add_annotation(x=(low_sum_limit+high_sum_limit)/4, y=(low_sum_limit+high_sum_limit)/4, text="中度重大", showarrow=False, font=dict(size=14, color="#b45309", bold=True))
-    fig.add_annotation(x=(high_sum_limit+20)/4, y=(high_sum_limit+20)/4, text="高度重大", showarrow=False, font=dict(size=14, color="#6d28d9", bold=True))
+    # 6. 新增背景區域文字標籤 (已修正 font 設定，移除錯誤的 bold 參數)
+    fig.add_annotation(x=low_sum_limit/4, y=low_sum_limit/4, text="<b>低度重大</b>", showarrow=False, font=dict(size=14, color="#4b5563"))
+    fig.add_annotation(x=(low_sum_limit+high_sum_limit)/4, y=(low_sum_limit+high_sum_limit)/4, text="<b>中度重大</b>", showarrow=False, font=dict(size=14, color="#b45309"))
+    fig.add_annotation(x=(high_sum_limit+20)/4, y=(high_sum_limit+20)/4, text="<b>高度重大</b>", showarrow=False, font=dict(size=14, color="#6d28d9"))
 
     # 7. 繪製資料點與標籤
     if not valid_df.empty:
         valid_df["Color"] = valid_df["面向"].map(color_map).fillna("#757575")
         
-        # 依面向分組繪製，以便自動生成漂亮的圖例
+        # 依面向分組繪製
         for name, group in valid_df.groupby("面向"):
             fig.add_trace(go.Scatter(
                 x=group["營運影響度"],
