@@ -11,32 +11,27 @@ from matplotlib.lines import Line2D
 __st.set_page_config(page_title="ESG 重大性矩陣分析工具", layout="wide")
 
 # =====================================================================
-# ⚙️ 解決 Streamlit Cloud Linux 環境中文亂碼問題
+# ⚙️ 解決 Streamlit Cloud Linux 環境中文亂碼問題 (免快取、直接路徑注入版)
 # =====================================================================
-@__st.cache_resource  # 快取字型下載機制，避免每次網頁重新整理都重複下載
-def init_chinese_font():
-    # 使用 Adobe 開源的思源黑體 (Source Han Sans TC) 繁體中文版
-    font_url = "https://github.com/adobe-fonts/source-hans-sans/raw/release/OTF/TraditionalChinese/SourceHanSansTC-Regular.otf"
-    font_path = "SourceHanSansTC-Regular.otf"
-    
-    # 如果本地沒有字型檔，就從 GitHub 下載
-    if not os.path.exists(font_path):
-        try:
-            urllib.request.urlretrieve(font_url, font_path)
-        except Exception as e:
-            # 若下載失敗，則降級使用系統預設字型
-            return ["sans-serif"]
-            
-    # 將下載的字型註冊到 matplotlib 中
-    fm.fontManager.addfont(font_path)
-    font_prop = fm.FontProperties(fname=font_path)
-    return [font_prop.get_name(), "sans-serif"]
+# 使用 Adobe 開源的思源黑體 (Source Han Sans TC) 繁體中文版
+font_url = "https://github.com/adobe-fonts/source-hans-sans/raw/release/OTF/TraditionalChinese/SourceHanSansTC-Regular.otf"
+font_path = "SourceHanSansTC-Regular.otf"
 
-# 執行字型初始化，並設定給 matplotlib
-font_list = init_chinese_font()
-plt.rcParams["font.sans-serif"] = font_list
-plt.rcParams["axes.unicode_minus"] = False
+# 如果雲端環境沒有字型檔，就從 GitHub 下載
+if not os.path.exists(font_path):
+    try:
+        urllib.request.urlretrieve(font_url, font_path)
+    except Exception as e:
+        pass
 
+# 檢查檔案是否存在，並建立字型物件
+if os.path.exists(font_path):
+    my_font = fm.FontProperties(fname=font_path)
+    # 同時設定全域後備字型
+    plt.rcParams["font.sans-serif"] = [my_font.get_name(), "sans-serif"]
+    plt.rcParams["axes.unicode_minus"] = False
+else:
+    my_font = None
 # =====================================================================
 
 __st.title("🍀 00股份有限公司 永續重大議題矩陣工具")
@@ -207,17 +202,18 @@ with col1:
         alpha=0.5,
     )
 
-    # 動態調整背景區域的文字位置 (置於對角線上，以符合 X+Y 區間)
+    # 動態調整背景區域的文字位置 (明確注入字型物件 my_font)
     ax.text(
         low_sum_limit / 4,
         low_sum_limit / 4,
         "低度重大",
         fontsize=12,
         fontweight="bold",
-        color="#4b5563",  # 深灰
+        color="#4b5563",
         alpha=0.8,
         ha="center",
         va="center",
+        fontproperties=my_font
     )
     ax.text(
         (low_sum_limit + high_sum_limit) / 4,
@@ -225,10 +221,11 @@ with col1:
         "中度重大",
         fontsize=12,
         fontweight="bold",
-        color="#b45309",  # 深橘黃
+        color="#b45309",
         alpha=0.8,
         ha="center",
         va="center",
+        fontproperties=my_font
     )
     ax.text(
         (high_sum_limit + 20) / 4,
@@ -236,13 +233,14 @@ with col1:
         "高度重大",
         fontsize=12,
         fontweight="bold",
-        color="#6d28d9",  # 深紫
+        color="#6d28d9",
         alpha=0.9,
         ha="center",
         va="center",
+        fontproperties=my_font
     )
 
-    # 繪製議題散佈點
+    # 繪製議題散佈點與標籤文字
     if not valid_df.empty:
         valid_df["Color"] = valid_df["面向"].map(color_map).fillna("#757575")
         for _, row in valid_df.iterrows():
@@ -262,14 +260,16 @@ with col1:
                 fontsize=10,
                 va="center",
                 zorder=4,
+                fontproperties=my_font
             )
 
-    # 軸線設定
-    ax.set_xlabel("營運影響程度（衝擊程度）", fontsize=11, labelpad=10)
+    # 軸線設定 (明確注入字型物件 my_font)
+    ax.set_xlabel("營運影響程度（衝擊程度）", fontsize=11, labelpad=10, fontproperties=my_font)
     ax.set_ylabel(
         "對經濟、環境和人（人權）的的衝擊影響（利害關係人關心度）",
         fontsize=11,
         labelpad=10,
+        fontproperties=my_font
     )
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 10)
@@ -290,6 +290,9 @@ with col1:
         )
         for k, v in color_map.items()
     ]
+    
+    # 這裡的圖例標籤（環境面、社會面...）若有亂碼，也一併套用全域後備設定
+    # 為了百分之百安全，我們也可以透過 prop 指定圖例字型
     ax.legend(
         handles=legend_elements,
         loc="lower center",
@@ -297,6 +300,7 @@ with col1:
         ncol=4,
         frameon=True,
         fontsize=10,
+        prop=my_font
     )
 
     plt.tight_layout()
