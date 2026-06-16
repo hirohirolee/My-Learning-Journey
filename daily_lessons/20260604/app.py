@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 import json
 
 # 設定網頁標題與寬度
-st.set_page_config(page_title="AI 圖像生成 Web App", page_icon="🎨", layout="centered")
+st.set_page_config(page_title="AI 圖像生成 Web App", page_icon="🎨", layout="wide")
 
 # 側邊欄設計
 with st.sidebar:
