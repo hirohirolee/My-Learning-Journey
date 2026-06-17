@@ -25,11 +25,14 @@ graph TD
     D -->|4. Matplotlib 繪圖 & python-docx 排版| E[output/星光電子製造廠_ESG_Report_2025.docx]
 ```
 
-* **`app.py`**：Web 控制中心。處理使用者輸入（企業名稱、報告年度、減碳基準年）、提供各指標 Excel 範本下載、管理細部子項目複選框，以及觸發報告書生成。
+* **`app.py`**：Web 控制中心。作為主調度器（小於 150 行），路由介面佈局與調用後端。
+* **`ui_components.py`**：[新增] 可複用網頁 UI 元件庫。封裝企業識別 CSS、側邊欄設定、上傳區（支援上傳檔案狀態持久化於 `st.session_state`）以及揭露指標勾選清單。
+* **`templates.py`**：[新增] Excel 數據模板資料。包含各指標的初始範本數據，並使用 `@st.cache_data` 快取二進位資料以加速下載。
+* **`gri_config.py`**：[新增] 集中化 GRI 指標設定字典。定義 9 大指標的名稱、對應檔案、解析器方法與子章節 Prompts 描述，使指標擴充更簡潔。
 * **`modules/data_processor.py`**：數據清洗模組。將上傳的 Excel 表格解析、轉換為標準的 JSON 結構，當使用者未上傳檔案時自動啟動專屬的高質量模擬數據以確保生成不中斷。
-* **`modules/local_ai_manager.py`**：地端 AI 寫作調度。定義各子章節寫作 Prompts，若地端 AI 未啟動或生成失敗時，自動套用極為詳實的本地 1:1 Fallback 備用文本。
-* **`modules/report_builder.py`**：排版與組裝引擎。處理 Matplotlib 數據圖表繪製、段落中英字型處理、邊距與表格樣式渲染，並在尾頁動態建立 GRI 揭露指標索引對照表。
-* **`config.py`**：系統全域設定。包含地端 AI 模型代碼、連線網址（採用 IPv6 免等待之 `127.0.0.1` 配置）及企業識別 HSL 顏色。
+* **`modules/local_ai_manager.py`**：地端 AI 寫作調度。支援 Ollama 連線與模型下載預檢，整合 3 次重試與最低長度機制，並在連線超時/失效時自動重設連線，快速套用本地 Fallback 備用文本。
+* **`modules/report_builder.py`**：排版與組裝引擎。處理 Matplotlib 數據圖表繪製（使用非互動式 `Agg` 後端避免伺服器掛起）、段落中英字型處理、邊距與表格樣式渲染，並在尾頁動態建立 GRI 揭露指標索引對照表。
+* **`config.py`**：系統全域設定。包含地端 AI 模型代碼、連線網址及企業識別 HSL 顏色。
 
 ---
 
