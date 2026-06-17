@@ -3,8 +3,21 @@
 ESG 永續報告書自動化生成系統 - 單元測試與整合驗證腳本
 """
 
-import os
 import sys
+
+# 解決 Windows 環境下 cp950 無法編碼 Unicode 字符（如 Emojis）的錯誤
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+if hasattr(sys.stderr, 'reconfigure'):
+    try:
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
+import os
 from modules.data_processor import ESGDataProcessor
 from modules.local_ai_manager import ESGLLMManager
 from modules.report_builder import ESGReportBuilder

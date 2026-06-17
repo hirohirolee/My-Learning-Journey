@@ -7,6 +7,7 @@ import os
 import json
 import ollama
 import config
+from gri_config import GRI_CONFIG
 
 class ESGLLMManager:
     """
@@ -17,12 +18,44 @@ class ESGLLMManager:
         self.model_name = model_name or config.MODEL_NAME
         self.host = host or config.OLLAMA_HOST
         
-        # 初始化 Ollama 客戶端
+        # 初始化 Ollama 客戶端，設置 10 秒超時限制以防連線掛起
         try:
-            self.client = ollama.Client(host=self.host)
+            self.client = ollama.Client(host=self.host, timeout=10.0)
         except Exception as e:
             self.client = None
-            print(f"⚠️ 初始化 Ollama 客戶端失敗，將使用預設的備用生成方案。錯誤原因: {e}")
+            print(f"⚠️ 初始化 Ollama 客戶端失敗，將使用預設的備用方案。錯誤原因: {e}")
+
+    @staticmethod
+    def check_connection(host, model_name):
+        """
+        檢查與地端 Ollama 伺服器的連線，並確認選擇的模型是否已安裝。
+        回傳: (is_connected, model_downloaded, installed_models)
+        """
+        try:
+            # 使用較短的 2.0 秒超時進行快速連線測試
+            client = ollama.Client(host=host, timeout=2.0)
+            # 獲取模型列表，此呼叫可同時驗證 Ollama 服務是否正常在線
+            models_response = client.list()
+            
+            # 從回傳中提取已安裝模型的名稱
+            installed_models = []
+            for m in models_response.get("models", []):
+                # 兼容不同的 ollama-python 版本與欄位命名
+                if "name" in m:
+                    installed_models.append(m["name"])
+                elif "model" in m:
+                    installed_models.append(m["model"])
+            
+            # 檢查目標模型是否在列表中 (支援模型名稱帶 tag 與不帶 tag 的匹配)
+            model_downloaded = False
+            for name in installed_models:
+                if name == model_name or name.startswith(f"{model_name}:"):
+                    model_downloaded = True
+                    break
+            
+            return True, model_downloaded, installed_models
+        except Exception:
+            return False, False, []
 
     def generate_chapter_subsections(self, json_data, framework_code, target_words=350, selected_subs=None):
         """
@@ -32,143 +65,27 @@ class ESGLLMManager:
         framework_code = str(framework_code).strip().upper()
         results = {}
         
-        # 定義各指標之子章節對照與 Prompt
-        if "305" in framework_code:
-            subs = {
-                "3.1.1": {
-                    "title": "3.1.1 範疇一（直接溫室氣體排放）來源與數據深度解讀",
-                    "instruction": "深入分析範疇一（直接排放）所涵蓋之所有排放源別（如柴油發電機、冷媒逸散等）的具體數值與占比。說明這些來源的製程本質、盤查結果，以及企業針對直接逸散所推動的常規維護措施與控制政策。"
-                },
-                "3.1.2": {
-                    "title": "3.1.2 範疇二（能源間接溫室氣體排放）外購電力分析與減碳路徑",
-                    "instruction": "深入分析範疇二（間接排放，主要是外購電力）的具體數值與占比。說明外購電力作為企業主要間接排放源的環境衝擊，並闡述綠電採購規劃、廠區節能設備改造、智慧能源管理等具體能效改善與減量路徑。"
-                },
-                "3.1.3": {
-                    "title": "3.1.3 年度排放變動率（YoY）與減量成效評估",
-                    "instruction": "分析溫室氣體排放總量相較於基準年度 (或前年度) 的變動率 (YoY)。結合變動百分比，對本年度的減碳成效進行量化與質性評估，說明製程優化或減量計畫的實質成效，並闡述下一階段減碳路徑目標。"
-                }
-            }
-            fallback_func = self._get_gri_305_subchapters_fallback
-            
-        elif "404" in framework_code:
-            subs = {
-                "4.1.1": {
-                    "title": "4.1.1 員工平均培訓時數結構分析（依職級與性別）",
-                    "instruction": "深入分析各職級員工（高階主管、中階主管、基層員工）及不同性別員工（男性、女性）的平均培訓時數與統計表現，說明企業在教育資源分配的均衡性，以及在落實內部職涯能力培育上的承諾與數據成果。"
-                },
-                "4.1.2": {
-                    "title": "4.1.2 員工技能提升與過渡協助計畫執行效益",
-                    "instruction": "探討企業如何透過持續的培訓課程及技能提升計畫，協助同仁因應數位轉型、AI 製程優化等職涯技能變動，並闡述這類培訓與技能重建方案對組織韌性、長期留任與企業永續競爭力帶來的實質效益。"
-                },
-                "4.1.3": {
-                    "title": "4.1.3 組織人才穩定度與流動率指標解讀",
-                    "instruction": "分析新進員工比率與員工離職率等指標數據。說明人才流動對組織穩定度、團隊凝聚力與長期營運效益的影響，並簡述企業在留才機制、升遷管道優化及友善職場工作氛圍上的具體方向與政策。"
-                }
-            }
-            fallback_func = self._get_gri_404_subchapters_fallback
-
-        elif "302" in framework_code:
-            subs = {
-                "3.2.1": {
-                    "title": "3.2.1 組織內部能源消耗數據解讀",
-                    "instruction": "深入分析組織內部的所有能源消耗數據（如外購電力、柴油、汽油消耗等）的具體數值與占比。說明這些能源耗用的製程或營運本質，並解讀本年度總體能源耗用的統計表現。"
-                },
-                "3.2.2": {
-                    "title": "3.2.2 能源密集度與節能減量成效",
-                    "instruction": "說明組織的能源密集度表現。闡述企業在提升能源效率、落實節電改造措施（如照明與空調系統升級、變頻改造）及降低能源消耗強度上的承諾與具體減量成效。"
-                }
-            }
-            fallback_func = self._get_gri_302_subchapters_fallback
-
-        elif "306" in framework_code:
-            subs = {
-                "3.6.1": {
-                    "title": "3.6.1 廢棄物產生源與源頭減量措施",
-                    "instruction": "說明組織在營運與生產過程中所產生的廢棄物來源（包含有害事業廢棄物與一般事業廢棄物）。闡述企業的廢棄物減量目標與源頭管理、包裝減塑等具體減量措施。"
-                },
-                "3.6.2": {
-                    "title": "3.6.2 廢棄物回收與循環再利用效益",
-                    "instruction": "分析廢棄物的回收率與資源化再利用數據。說明企業如何推動垃圾分類、廢料回收再利用，以及邁向循環經濟、綠色設計之具體成效。"
-                },
-                "3.6.3": {
-                    "title": "3.6.3 廢棄物最終處置與合規評估",
-                    "instruction": "說明無法回收之廢棄物的最終處置方式（如委外焚化、衛生掩埋等）與處理量。闡明企業如何對委外清除處理機構進行合規審查與流向申報追蹤，確保符合環保法規要求。"
-                }
-            }
-            fallback_func = self._get_gri_306_subchapters_fallback
-
-        elif "401" in framework_code:
-            subs = {
-                "4.1.1.b": {
-                    "title": "4.1.1.b 員工流動率與新進率結構解讀",
-                    "instruction": "分析本年度新進員工與離職員工之總數、新進率及離職率數據。解讀此流動結構對組織人才儲備、營運穩定度及團隊活力所帶來的影響。"
-                },
-                "4.1.2": {
-                    "title": "4.1.2 關懷福利政策與育嬰留停成效",
-                    "instruction": "說明企業在吸引與留任人才上的各項福利政策與關懷措施，包括育嬰留职停薪、托兒補助、身心健康檢查及彈性工時等具體實踐與成效。"
-                }
-            }
-            fallback_func = self._get_gri_401_subchapters_fallback
-
-        elif "405" in framework_code:
-            subs = {
-                "4.5.1": {
-                    "title": "4.5.1 治理機構與員工結構多元化比例",
-                    "instruction": "分析治理機構（如董事會、高階管理層）與各級員工的多元化比例，特別是不同性別占比與年齡結構（30歲以下、30至50歲、50歲以上）。說明企業推動多元包容職場的承諾與數據成果。"
-                },
-                "4.5.2": {
-                    "title": "4.5.2 男女同工同酬與平等晉升機會",
-                    "instruction": "說明企業如何維護職場平等機會，保障男女同工同酬、提供公正透明的績效考核與平等晉升管道，以消除任何形式的職場性別歧視。"
-                }
-            }
-            fallback_func = self._get_gri_405_subchapters_fallback
-
-        elif "201" in framework_code:
-            subs = {
-                "2.1.1": {
-                    "title": "2.1.1 直接產生與分配之經濟價值分析",
-                    "instruction": "分析企業直接產生之經濟價值（營業收入）與分配之經濟價值（營運成本、員工薪資與福利、支付給出資人股利、支付公部門稅收及社區投資）及保留之經濟價值。說明如何透過合理的價值分配促進與所有持份者的共榮。"
-                },
-                "2.1.2": {
-                    "title": "2.1.2 氣候變遷對企業營運之財務衝擊",
-                    "instruction": "說明氣候變遷（如極端天氣、法規碳費等）對企業營運所帶來的潛在財務風險與機遇。闡明企業如何評估這些物理與轉型風險，並制定相應的適應性治理計畫。"
-                }
-            }
-            fallback_func = self._get_gri_201_subchapters_fallback
-
-        elif "205" in framework_code:
-            subs = {
-                "2.5.1": {
-                    "title": "2.5.1 反貪腐政策傳達、簽署與培訓統計",
-                    "instruction": "分析公司董事與員工在誠信經營與反貪腐守則的傳達、簽署率與培訓完成時數。說明企業如何對內建立誠信守則與反貪腐意識。"
-                },
-                "2.5.2": {
-                    "title": "2.5.2 誠信經營確立事件與檢舉防範機制",
-                    "instruction": "說明本年度是否發生任何貪腐確立案件。闡述企業所建立的誠信經營檢舉管道（如匿名信箱、專線）及保護檢舉人的防護網機制與合規成效。"
-                }
-            }
-            fallback_func = self._get_gri_205_subchapters_fallback
-
-        elif "2" in framework_code or "GENERAL" in framework_code:
-            subs = {
-                "2.2.1": {
-                    "title": "2.2.1 組織基本概況、據點與資本規模",
-                    "instruction": "說明企業之組織基本概況、營運據點分佈、主要產品與服務以及資本規模（實收資本額等）。展現企業的核心組織身分與業務版圖。"
-                },
-                "2.2.2": {
-                    "title": "2.2.2 商業活動與供應鏈價值關係",
-                    "instruction": "描述企業的主要商業活動與上下游供應鏈之價值關係，包含供應商管理政策、綠色採購方針，以及企業如何推動供應鏈之社會與環境合規責任。"
-                },
-                "2.2.3": {
-                    "title": "2.2.3 員工聘用特性與人力資源分佈",
-                    "instruction": "分析企業員工總數及聘用特性（如全職、兼職、定期與不定期契約員工的性別與地區分布），說明企業人力資源的基本架構與穩定勞工關係政策。"
-                }
-            }
-            fallback_func = self._get_gri_2_subchapters_fallback
-            
-        else:
+        # 從全域配置中動態尋找對應的指標設定
+        matched_config = None
+        for key, cfg in GRI_CONFIG.items():
+            if cfg["code"] == framework_code or framework_code in key:
+                matched_config = cfg
+                break
+                
+        if not matched_config:
             # 預設回退
             return {"無子章節": f"已收到數據：{json.dumps(json_data, ensure_ascii=False)}"}
+            
+        subs = matched_config["sub_items"]
+        fallback_method_name = matched_config["fallback_method"]
+        fallback_func = getattr(self, fallback_method_name, None)
+
+        # 如果客戶端存在，先進行一次快速連線檢測，避免連線失敗導致多次等待超時
+        if self.client is not None:
+            is_connected, _, _ = self.check_connection(self.host, self.model_name)
+            if not is_connected:
+                print("⚠️ 檢測到 Ollama 伺服器未連線，將直接使用備用文本。")
+                self.client = None
 
         # 對各個子章節單獨進行 AI 生成
         for sub_id, info in subs.items():
@@ -192,23 +109,38 @@ class ESGLLMManager:
             # 呼叫地端 AI
             sub_text = ""
             if self.client is not None:
-                try:
-                    response = self.client.chat(
-                        model=self.model_name,
-                        messages=[
-                            {'role': 'system', 'content': system_instruction},
-                            {'role': 'user', 'content': user_prompt}
-                        ]
-                    )
-                    sub_text = response['message']['content'].strip()
-                except Exception as e:
-                    print(f"❌ 呼叫 Ollama {self.model_name} 失敗。將對該子項啟用備用文本。錯誤: {e}")
-                    sub_text = ""
+                # 實作重試與最低長度檢查邏輯，避免 Ollama 出現過短或空白的異常輸出
+                min_len = max(50, target_words // 2)
+                max_attempts = 3
+                for attempt in range(1, max_attempts + 1):
+                    try:
+                        response = self.client.chat(
+                            model=self.model_name,
+                            messages=[
+                                {'role': 'system', 'content': system_instruction},
+                                {'role': 'user', 'content': user_prompt}
+                            ]
+                        )
+                        candidate_text = response['message']['content'].strip()
+                        if len(candidate_text) >= min_len:
+                            sub_text = candidate_text
+                            break
+                        else:
+                            print(f"⚠️ 第 {attempt} 次生成文本長度不足 ({len(candidate_text)} < {min_len} 字)，將重試。")
+                    except Exception as e:
+                        print(f"❌ 第 {attempt} 次呼叫 Ollama {self.model_name} 失敗。錯誤: {e}")
+                        if attempt == max_attempts:
+                            print("⚠️ 偵測到地端 Ollama 服務多次呼叫失敗，已將連線重設，後續子章節將直接採用備用方案。")
+                            self.client = None
+                            break
             
             # 如果 AI 生成失敗或未連線，則調用本地高質量 Fallback
             if not sub_text:
-                fallback_dict = fallback_func(json_data)
-                sub_text = fallback_dict.get(sub_id, "")
+                if fallback_func is not None:
+                    fallback_dict = fallback_func(json_data)
+                    sub_text = fallback_dict.get(sub_id, "")
+                else:
+                    sub_text = f"數據摘要: {json.dumps(json_data, ensure_ascii=False)}"
                 
             results[sub_id] = sub_text
             

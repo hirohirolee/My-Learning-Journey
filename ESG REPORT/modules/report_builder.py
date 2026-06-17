@@ -4,6 +4,8 @@ ESG 永續報告書自動化生成系統 - Word 排版與組裝模組
 """
 
 import os
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
