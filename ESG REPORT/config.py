@@ -7,7 +7,7 @@ import os
 
 # 地端 Ollama AI 設定
 MODEL_NAME = 'llama3'
-OLLAMA_HOST = 'http://localhost:11434'
+OLLAMA_HOST = 'http://127.0.0.1:11434'
 
 # 報告書輸出設定
 OUTPUT_DIR = 'output'

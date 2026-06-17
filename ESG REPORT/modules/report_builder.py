@@ -267,7 +267,7 @@ class ESGReportBuilder:
         meta_p.paragraph_format.line_spacing = 1.5
         meta_run = meta_p.add_run(
             f"報告年度：{year} 年度\n"
-            "報導核心：GRI 305 排放、GRI 404 培訓與教育\n"
+            "報導核心：多指標綜合永續報告書\n"
             "製表單位：ESG 企業永續發展小組\n"
             "發布時間：地端 AI 自動生成系統自動輸出\n"
         )
@@ -279,28 +279,20 @@ class ESGReportBuilder:
 
         # 計算動態頁碼與設定
         current_page = 5
-        page_305 = None
-        page_305_yoy = None
-        page_404 = None
-        page_404_yoy = None
-        page_appendix = None
+        pages = {}
         
-        if "GRI 305" in chapters_data:
-            page_305 = current_page
-            # 3.1.1 and 3.1.2 are on page_305
-            # then there is a page break for 3.1.3
-            current_page += 1
-            page_305_yoy = current_page
-            current_page += 1
-            
-        if "GRI 404" in chapters_data:
-            page_404 = current_page
-            # 4.1.1 and 4.1.2 are on page_404
-            # then there is a page break for 4.1.3
-            current_page += 1
-            page_404_yoy = current_page
-            current_page += 1
-            
+        # 按照順序計算各章節的起始頁碼
+        orderOfChapters = ["GRI 2", "GRI 201", "GRI 205", "GRI 302", "GRI 305", "GRI 306", "GRI 401", "GRI 404", "GRI 405"]
+        for ch in orderOfChapters:
+            if ch in chapters_data:
+                sub_count = len(chapters_data[ch].get("sub_chapters", {}))
+                if sub_count > 0:
+                    pages[ch] = current_page
+                    if sub_count >= 3:
+                        current_page += 2
+                    else:
+                        current_page += 1
+                    
         page_appendix = current_page
 
         # ==================== Page 2: 目錄 ====================
@@ -311,25 +303,27 @@ class ESGReportBuilder:
             "二、 關於本報告書 ............................................................................................. 4"
         ]
         
-        if "GRI 305" in chapters_data:
-            toc_lines.append(f"三、 GRI 305：溫室氣體排放量揭露 (Environmental) ..................................................... {page_305}")
-            sub_305 = chapters_data["GRI 305"].get("sub_chapters", {})
-            if "3.1.1" in sub_305:
-                toc_lines.append(f"     3.1.1 範疇一（直接溫室氣體排放）來源與數據深度解讀 ............................................ {page_305}")
-            if "3.1.2" in sub_305:
-                toc_lines.append(f"     3.1.2 範疇二（能源間接溫室氣體排放）外購電力分析與減量路徑 ................................. {page_305}")
-            if "3.1.3" in sub_305:
-                toc_lines.append(f"     3.1.3 年度排放變動率（YoY）與減量成效評估 ......................................................... {page_305_yoy}")
-                
-        if "GRI 404" in chapters_data:
-            toc_lines.append(f"四、 GRI 404：培訓與教育 (Social) ............................................................................ {page_404}")
-            sub_404 = chapters_data["GRI 404"].get("sub_chapters", {})
-            if "4.1.1" in sub_404:
-                toc_lines.append(f"     4.1.1 員工平均培訓時數結構分析（依職級與性別） .................................................. {page_404}")
-            if "4.1.2" in sub_404:
-                toc_lines.append(f"     4.1.2 員工技能提升與過渡協助計畫執行效益 ............................................................ {page_404}")
-            if "4.1.3" in sub_404:
-                toc_lines.append(f"     4.1.3 組織人才穩定度與流動率指標解讀 .................................................................. {page_404_yoy}")
+        chapter_counter = 3
+        chapter_titles = {
+            "GRI 2": "GRI 2：一般揭露 (General Disclosures)",
+            "GRI 201": "GRI 201：經濟績效 (Economic Performance)",
+            "GRI 205": "GRI 205：反貪腐 (Anti-corruption)",
+            "GRI 302": "GRI 302：能源消耗 (Energy)",
+            "GRI 305": "GRI 305：溫室氣體排放量揭露 (Emissions)",
+            "GRI 306": "GRI 306：廢棄物與回收 (Waste)",
+            "GRI 401": "GRI 401：員工聘用與流動 (Employment)",
+            "GRI 404": "GRI 404：培訓與教育 (Training & Education)",
+            "GRI 405": "GRI 405：多元與平等機會 (Diversity & Equality)"
+        }
+        
+        num_map = ["三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"]
+        
+        for ch in orderOfChapters:
+            if ch in chapters_data and len(chapters_data[ch].get("sub_chapters", {})) > 0:
+                ch_num_str = num_map[chapter_counter - 3]
+                p_num = pages[ch]
+                toc_lines.append(f"{ch_num_str}、 {chapter_titles[ch]} ............................................................................ {p_num}")
+                chapter_counter += 1
                 
         toc_lines.append(f"附錄、 GRI 揭露指標索引對照表 .............................................................................. {page_appendix}")
         toc_text = "\n".join(toc_lines) + "\n"
@@ -370,215 +364,507 @@ class ESGReportBuilder:
         
         doc.add_page_break()
 
-        # ==================== Page 5 & 6: GRI 305 環境篇 ====================
+        # ==================== GRI 2 ====================
+        if "GRI 2" in chapters_data:
+            data = chapters_data["GRI 2"]
+            sub_chapters = data.get("sub_chapters", {})
+            if sub_chapters:
+                add_heading_1("三、 GRI 2：一般揭露與企業永續治理概況")
+                
+                if "2.2.1" in sub_chapters:
+                    add_heading_2("2.2.1 組織基本概況、據點與資本規模")
+                    add_body_text(sub_chapters["2.2.1"])
+                if "2.2.2" in sub_chapters:
+                    add_heading_2("2.2.2 商業活動與供應鏈價值關係")
+                    add_body_text(sub_chapters["2.2.2"])
+                if "2.2.3" in sub_chapters:
+                    add_heading_2("2.2.3 員工聘用特性與人力資源分佈")
+                    add_body_text(sub_chapters["2.2.3"])
+                
+                add_heading_2("2.2.4 組織基本概況數據表")
+                table = doc.add_table(rows=1, cols=2)
+                table.style = 'Light Shading Accent 1'
+                hdr_cells = table.rows[0].cells
+                hdr_cells[0].text = '組織特性項目'
+                hdr_cells[1].text = '揭露內容說明'
+                for cell in hdr_cells:
+                    for p in cell.paragraphs:
+                        for r in p.runs:
+                            self.set_run_fonts(r)
+                            r.font.bold = True
+                            r.font.size = Pt(10)
+                
+                gd_items = data.get("general_data", {})
+                for k, v in gd_items.items():
+                    row_cells = table.add_row().cells
+                    row_cells[0].text = str(k).replace("_", " ")
+                    row_cells[1].text = str(v)
+                
+                for row in table.rows:
+                    for cell in row.cells:
+                        for p in cell.paragraphs:
+                            for r in p.runs:
+                                self.set_run_fonts(r)
+                                r.font.size = Pt(9.5)
+                
+                doc.add_page_break()
+
+        # ==================== GRI 201 ====================
+        if "GRI 201" in chapters_data:
+            data = chapters_data["GRI 201"]
+            sub_chapters = data.get("sub_chapters", {})
+            if sub_chapters:
+                add_heading_1("四、 GRI 201：經濟績效")
+                
+                if "2.1.1" in sub_chapters:
+                    add_heading_2("2.1.1 直接產生與分配之經濟價值分析")
+                    add_body_text(sub_chapters["2.1.1"])
+                if "2.1.2" in sub_chapters:
+                    add_heading_2("2.1.2 氣候變遷對企業營運之財務衝擊")
+                    add_body_text(sub_chapters["2.1.2"])
+                
+                add_heading_2("2.1.3 直接產生與分配的經濟價值表")
+                table = doc.add_table(rows=1, cols=2)
+                table.style = 'Light Shading Accent 1'
+                hdr_cells = table.rows[0].cells
+                hdr_cells[0].text = '經濟價值組成項目'
+                hdr_cells[1].text = '金額 (萬元)'
+                for cell in hdr_cells:
+                    for p in cell.paragraphs:
+                        for r in p.runs:
+                            self.set_run_fonts(r)
+                            r.font.bold = True
+                            r.font.size = Pt(10)
+                
+                ec_items = data.get("economic_data", {})
+                for k, v in ec_items.items():
+                    row_cells = table.add_row().cells
+                    row_cells[0].text = str(k).replace("_", " ")
+                    row_cells[1].text = f"{v:,.2f}" if isinstance(v, (int, float)) else str(v)
+                
+                for row in table.rows:
+                    for cell in row.cells:
+                        for p in cell.paragraphs:
+                            for r in p.runs:
+                                self.set_run_fonts(r)
+                                r.font.size = Pt(9.5)
+                
+                doc.add_page_break()
+
+        # ==================== GRI 205 ====================
+        if "GRI 205" in chapters_data:
+            data = chapters_data["GRI 205"]
+            sub_chapters = data.get("sub_chapters", {})
+            if sub_chapters:
+                add_heading_1("五、 GRI 205：反貪腐")
+                
+                if "2.5.1" in sub_chapters:
+                    add_heading_2("2.5.1 反貪腐政策傳達、簽署與培訓統計")
+                    add_body_text(sub_chapters["2.5.1"])
+                if "2.5.2" in sub_chapters:
+                    add_heading_2("2.5.2 誠信經營確立事件與檢舉防範機制")
+                    add_body_text(sub_chapters["2.5.2"])
+                
+                add_heading_2("2.5.3 反貪腐與誠信經營運作指標表")
+                table = doc.add_table(rows=1, cols=3)
+                table.style = 'Light Shading Accent 1'
+                hdr_cells = table.rows[0].cells
+                hdr_cells[0].text = '誠信經營防範指標'
+                hdr_cells[1].text = '統計數值'
+                hdr_cells[2].text = '單位'
+                for cell in hdr_cells:
+                    for p in cell.paragraphs:
+                        for r in p.runs:
+                            self.set_run_fonts(r)
+                            r.font.bold = True
+                            r.font.size = Pt(10)
+                
+                ac_items = data.get("anti_corruption_data", {})
+                for k, v in ac_items.items():
+                    row_cells = table.add_row().cells
+                    row_cells[0].text = str(k).split("_")[0]
+                    row_cells[1].text = str(v)
+                    row_cells[2].text = str(k).split("_")[-1] if "_" in str(k) else ""
+                
+                for row in table.rows:
+                    for cell in row.cells:
+                        for p in cell.paragraphs:
+                            for r in p.runs:
+                                self.set_run_fonts(r)
+                                r.font.size = Pt(9.5)
+                
+                doc.add_page_break()
+
+        # ==================== GRI 302 ====================
+        if "GRI 302" in chapters_data:
+            data = chapters_data["GRI 302"]
+            sub_chapters = data.get("sub_chapters", {})
+            if sub_chapters:
+                add_heading_1("六、 GRI 302：能源消耗")
+                
+                if "3.2.1" in sub_chapters:
+                    add_heading_2("3.2.1 組織內部能源消耗數據解讀")
+                    add_body_text(sub_chapters["3.2.1"])
+                if "3.2.2" in sub_chapters:
+                    add_heading_2("3.2.2 能源密集度與節能減量成效")
+                    add_body_text(sub_chapters["3.2.2"])
+                
+                add_heading_2("3.2.3 企業能源消耗統計表")
+                table = doc.add_table(rows=1, cols=3)
+                table.style = 'Light Shading Accent 1'
+                hdr_cells = table.rows[0].cells
+                hdr_cells[0].text = '能源種類'
+                hdr_cells[1].text = '消耗數據'
+                hdr_cells[2].text = '單位'
+                for cell in hdr_cells:
+                    for p in cell.paragraphs:
+                        for r in p.runs:
+                            self.set_run_fonts(r)
+                            r.font.bold = True
+                            r.font.size = Pt(10)
+                
+                en_items = data.get("energy_data", {})
+                for k, v in en_items.items():
+                    row_cells = table.add_row().cells
+                    row_cells[0].text = str(k).split("_")[0]
+                    row_cells[1].text = f"{v:,.1f}" if isinstance(v, (int, float)) else str(v)
+                    row_cells[2].text = str(k).split("_")[-1] if "_" in str(k) else ""
+                
+                for row in table.rows:
+                    for cell in row.cells:
+                        for p in cell.paragraphs:
+                            for r in p.runs:
+                                self.set_run_fonts(r)
+                                r.font.size = Pt(9.5)
+                
+                doc.add_page_break()
+
+        # ==================== GRI 305 ====================
         if "GRI 305" in chapters_data:
             data = chapters_data["GRI 305"]
-            add_heading_1("三、 GRI 305：溫室氣體排放量揭露")
-            
             sub_chapters = data.get("sub_chapters", {})
-            
-            # 3.1.1 子項
-            if "3.1.1" in sub_chapters:
-                add_heading_2("3.1.1 範疇一（直接溫室氣體排放）來源與數據深度解讀")
-                add_body_text(sub_chapters["3.1.1"])
+            if sub_chapters:
+                add_heading_1("七、 GRI 305：溫室氣體排放量揭露")
                 
-            # 3.1.2 子項
-            if "3.1.2" in sub_chapters:
-                add_heading_2("3.1.2 範疇二（能源間接溫室氣體排放）外購電力分析與減碳路徑")
-                add_body_text(sub_chapters["3.1.2"])
-            
-            # 建立數據表格 (數據表作為環境篇核心，一律呈現)
-            add_heading_2("3.1.2.2 溫室氣體排放細部數據表")
-            
-            em_data = data.get("emissions_data", {})
-            s1 = em_data.get("scope_1_direct", {})
-            s2 = em_data.get("scope_2_indirect", {})
-            
-            # 建立表格 4 欄
-            table = doc.add_table(rows=1, cols=4)
-            table.style = 'Light Shading Accent 1'
-            hdr_cells = table.rows[0].cells
-            hdr_cells[0].text = '範疇別'
-            hdr_cells[1].text = '排放源名稱'
-            hdr_cells[2].text = '碳排放量 (公噸 CO2e)'
-            hdr_cells[3].text = '百分比 (%)'
-            
-            # 表格標題字型設定
-            for cell in hdr_cells:
-                for paragraph in cell.paragraphs:
-                    for run in paragraph.runs:
-                        self.set_run_fonts(run)
-                        run.font.bold = True
-                        run.font.size = Pt(10)
-            
-            total_val = em_data.get("total_emissions_tCO2e", 1.0)
-            
-            # 填寫範疇一
-            for name, val in s1.items():
-                if name == "總計":
-                    continue
-                row_cells = table.add_row().cells
-                row_cells[0].text = "範疇一 (直接)"
-                row_cells[1].text = name
-                row_cells[2].text = f"{val:,}"
-                pct = round((val / total_val) * 100, 1) if total_val > 0 else 0.0
-                row_cells[3].text = f"{pct}%"
+                if "3.1.1" in sub_chapters:
+                    add_heading_2("3.1.1 範疇一（直接溫室氣體排放）來源與數據深度解讀")
+                    add_body_text(sub_chapters["3.1.1"])
+                    
+                if "3.1.2" in sub_chapters:
+                    add_heading_2("3.1.2 範疇二（能源間接溫室氣體排放）外購電力分析與減碳路徑")
+                    add_body_text(sub_chapters["3.1.2"])
                 
-            # 填寫範疇二
-            for name, val in s2.items():
-                if name == "總計":
-                    continue
-                row_cells = table.add_row().cells
-                row_cells[0].text = "範疇二 (間接)"
-                row_cells[1].text = name
-                row_cells[2].text = f"{val:,}"
-                pct = round((val / total_val) * 100, 1) if total_val > 0 else 0.0
-                row_cells[3].text = f"{pct}%"
+                if "3.1.1" in sub_chapters or "3.1.2" in sub_chapters:
+                    add_heading_2("3.1.2.2 溫室氣體排放細部數據表")
+                    
+                    em_data = data.get("emissions_data", {})
+                    s1 = em_data.get("scope_1_direct", {})
+                    s2 = em_data.get("scope_2_indirect", {})
+                    
+                    table = doc.add_table(rows=1, cols=4)
+                    table.style = 'Light Shading Accent 1'
+                    hdr_cells = table.rows[0].cells
+                    hdr_cells[0].text = '範疇別'
+                    hdr_cells[1].text = '排放源名稱'
+                    hdr_cells[2].text = '碳排放量 (公噸 CO2e)'
+                    hdr_cells[3].text = '百分比 (%)'
+                    
+                    for cell in hdr_cells:
+                        for paragraph in cell.paragraphs:
+                            for run in paragraph.runs:
+                                self.set_run_fonts(run)
+                                run.font.bold = True
+                                run.font.size = Pt(10)
+                    
+                    total_val = em_data.get("total_emissions_tCO2e", 1.0)
+                    
+                    for name, val in s1.items():
+                        if name == "總計":
+                            continue
+                        row_cells = table.add_row().cells
+                        row_cells[0].text = "範疇一 (直接)"
+                        row_cells[1].text = name
+                        row_cells[2].text = f"{val:,}"
+                        pct = round((val / total_val) * 100, 1) if total_val > 0 else 0.0
+                        row_cells[3].text = f"{pct}%"
+                        
+                    for name, val in s2.items():
+                        if name == "總計":
+                            continue
+                        row_cells = table.add_row().cells
+                        row_cells[0].text = "範疇二 (間接)"
+                        row_cells[1].text = name
+                        row_cells[2].text = f"{val:,}"
+                        pct = round((val / total_val) * 100, 1) if total_val > 0 else 0.0
+                        row_cells[3].text = f"{pct}%"
+                        
+                    row_cells = table.add_row().cells
+                    row_cells[0].text = "範疇一與範疇二總計"
+                    row_cells[1].text = "所有排放源"
+                    row_cells[2].text = f"{total_val:,}"
+                    row_cells[3].text = "100.0%"
+                    
+                    for row in table.rows:
+                        for cell in row.cells:
+                            for paragraph in cell.paragraphs:
+                                for run in paragraph.runs:
+                                    self.set_run_fonts(run)
+                                    run.font.size = Pt(9.5)
+                    
+                    p_space = doc.add_paragraph()
+                    p_space.paragraph_format.space_before = Pt(10)
+                    
+                    doc.add_page_break()
                 
-            # 填寫總計
-            row_cells = table.add_row().cells
-            row_cells[0].text = "範疇一與範疇二總計"
-            row_cells[1].text = "所有排放源"
-            row_cells[2].text = f"{total_val:,}"
-            row_cells[3].text = "100.0%"
-            
-            for row in table.rows:
-                for cell in row.cells:
-                    for paragraph in cell.paragraphs:
-                        for run in paragraph.runs:
-                            self.set_run_fonts(run)
-                            run.font.size = Pt(9.5)
-            
-            p_space = doc.add_paragraph()
-            p_space.paragraph_format.space_before = Pt(10)
-            
-            doc.add_page_break()
-            
-            # Page 6: 變動評估與圖表
-            # 3.1.3 子項
-            if "3.1.3" in sub_chapters:
-                add_heading_2("3.1.3 年度排放變動率（YoY）與減量成效評估")
-                add_body_text(sub_chapters["3.1.3"])
-                
-            add_heading_2("3.1.3.2 排放源與範疇占比可視化")
-            
-            # 生成圖表並插入
-            chart_path = self.generate_emissions_chart(data)
-            if chart_path and os.path.exists(chart_path):
-                img_p = doc.add_paragraph()
-                img_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                img_run = img_p.add_run()
-                img_run.add_picture(chart_path, width=Inches(5.0))
-                
-                caption_p = doc.add_paragraph()
-                caption_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                caption_p.paragraph_format.space_after = Pt(20)
-                cap_run = caption_p.add_run(f"圖 3-1 {year} 年度環境範疇一與範疇二排放分布 donut 圖")
-                self.set_run_fonts(cap_run)
-                cap_run.font.size = Pt(9)
-                cap_run.font.italic = True
-                
-                # 刪除暫存檔
-                os.remove(chart_path)
-                
-            doc.add_page_break()
+                if "3.1.3" in sub_chapters:
+                    add_heading_2("3.1.3 年度排放變動率（YoY）與減量成效評估")
+                    add_body_text(sub_chapters["3.1.3"])
+                    
+                    add_heading_2("3.1.3.2 排放源與範疇占比可視化")
+                    
+                    chart_path = self.generate_emissions_chart(data)
+                    if chart_path and os.path.exists(chart_path):
+                        img_p = doc.add_paragraph()
+                        img_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        img_run = img_p.add_run()
+                        img_run.add_picture(chart_path, width=Inches(5.0))
+                        
+                        caption_p = doc.add_paragraph()
+                        caption_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        caption_p.paragraph_format.space_after = Pt(20)
+                        cap_run = caption_p.add_run(f"圖 3-1 {year} 年度環境範疇一與範疇二排放分布 donut 圖")
+                        self.set_run_fonts(cap_run)
+                        cap_run.font.size = Pt(9)
+                        cap_run.font.italic = True
+                        
+                        os.remove(chart_path)
+                    
+                    doc.add_page_break()
 
-        # ==================== Page 7 & 8: GRI 404 社會篇 ====================
+        # ==================== GRI 306 ====================
+        if "GRI 306" in chapters_data:
+            data = chapters_data["GRI 306"]
+            sub_chapters = data.get("sub_chapters", {})
+            if sub_chapters:
+                add_heading_1("八、 GRI 306：廢棄物與回收")
+                
+                if "3.6.1" in sub_chapters:
+                    add_heading_2("3.6.1 廢棄物產生源與源頭減量措施")
+                    add_body_text(sub_chapters["3.6.1"])
+                if "3.6.2" in sub_chapters:
+                    add_heading_2("3.6.2 廢棄物回收與循環再利用效益")
+                    add_body_text(sub_chapters["3.6.2"])
+                if "3.6.3" in sub_chapters:
+                    add_heading_2("3.6.3 廢棄物最終處置與合規評估")
+                    add_body_text(sub_chapters["3.6.3"])
+                
+                add_heading_2("3.6.4 廢棄物產生與處置方式明細表")
+                table = doc.add_table(rows=1, cols=3)
+                table.style = 'Light Shading Accent 1'
+                hdr_cells = table.rows[0].cells
+                hdr_cells[0].text = '廢棄物與處置類別'
+                hdr_cells[1].text = '統計值'
+                hdr_cells[2].text = '單位'
+                for cell in hdr_cells:
+                    for p in cell.paragraphs:
+                        for r in p.runs:
+                            self.set_run_fonts(r)
+                            r.font.bold = True
+                            r.font.size = Pt(10)
+                
+                wt_items = data.get("waste_data", {})
+                for k, v in wt_items.items():
+                    row_cells = table.add_row().cells
+                    row_cells[0].text = str(k).split("_")[0]
+                    row_cells[1].text = str(v)
+                    row_cells[2].text = str(k).split("_")[-1] if "_" in str(k) else "噸"
+                
+                for row in table.rows:
+                    for cell in row.cells:
+                        for p in cell.paragraphs:
+                            for r in p.runs:
+                                self.set_run_fonts(r)
+                                r.font.size = Pt(9.5)
+                
+                doc.add_page_break()
+
+        # ==================== GRI 401 ====================
+        if "GRI 401" in chapters_data:
+            data = chapters_data["GRI 401"]
+            sub_chapters = data.get("sub_chapters", {})
+            if sub_chapters:
+                add_heading_1("九、 GRI 401：員工聘用與流動")
+                
+                if "4.1.1.b" in sub_chapters:
+                    add_heading_2("4.1.1.b 員工流動率與新進率結構解讀")
+                    add_body_text(sub_chapters["4.1.1.b"])
+                if "4.1.2" in sub_chapters:
+                    add_heading_2("4.1.2 關懷福利政策與育嬰留停成效")
+                    add_body_text(sub_chapters["4.1.2"])
+                
+                add_heading_2("4.1.3 員工聘用與流動指標統計表")
+                table = doc.add_table(rows=1, cols=3)
+                table.style = 'Light Shading Accent 1'
+                hdr_cells = table.rows[0].cells
+                hdr_cells[0].text = '人力資源流動指標'
+                hdr_cells[1].text = '統計值'
+                hdr_cells[2].text = '單位'
+                for cell in hdr_cells:
+                    for p in cell.paragraphs:
+                        for r in p.runs:
+                            self.set_run_fonts(r)
+                            r.font.bold = True
+                            r.font.size = Pt(10)
+                
+                em_items = data.get("employment_data", {})
+                for k, v in em_items.items():
+                    row_cells = table.add_row().cells
+                    row_cells[0].text = str(k).split("_")[0]
+                    row_cells[1].text = str(v)
+                    row_cells[2].text = str(k).split("_")[-1] if "_" in str(k) else "人"
+                
+                for row in table.rows:
+                    for cell in row.cells:
+                        for p in cell.paragraphs:
+                            for r in p.runs:
+                                self.set_run_fonts(r)
+                                r.font.size = Pt(9.5)
+                
+                doc.add_page_break()
+
+        # ==================== GRI 404 ====================
         if "GRI 404" in chapters_data:
             data = chapters_data["GRI 404"]
-            add_heading_1("四、 GRI 404：培訓與教育")
-            
             sub_chapters = data.get("sub_chapters", {})
-            
-            # 4.1.1 子項
-            if "4.1.1" in sub_chapters:
-                add_heading_2("4.1.1 員工平均培訓時數結構分析（依職級與性別）")
-                add_body_text(sub_chapters["4.1.1"])
+            if sub_chapters:
+                add_heading_1("十、 GRI 404：培訓與教育")
                 
-            # 4.1.2 子項
-            if "4.1.2" in sub_chapters:
-                add_heading_2("4.1.2 員工技能提升與過渡協助計畫執行效益")
-                add_body_text(sub_chapters["4.1.2"])
-            
-            # 建立數據表格 (培訓績效數據表格作為核心，一律呈現)
-            add_heading_2("4.1.2.2 培訓與教育績效統計表")
-            
-            sd = data.get("social_data", {})
-            tm = sd.get("training_metrics", {})
-            to = sd.get("turnover_metrics", {})
-            
-            table = doc.add_table(rows=1, cols=4)
-            table.style = 'Light Shading Accent 1'
-            hdr_cells = table.rows[0].cells
-            hdr_cells[0].text = '數據指標分類'
-            hdr_cells[1].text = '細部指標名稱'
-            hdr_cells[2].text = '統計值'
-            hdr_cells[3].text = '計量單位'
-            
-            # 表格標題字型設定
-            for cell in hdr_cells:
-                for paragraph in cell.paragraphs:
-                    for run in paragraph.runs:
-                        self.set_run_fonts(run)
-                        run.font.bold = True
-                        run.font.size = Pt(10)
+                if "4.1.1" in sub_chapters:
+                    add_heading_2("4.1.1 員工平均培訓時數結構分析（依職級與性別）")
+                    add_body_text(sub_chapters["4.1.1"])
+                    
+                if "4.1.2" in sub_chapters:
+                    add_heading_2("4.1.2 員工技能提升與過渡協助計畫執行效益")
+                    add_body_text(sub_chapters["4.1.2"])
+                
+                if "4.1.1" in sub_chapters or "4.1.2" in sub_chapters:
+                    add_heading_2("4.1.2.2 培訓與教育績效統計表")
+                    
+                    sd = data.get("social_data", {})
+                    tm = sd.get("training_metrics", {})
+                    to = sd.get("turnover_metrics", {})
+                    
+                    table = doc.add_table(rows=1, cols=4)
+                    table.style = 'Light Shading Accent 1'
+                    hdr_cells = table.rows[0].cells
+                    hdr_cells[0].text = '數據指標分類'
+                    hdr_cells[1].text = '細部指標名稱'
+                    hdr_cells[2].text = '統計值'
+                    hdr_cells[3].text = '計量單位'
+                    
+                    for cell in hdr_cells:
+                        for paragraph in cell.paragraphs:
+                            for run in paragraph.runs:
+                                self.set_run_fonts(run)
+                                run.font.bold = True
+                                run.font.size = Pt(10)
+                                
+                    for name, val_dict in tm.items():
+                        row_cells = table.add_row().cells
+                        row_cells[0].text = "培育成長 (Training)"
+                        row_cells[1].text = name
+                        row_cells[2].text = str(val_dict.get("value"))
+                        row_cells[3].text = val_dict.get("unit")
                         
-            # 填入培訓時數
-            for name, val_dict in tm.items():
-                row_cells = table.add_row().cells
-                row_cells[0].text = "培育成長 (Training)"
-                row_cells[1].text = name
-                row_cells[2].text = str(val_dict.get("value"))
-                row_cells[3].text = val_dict.get("unit")
+                    for name, val_dict in to.items():
+                        row_cells = table.add_row().cells
+                        row_cells[0].text = "組織穩定 (Turnover)"
+                        row_cells[1].text = name
+                        row_cells[2].text = str(val_dict.get("value"))
+                        row_cells[3].text = val_dict.get("unit")
+                        
+                    for row in table.rows:
+                        for cell in row.cells:
+                            for paragraph in cell.paragraphs:
+                                for run in paragraph.runs:
+                                    self.set_run_fonts(run)
+                                    run.font.size = Pt(9.5)
+                                    
+                    p_space = doc.add_paragraph()
+                    p_space.paragraph_format.space_before = Pt(10)
+                    
+                    doc.add_page_break()
                 
-            # 填入離職率
-            for name, val_dict in to.items():
-                row_cells = table.add_row().cells
-                row_cells[0].text = "組織穩定 (Turnover)"
-                row_cells[1].text = name
-                row_cells[2].text = str(val_dict.get("value"))
-                row_cells[3].text = val_dict.get("unit")
-                
-            for row in table.rows:
-                for cell in row.cells:
-                    for paragraph in cell.paragraphs:
-                        for run in paragraph.runs:
-                            self.set_run_fonts(run)
-                            run.font.size = Pt(9.5)
-                            
-            p_space = doc.add_paragraph()
-            p_space.paragraph_format.space_before = Pt(10)
-            
-            doc.add_page_break()
-            
-            # Page 8: 組織穩定與圖表
-            # 4.1.3 子項
-            if "4.1.3" in sub_chapters:
-                add_heading_2("4.1.3 組織人才穩定度與流動率指標解讀")
-                add_body_text(sub_chapters["4.1.3"])
-                
-            add_heading_2("4.1.3.2 培訓效益與流動性分析")
-            
-            chart_path = self.generate_social_chart(data)
-            if chart_path and os.path.exists(chart_path):
-                img_p = doc.add_paragraph()
-                img_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                img_run = img_p.add_run()
-                img_run.add_picture(chart_path, width=Inches(5.2))
-                
-                caption_p = doc.add_paragraph()
-                caption_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                caption_p.paragraph_format.space_after = Pt(20)
-                cap_run = caption_p.add_run(f"圖 4-1 {year} 年度各維度平均培訓時數對比長條圖")
-                self.set_run_fonts(cap_run)
-                cap_run.font.size = Pt(9)
-                cap_run.font.italic = True
-                
-                os.remove(chart_path)
-                
-            doc.add_page_break()
+                if "4.1.3" in sub_chapters:
+                    add_heading_2("4.1.3 組織人才穩定度與流動率指標解讀")
+                    add_body_text(sub_chapters["4.1.3"])
+                    
+                    add_heading_2("4.1.3.2 培訓效益與流動性分析")
+                    
+                    chart_path = self.generate_social_chart(data)
+                    if chart_path and os.path.exists(chart_path):
+                        img_p = doc.add_paragraph()
+                        img_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        img_run = img_p.add_run()
+                        img_run.add_picture(chart_path, width=Inches(5.2))
+                        
+                        caption_p = doc.add_paragraph()
+                        caption_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        caption_p.paragraph_format.space_after = Pt(20)
+                        cap_run = caption_p.add_run(f"圖 4-1 {year} 年度各維度平均培訓時數對比長條圖")
+                        self.set_run_fonts(cap_run)
+                        cap_run.font.size = Pt(9)
+                        cap_run.font.italic = True
+                        
+                        os.remove(chart_path)
+                    
+                    doc.add_page_break()
 
-        # ==================== Page 9: 附錄 ====================
+        # ==================== GRI 405 ====================
+        if "GRI 405" in chapters_data:
+            data = chapters_data["GRI 405"]
+            sub_chapters = data.get("sub_chapters", {})
+            if sub_chapters:
+                add_heading_1("十一、 GRI 405：多元與平等機會")
+                
+                if "4.5.1" in sub_chapters:
+                    add_heading_2("4.5.1 治理機構與員工結構多元化比例")
+                    add_body_text(sub_chapters["4.5.1"])
+                if "4.5.2" in sub_chapters:
+                    add_heading_2("4.5.2 男女同工同酬與平等晉升機會")
+                    add_body_text(sub_chapters["4.5.2"])
+                
+                add_heading_2("4.5.3 管理與基層員工多元化結構表")
+                table = doc.add_table(rows=1, cols=3)
+                table.style = 'Light Shading Accent 1'
+                hdr_cells = table.rows[0].cells
+                hdr_cells[0].text = '多元化組成指標'
+                hdr_cells[1].text = '佔比'
+                hdr_cells[2].text = '單位'
+                for cell in hdr_cells:
+                    for p in cell.paragraphs:
+                        for r in p.runs:
+                            self.set_run_fonts(r)
+                            r.font.bold = True
+                            r.font.size = Pt(10)
+                
+                dv_items = data.get("diversity_data", {})
+                for k, v in dv_items.items():
+                    row_cells = table.add_row().cells
+                    row_cells[0].text = str(k).split("_")[0]
+                    row_cells[1].text = str(v)
+                    row_cells[2].text = str(k).split("_")[-1] if "_" in str(k) else "%"
+                
+                for row in table.rows:
+                    for cell in row.cells:
+                        for p in cell.paragraphs:
+                            for r in p.runs:
+                                self.set_run_fonts(r)
+                                r.font.size = Pt(9.5)
+                
+                doc.add_page_break()
+
+        # ==================== 附錄 ====================
         add_heading_1("附錄、 GRI 揭露指標索引對照表")
         
         table = doc.add_table(rows=1, cols=4)
@@ -597,19 +883,79 @@ class ESGReportBuilder:
                     run.font.size = Pt(10)
                     
         indexes = []
+        
+        if "GRI 2" in chapters_data:
+            sub_2 = chapters_data["GRI 2"].get("sub_chapters", {})
+            if "2.2.1" in sub_2:
+                indexes.append(("GRI 2: General Disclosures", "2-1 組織基本概況與據點", "GRI 2 - 2.2.1 組織基本概況與資本規模", str(pages.get("GRI 2", ""))))
+            if "2.2.2" in sub_2:
+                indexes.append(("GRI 2: General Disclosures", "2-6 商業活動與供應鏈價值關係", "GRI 2 - 2.2.2 商業活動與供應鏈", str(pages.get("GRI 2", ""))))
+            if "2.2.3" in sub_2:
+                indexes.append(("GRI 2: General Disclosures", "2-7 員工聘用特性與人力資源分佈", "GRI 2 - 2.2.3 員工聘用特性與人力資源", str(pages.get("GRI 2", ""))))
+                
+        if "GRI 201" in chapters_data:
+            sub_201 = chapters_data["GRI 201"].get("sub_chapters", {})
+            if "2.1.1" in sub_201:
+                indexes.append(("GRI 201: Economic Performance", "201-1 直接產生與分配的經濟價值", "GRI 201 - 2.1.1 直接產生與分配經濟價值", str(pages.get("GRI 201", ""))))
+            if "2.1.2" in sub_201:
+                indexes.append(("GRI 201: Economic Performance", "201-2 氣候變遷對企業營運之財務衝擊", "GRI 201 - 2.1.2 氣候變遷財務衝擊", str(pages.get("GRI 201", ""))))
+                
+        if "GRI 205" in chapters_data:
+            sub_205 = chapters_data["GRI 205"].get("sub_chapters", {})
+            if "2.5.1" in sub_205:
+                indexes.append(("GRI 205: Anti-corruption", "205-2 反貪腐政策傳達、簽署與培訓", "GRI 205 - 2.5.1 反貪腐政策與培訓", str(pages.get("GRI 205", ""))))
+            if "2.5.2" in sub_205:
+                indexes.append(("GRI 205: Anti-corruption", "205-3 誠信經營確立事件與檢舉防範", "GRI 205 - 2.5.2 誠信經營與檢舉機制", str(pages.get("GRI 205", ""))))
+                
+        if "GRI 302" in chapters_data:
+            sub_302 = chapters_data["GRI 302"].get("sub_chapters", {})
+            if "3.2.1" in sub_302:
+                indexes.append(("GRI 302: Energy", "302-1 組織內部的能源消耗量", "GRI 302 - 3.2.1 組織內部能源消耗數據", str(pages.get("GRI 302", ""))))
+            if "3.2.2" in sub_302:
+                indexes.append(("GRI 302: Energy", "302-3/4 能源密集度與節能減量成效", "GRI 302 - 3.2.2 能源密集度與節能減量", str(pages.get("GRI 302", ""))))
+                
         if "GRI 305" in chapters_data:
             sub_305 = chapters_data["GRI 305"].get("sub_chapters", {})
             if "3.1.1" in sub_305:
-                indexes.append(("GRI 305: Emissions 2016", "305-1 直接（範疇一）溫室氣體排放", "三、 GRI 305 - 3.1.1 範疇一來源解讀", str(page_305)))
+                indexes.append(("GRI 305: Emissions 2016", "305-1 直接（範疇一）溫室氣體排放", "GRI 305 - 3.1.1 範疇一來源深度解讀", str(pages.get("GRI 305", ""))))
             if "3.1.2" in sub_305:
-                indexes.append(("GRI 305: Emissions 2016", "305-2 能源間接（範疇二）溫室氣體排放", "三、 GRI 305 - 3.1.2 範疇二電力分析", str(page_305)))
+                indexes.append(("GRI 305: Emissions 2016", "305-2 能源間接（範疇二）溫室氣體排放", "GRI 305 - 3.1.2 範疇二電力與減碳路徑", str(pages.get("GRI 305", ""))))
+            if "3.1.3" in sub_305:
+                page_offset = 1 if ("3.1.1" in sub_305 or "3.1.2" in sub_305) else 0
+                indexes.append(("GRI 305: Emissions 2016", "305-4 溫室氣體排放密集度/YoY成效", "GRI 305 - 3.1.3 YoY排放變動評估", str(pages.get("GRI 305", 0) + page_offset)))
+                
+        if "GRI 306" in chapters_data:
+            sub_306 = chapters_data["GRI 306"].get("sub_chapters", {})
+            if "3.6.1" in sub_306:
+                indexes.append(("GRI 306: Waste", "306-3 廢棄物產生源與源頭減量", "GRI 306 - 3.6.1 廢棄物產生源與源頭減量", str(pages.get("GRI 306", ""))))
+            if "3.6.2" in sub_306:
+                indexes.append(("GRI 306: Waste", "306-4 廢棄物回收與循環再利用", "GRI 306 - 3.6.2 廢棄物回收與循環再利用", str(pages.get("GRI 306", ""))))
+            if "3.6.3" in sub_306:
+                indexes.append(("GRI 306: Waste", "306-5 廢棄物最終處置與合規評估", "GRI 306 - 3.6.3 最終處置與合規評估", str(pages.get("GRI 306", ""))))
+                
+        if "GRI 401" in chapters_data:
+            sub_401 = chapters_data["GRI 401"].get("sub_chapters", {})
+            if "4.1.1.b" in sub_401:
+                indexes.append(("GRI 401: Employment", "401-1 員工流動率與新進率結構解讀", "GRI 401 - 4.1.1.b 員工流動與新進率", str(pages.get("GRI 401", ""))))
+            if "4.1.2" in sub_401:
+                indexes.append(("GRI 401: Employment", "401-2/3 關懷福利政策與育嬰留停成效", "GRI 401 - 4.1.2 關懷福利政策與育嬰留停", str(pages.get("GRI 401", ""))))
                 
         if "GRI 404" in chapters_data:
             sub_404 = chapters_data["GRI 404"].get("sub_chapters", {})
             if "4.1.1" in sub_404:
-                indexes.append(("GRI 404: Training & Education", "404-1 每名員工每年接受培訓的平均時數", "四、 GRI 404 - 4.1.1 培訓時數結構分析", str(page_404)))
+                indexes.append(("GRI 404: Training & Education", "404-1 每名員工每年接受培訓的平均時數", "GRI 404 - 4.1.1 培訓時數結構分析", str(pages.get("GRI 404", ""))))
             if "4.1.2" in sub_404:
-                indexes.append(("GRI 404: Training & Education", "404-2 員工技能提升計畫與過渡協助計畫", "四、 GRI 404 - 4.1.2 員工技能提升效益", str(page_404)))
+                indexes.append(("GRI 404: Training & Education", "404-2 員工技能提升計畫與過渡協助計畫", "GRI 404 - 4.1.2 技能提升與過渡計畫", str(pages.get("GRI 404", ""))))
+            if "4.1.3" in sub_404:
+                page_offset = 1 if ("4.1.1" in sub_404 or "4.1.2" in sub_404) else 0
+                indexes.append(("GRI 404: Training & Education", "404-3 接受定期績效及職涯發展檢核", "GRI 404 - 4.1.3 組織人才穩定度", str(pages.get("GRI 404", 0) + page_offset)))
+                
+        if "GRI 405" in chapters_data:
+            sub_405 = chapters_data["GRI 405"].get("sub_chapters", {})
+            if "4.5.1" in sub_405:
+                indexes.append(("GRI 405: Diversity & Equal Opportunity", "405-1 治理機構與員工的多元化比例", "GRI 405 - 4.5.1 治理機構與員工多元化", str(pages.get("GRI 405", ""))))
+            if "4.5.2" in sub_405:
+                indexes.append(("GRI 405: Diversity & Equal Opportunity", "405-2 男女同工同酬與平等晉升機會", "GRI 405 - 4.5.2 男女同工同酬與晉升", str(pages.get("GRI 405", ""))))
         
         for item in indexes:
             row_cells = table.add_row().cells
@@ -629,5 +975,4 @@ class ESGReportBuilder:
         out_filename = f"{company_name}_ESG_Report_{year}.docx"
         out_path = os.path.join(config.OUTPUT_DIR, out_filename)
         doc.save(out_path)
-        
         return out_path

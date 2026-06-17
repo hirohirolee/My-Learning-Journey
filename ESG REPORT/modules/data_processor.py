@@ -224,3 +224,342 @@ class ESGDataProcessor:
             
         except Exception as e:
             raise Exception(f"解析人資 Excel 失敗：{str(e)}")
+
+    @staticmethod
+    def process_energy_excel(file, company_name="未指定企業", reporting_year="2025"):
+        """解析 GRI 302 能源消耗數據。"""
+        if not file or (isinstance(file, bytes) and len(file) == 0):
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 302-1",
+                "energy_data": {
+                    "外購電力_度": 5620000.0,
+                    "柴油_公升": 12500.0,
+                    "汽油_公升": 4200.0,
+                    "總能源消耗_GJ": 20628.0,
+                    "能源密集度_GJ_百萬營收": 4.2
+                }
+            }
+        try:
+            df = pd.read_excel(io.BytesIO(file) if isinstance(file, bytes) else file)
+            df.columns = [str(col).strip() for col in df.columns]
+            data_dict = {}
+            for _, row in df.iterrows():
+                name = str(row.get("能源種類", "")).strip()
+                val = float(row.get("消耗量", 0))
+                unit = str(row.get("單位", "")).strip()
+                data_dict[f"{name}_{unit}"] = val
+            if not data_dict:
+                raise ValueError("未讀取到有效數據")
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 302-1",
+                "energy_data": data_dict
+            }
+        except Exception as e:
+            # 發生解析錯誤時，回退到預設模擬數據
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 302-1",
+                "energy_data": {
+                    "外購電力_度": 5620000.0,
+                    "柴油_公升": 12500.0,
+                    "汽油_公升": 4200.0,
+                    "總能源消耗_GJ": 20628.0,
+                    "能源密集度_GJ_百萬營收": 4.2
+                },
+                "warning": f"Excel 解析失敗，已啟用備用數據。錯誤: {str(e)}"
+            }
+
+    @staticmethod
+    def process_waste_excel(file, company_name="未指定企業", reporting_year="2025"):
+        """解析 GRI 306 廢棄物與回收數據。"""
+        if not file or (isinstance(file, bytes) and len(file) == 0):
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 306-3, 306-4, 306-5",
+                "waste_data": {
+                    "有害事業廢棄物_噸": 1.2,
+                    "一般事業廢棄物_噸": 45.8,
+                    "廢棄物回收率_百分比": 85.3,
+                    "處理方式_委外焚化_噸": 8.5,
+                    "處理方式_衛生掩埋_噸": 5.7
+                }
+            }
+        try:
+            df = pd.read_excel(io.BytesIO(file) if isinstance(file, bytes) else file)
+            df.columns = [str(col).strip() for col in df.columns]
+            data_dict = {}
+            for _, row in df.iterrows():
+                name = str(row.get("廢棄物種類", row.get("指標名稱", ""))).strip()
+                val = float(row.get("重量_噸", row.get("數值", 0)))
+                data_dict[name] = val
+            if not data_dict:
+                raise ValueError("未讀取到有效數據")
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 306-3, 306-4, 306-5",
+                "waste_data": data_dict
+            }
+        except Exception as e:
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 306-3, 306-4, 306-5",
+                "waste_data": {
+                    "有害事業廢棄物_噸": 1.2,
+                    "一般事業廢棄物_噸": 45.8,
+                    "廢棄物回收率_百分比": 85.3,
+                    "處理方式_委外焚化_噸": 8.5,
+                    "處理方式_衛生掩埋_噸": 5.7
+                },
+                "warning": f"Excel 解析失敗，已啟用備用數據。錯誤: {str(e)}"
+            }
+
+    @staticmethod
+    def process_employment_excel(file, company_name="未指定企業", reporting_year="2025"):
+        """解析 GRI 401 員工聘用與流動數據。"""
+        if not file or (isinstance(file, bytes) and len(file) == 0):
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 401-1",
+                "employment_data": {
+                    "新進員工總數_人": 25,
+                    "新進率_百分比": 10.4,
+                    "離職員工總數_人": 20,
+                    "離職率_百分比": 8.3
+                }
+            }
+        try:
+            df = pd.read_excel(io.BytesIO(file) if isinstance(file, bytes) else file)
+            df.columns = [str(col).strip() for col in df.columns]
+            data_dict = {}
+            for _, row in df.iterrows():
+                name = str(row.get("指標名稱", "")).strip()
+                val = float(row.get("數值", 0))
+                data_dict[name] = val
+            if not data_dict:
+                raise ValueError("未讀取到有效數據")
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 401-1",
+                "employment_data": data_dict
+            }
+        except Exception as e:
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 401-1",
+                "employment_data": {
+                    "新進員工總數_人": 25,
+                    "新進率_百分比": 10.4,
+                    "離職員工總數_人": 20,
+                    "離職率_百分比": 8.3
+                },
+                "warning": f"Excel 解析失敗，已啟用備用數據。錯誤: {str(e)}"
+            }
+
+    @staticmethod
+    def process_diversity_excel(file, company_name="未指定企業", reporting_year="2025"):
+        """解析 GRI 405 多元與平等機會數據。"""
+        if not file or (isinstance(file, bytes) and len(file) == 0):
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 405-1",
+                "diversity_data": {
+                    "管理階層男性佔比_百分比": 60.0,
+                    "管理階層女性佔比_百分比": 40.0,
+                    "基層員工男性佔比_百分比": 55.0,
+                    "基層員工女性佔比_百分比": 45.0,
+                    "員工年齡結構_30歲以下_百分比": 15.0,
+                    "員工年齡結構_30至50歲_百分比": 65.0,
+                    "員工年齡結構_50歲以上_百分比": 20.0
+                }
+            }
+        try:
+            df = pd.read_excel(io.BytesIO(file) if isinstance(file, bytes) else file)
+            df.columns = [str(col).strip() for col in df.columns]
+            data_dict = {}
+            for _, row in df.iterrows():
+                name = str(row.get("指標名稱", "")).strip()
+                val = float(row.get("數值", 0))
+                data_dict[name] = val
+            if not data_dict:
+                raise ValueError("未讀取到有效數據")
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 405-1",
+                "diversity_data": data_dict
+            }
+        except Exception as e:
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 405-1",
+                "diversity_data": {
+                    "管理階層男性佔比_百分比": 60.0,
+                    "管理階層女性佔比_百分比": 40.0,
+                    "基層員工男性佔比_百分比": 55.0,
+                    "基層員工女性佔比_百分比": 45.0,
+                    "員工年齡結構_30歲以下_百分比": 15.0,
+                    "員工年齡結構_30至50歲_百分比": 65.0,
+                    "員工年齡結構_50歲以上_百分比": 20.0
+                },
+                "warning": f"Excel 解析失敗，已啟用備用數據。錯誤: {str(e)}"
+            }
+
+    @staticmethod
+    def process_economic_excel(file, company_name="未指定企業", reporting_year="2025"):
+        """解析 GRI 201 經濟績效數據。"""
+        if not file or (isinstance(file, bytes) and len(file) == 0):
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 201-1",
+                "economic_data": {
+                    "營業收入_萬元": 52000.0,
+                    "營運成本_萬元": 38000.0,
+                    "員工薪資與福利_萬元": 8500.0,
+                    "支付給出資人股息_萬元": 1200.0,
+                    "支付給公部門稅收_萬元": 300.0,
+                    "社區投資_萬元": 30.0,
+                    "保留經濟價值_萬元": 3970.0
+                }
+            }
+        try:
+            df = pd.read_excel(io.BytesIO(file) if isinstance(file, bytes) else file)
+            df.columns = [str(col).strip() for col in df.columns]
+            data_dict = {}
+            for _, row in df.iterrows():
+                name = str(row.get("指標名稱", row.get("項目名稱", ""))).strip()
+                val = float(row.get("金額_萬元", row.get("數值", 0)))
+                data_dict[name] = val
+            if not data_dict:
+                raise ValueError("未讀取到有效數據")
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 201-1",
+                "economic_data": data_dict
+            }
+        except Exception as e:
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 201-1",
+                "economic_data": {
+                    "營業收入_萬元": 52000.0,
+                    "營運成本_萬元": 38000.0,
+                    "員工薪資與福利_萬元": 8500.0,
+                    "支付給出資人股息_萬元": 1200.0,
+                    "支付給公部門稅收_萬元": 300.0,
+                    "社區投資_萬元": 30.0,
+                    "保留經濟價值_萬元": 3970.0
+                },
+                "warning": f"Excel 解析失敗，已啟用備用數據。錯誤: {str(e)}"
+            }
+
+    @staticmethod
+    def process_anti_corruption_excel(file, company_name="未指定企業", reporting_year="2025"):
+        """解析 GRI 205 反貪腐數據。"""
+        if not file or (isinstance(file, bytes) and len(file) == 0):
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 205-2, 205-3",
+                "anti_corruption_data": {
+                    "董事反貪腐守則簽署率_百分比": 100.0,
+                    "員工反貪腐宣導完成率_百分比": 100.0,
+                    "人均反貪腐培訓時數_小時": 2.0,
+                    "貪腐確立案件_件": 0
+                }
+            }
+        try:
+            df = pd.read_excel(io.BytesIO(file) if isinstance(file, bytes) else file)
+            df.columns = [str(col).strip() for col in df.columns]
+            data_dict = {}
+            for _, row in df.iterrows():
+                name = str(row.get("指標名稱", "")).strip()
+                val = float(row.get("數值", 0))
+                data_dict[name] = val
+            if not data_dict:
+                raise ValueError("未讀取到有效數據")
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 205-2, 205-3",
+                "anti_corruption_data": data_dict
+            }
+        except Exception as e:
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 205-2, 205-3",
+                "anti_corruption_data": {
+                    "董事反貪腐守則簽署率_百分比": 100.0,
+                    "員工反貪腐宣導完成率_百分比": 100.0,
+                    "人均反貪腐培訓時數_小時": 2.0,
+                    "貪腐確立案件_件": 0
+                },
+                "warning": f"Excel 解析失敗，已啟用備用數據。錯誤: {str(e)}"
+            }
+
+    @staticmethod
+    def process_general_disclosure_excel(file, company_name="未指定企業", reporting_year="2025"):
+        """解析 GRI 2 一般揭露數據。"""
+        if not file or (isinstance(file, bytes) and len(file) == 0):
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 2-1, 2-6, 2-7",
+                "general_data": {
+                    "員工總數_人": 240,
+                    "營運據點_說明": "台灣台北總部、桃園生產工廠",
+                    "主要產品_說明": "電子零組件與製造服務",
+                    "公司實收資本額_億元": 2.0
+                }
+            }
+        try:
+            df = pd.read_excel(io.BytesIO(file) if isinstance(file, bytes) else file)
+            df.columns = [str(col).strip() for col in df.columns]
+            data_dict = {}
+            for _, row in df.iterrows():
+                name = str(row.get("項目", row.get("指標名稱", ""))).strip()
+                val = row.get("內容說明", row.get("數值", ""))
+                try:
+                    # 嘗試轉換成 float，若是純文字就保留
+                    val = float(val)
+                except ValueError:
+                    val = str(val).strip()
+                data_dict[name] = val
+            if not data_dict:
+                raise ValueError("未讀取到有效數據")
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 2-1, 2-6, 2-7",
+                "general_data": data_dict
+            }
+        except Exception as e:
+            return {
+                "company_name": company_name,
+                "reporting_year": str(reporting_year),
+                "framework": "GRI 2-1, 2-6, 2-7",
+                "general_data": {
+                    "員工總數_人": 240,
+                    "營運據點_說明": "台灣台北總部、桃園生產工廠",
+                    "主要產品_說明": "電子零組件與製造服務",
+                    "公司實收資本額_億元": 2.0
+                },
+                "warning": f"Excel 解析失敗，已啟用備用數據。錯誤: {str(e)}"
+            }
+
