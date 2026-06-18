@@ -1,6 +1,6 @@
 # Today's Work Summary - 2026-06-18
 
-Today, we successfully resolved the 2D training process animation stuttering issue in the **SVM Kernel Trick 3D** Streamlit dashboard (upgrading it to **v2.4**) and synced the repository with GitHub.
+Today, we successfully resolved the 2D training process animation stuttering issue in the **SVM Kernel Trick 3D** Streamlit dashboard (upgrading it to **v2.4**) and synced the repository with GitHub, solving local caching and Streamlit Community Cloud deployment issues.
 
 ---
 
@@ -22,10 +22,14 @@ Today, we successfully resolved the 2D training process animation stuttering iss
 - **Problem**: Streamlit's `@st.cache_data` crashed with an `UnhashableParamError` because the sklearn `SVC` model object passed to `build_all_frames()` is unhashable.
 - **Solution**: Prefixed the parameter name with an underscore (`_svc`), instructing Streamlit to ignore the model parameter when generating cache keys.
 
+### 5. Streamlit Cloud Deployment Fix (Dependency Resolution)
+- **Problem**: Streamlit Community Cloud deployment failed during package installation because `manim` requires complex system-level dependencies (LaTeX, ffmpeg, PyCairo, etc.) that cannot be resolved via pure `pip` inside the server container.
+- **Solution**: Removed `manim` from `requirements.txt`. Since `phase3_streamlit_app.py` only imports and runs Plotly visualization and does not depend on `manim` at runtime (which was only used offline to render the storyboard video), the app runs perfectly with just `streamlit`, `plotly`, `scikit-learn`, and `numpy`.
+
 ---
 
 ## 📂 File Deliverables (20260618)
-- [requirements.txt](file:///d:/My-Learning-Journey/daily_lessons/20260618/requirements.txt): Environment dependencies.
+- [requirements.txt](file:///d:/My-Learning-Journey/daily_lessons/20260618/requirements.txt): Environment dependencies (updated to exclude `manim`).
 - [utils/data_generator.py](file:///d:/My-Learning-Journey/daily_lessons/20260618/utils/data_generator.py): SVM dataset generator.
 - [phase1_manim.py](file:///d:/My-Learning-Journey/daily_lessons/20260618/phase1_manim.py): Manim 3D paraboloid lifting animation.
 - [phase3_streamlit_app.py](file:///d:/My-Learning-Journey/daily_lessons/20260618/phase3_streamlit_app.py): Synced 2D/3D interactive dashboard app.
@@ -85,7 +89,47 @@ To https://github.com/hirohirolee/My-Learning-Journey.git
    ef298b4..2a78119  master -> master
 ```
 
-### 5. Streamlit Local Server Verification Output
+### 5. Streamlit Community Cloud Deployment Fix (`requirements.txt` Update)
+```bash
+# requirements.txt modifications (removing manim)
+PS D:\My-Learning-Journey\daily_lessons\20260618> git status .
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   requirements.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+PS D:\My-Learning-Journey\daily_lessons\20260618> git add requirements.txt
+PS D:\My-Learning-Journey\daily_lessons\20260618> git commit -m "fix: remove manim from requirements.txt to fix Streamlit deployment"
+[master f0385b6] fix: remove manim from requirements.txt to fix Streamlit deployment
+ 1 file changed, 1 deletion(-)
+
+PS D:\My-Learning-Journey\daily_lessons\20260618> git push origin master
+To https://github.com/hirohirolee/My-Learning-Journey.git
+   959fee7..f0385b6  master -> master
+```
+
+### 6. Documentation Commit & Git Sync Log
+This log captures the synchronization of this final documentation update:
+```bash
+PS D:\My-Learning-Journey\daily_lessons\20260618> git status .
+modified:   summary.md
+
+PS D:\My-Learning-Journey\daily_lessons\20260618> git add summary.md
+PS D:\My-Learning-Journey\daily_lessons\20260618> git commit -m "docs: add command execution and server logs to summary.md"
+[master 959fee7] docs: add command execution and server logs to summary.md
+ 1 file changed, 69 insertions(+), 2 deletions(-)
+
+PS D:\My-Learning-Journey\daily_lessons\20260618> git push origin master
+To https://github.com/hirohirolee/My-Learning-Journey.git
+   2a78119..959fee7  master -> master
+```
+
+### 7. Streamlit Local Server Verification Output
 Streamlit compiled the updated source code successfully with zero caching issues after the parameter fix:
 ```text
   You can now view your Streamlit app in your browser.
