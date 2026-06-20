@@ -13,32 +13,40 @@ __st.markdown("透過左側控制面板調整重大性門檻，右側圖表將�
 # 2. 側邊欄控制面板 (Sidebar)
 # =====================================================================
 __st.sidebar.header("🛠️ 矩陣門檻設定")
-__st.sidebar.markdown("請設定「兩項分數相加（滿分20分）」的切分門檻：")
+__st.sidebar.markdown("請設定「兩項分數相乘（滿分100分）」的切分門檻：")
 
 # 讓使用者調整低度重大與高度重大的門檻
-low_sum_limit = __st.sidebar.slider(
-    "🟢 低度重大門檻 (總分低於此數值)",
-    min_value=2.0,
-    max_value=12.0,
-    value=9.0,
-    step=0.5,
+low_limit = __st.sidebar.slider(
+    "🟢 低度重大門檻 (中低優先分界點)",
+    min_value=0,
+    max_value=100,
+    value=20,
+    step=1,
 )
 
-high_sum_limit = __st.sidebar.slider(
-    "🟣 高度重大門檻 (總分高於此數值)",
-    min_value=12.5,
-    max_value=18.0,
-    value=15.0,
-    step=0.5,
+high_limit = __st.sidebar.slider(
+    "🟣 高度重大門檻 (中高優先分界點)",
+    min_value=0,
+    max_value=100,
+    value=60,
+    step=1,
 )
+
+# 限制條件：高度門檻必須大於低度門檻
+if high_limit <= low_limit:
+    __st.sidebar.warning("⚠️ 高度門檻必須大於低度門檻！系統已自動將高度門檻調整為低度門檻 + 1。")
+    high_limit = low_limit + 1
+    if high_limit > 100:
+        high_limit = 100
+        low_limit = 99
 
 __st.sidebar.write("---")
 __st.sidebar.markdown(
     f"""
 **目前的分區邏輯：**
-* 總分 `< {low_sum_limit}` ➡️ **低度重大**
-* 總分 `介於兩者之間` ➡️ **中度重大**
-* 總分 `> {high_sum_limit}` ➡️ **高度重大**
+* 兩項分數相乘 `< {low_limit}` ➡️ **🟢 低度重大**
+* 兩項分數相乘 `介於 {low_limit} 與 {high_limit} 之間` ➡️ **🟡 中度重大**
+* 兩項分數相乘 `>= {high_limit}` ➡️ **🟣 高度重大**
 """
 )
 
@@ -46,18 +54,62 @@ __st.sidebar.markdown(
 # 3. 原始數據統整
 # =====================================================================
 data = {
-    "面向": ["經濟面", "經濟面", "環境面", "環境面", "社會面", "社會面", "社會面", "治理面", "治理面"],
-    "重大議題": ["經濟績效與獲利", "反貪腐與反競爭", "溫室氣體管理", "水資源管理", "安心職場", "人才招募與留任", "顧客隱私", "誠信經營與法規遵循", "吹哨者制度"],
-    "營運影響度": [9.0, 3.5, 7.5, 4.0, 8.5, 8.8, 9.5, 9.2, 4.2],  # X軸
-    "關心度": [8.8, 4.2, 7.8, 4.5, 8.2, 8.0, 9.6, 9.0, 4.8],  # Y軸
+    "面向": [
+        "1.經濟面", "1.經濟面", "1.經濟面", "1.經濟面", "1.經濟面", "1.經濟面", "1.經濟面",
+        "2.環境面", "2.環境面", "2.環境面", "2.環境面", "2.環境面", "2.環境面", "2.環境面", "2.環境面",
+        "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面", "3.社會面"
+    ],
+    "重大議題": [
+        "聚焦經濟價值的產生與分配 (GRI 201)",
+        "優先雇用在地管理人員 (GRI 202)",
+        "加大在地社區基礎設施的投資 (GRI 203)",
+        "支持在地採購 (GRI 204)",
+        "實施反貪腐措施 (GRI 205)",
+        "避免不公平競爭 (GRI 206)",
+        "完善稅務管理 (GRI 207)",
+        "使用環保原物料 (GRI 301)",
+        "生物多樣性政策 (GRI 101)",
+        "節約能源 (GRI 302)",
+        "提升水資源的利用 (GRI 303)",
+        "建構生物多樣性環境 (GRI 304)",
+        "注重溫室氣體排放與管理 (GRI 305)",
+        "妥善處理廢棄物 (GRI 306)",
+        "以環境標準篩選供應商 (GRI 308)",
+        "優化員工福利 (GRI 401)",
+        "促進和諧的勞資關係 (GRI 402)",
+        "落實職業安全衛生制度 (GRI 403)",
+        "推動員工教育訓練與職涯發展 (GRI 404)",
+        "實踐員工多元化與平等機會 (GRI 405)",
+        "建構不歧視的工作場域 (GRI 406)",
+        "保障員工結社自由及團體協商 (GRI 407)",
+        "堅守禁用童工政策 (GRI 408)",
+        "禁止強迫勞動相關措施 (GRI 409)",
+        "實施保全人員的人權訓練 (GRI 410)",
+        "保護原住民權利 (GRI 411)",
+        "友善當地社區 (GRI 413)",
+        "導入供應商社會評估 (GRI 414)",
+        "堅守公共政策分際 (GRI 415)",
+        "確保顧客健康與安全 (GRI 416)",
+        "遵循產品資訊與標示規範 (GRI 417)",
+        "維護顧客隱私 (GRI 418)"
+    ],
+    "營運影響度": [
+        8.0, 5.0, 6.0, 7.0, 9.0, 7.5, 8.5,
+        6.5, 5.5, 8.0, 7.5, 5.0, 9.0, 8.5, 7.0,
+        8.8, 8.0, 9.2, 8.5, 7.5, 8.0, 6.0, 9.5, 9.5, 5.0, 4.5, 7.0, 7.5, 6.0, 9.0, 8.0, 9.5
+    ],
+    "關心度": [
+        8.5, 5.5, 6.0, 6.5, 9.0, 7.0, 8.0,
+        7.0, 5.0, 8.5, 8.0, 4.5, 9.2, 8.0, 6.8,
+        9.0, 8.2, 9.5, 8.0, 7.8, 8.0, 6.5, 9.0, 9.0, 5.5, 5.0, 7.2, 7.0, 5.5, 9.2, 8.0, 9.6
+    ]
 }
 init_df = pd.DataFrame(data)
 
 color_map = {
-    "環境面": "#2ca02c",  # 綠
-    "社會面": "#ff7f0e",  # 橘
-    "經濟面": "#1f77b4",  # 藍
-    "治理面": "#17becf",  # 青
+    "1.經濟面": "#1f77b4",  # 藍
+    "2.環境面": "#2ca02c",  # 綠
+    "3.社會面": "#ff7f0e",  # 橘
 }
 
 # =====================================================================
@@ -74,7 +126,7 @@ with col2:
         use_container_width=True,
         height=300,
         column_config={
-            "面向": __st.column_config.SelectboxColumn("面向", options=["經濟面", "環境面", "社會面", "治理面"], required=True, width="small"),
+            "面向": __st.column_config.SelectboxColumn("面向", options=["1.經濟面", "2.環境面", "3.社會面"], required=True, width="small"),
             "重大議題": __st.column_config.TextColumn("重大議題", required=True, width="medium"),
             "營運影響度": __st.column_config.NumberColumn("營運影響度", min_value=0.0, max_value=10.0, step=0.1, required=True, width="small"),
             "關心度": __st.column_config.NumberColumn("關心度", min_value=0.0, max_value=10.0, step=0.1, required=True, width="small"),
@@ -85,17 +137,22 @@ with col2:
     valid_df = edited_df.dropna(subset=["面向", "重大議題", "營運影響度", "關心度"]).copy()
     
     if not valid_df.empty:
-        valid_df["總分"] = valid_df["營運影響度"] + valid_df["關心度"]
+        # 動態賦予議題編號 (1 ~ N)
+        valid_df["編號"] = range(1, len(valid_df) + 1)
+        valid_df["重大主題指標"] = valid_df["營運影響度"] * valid_df["關心度"]
         
         def get_level(row):
-            total = row["總分"]
-            if total < low_sum_limit: return "🟢 低度重大"
-            elif total > high_sum_limit: return "🟣 高度重大"
-            else: return "🟡 中度重大"
+            score = row["重大主題指標"]
+            if score < low_limit:
+                return "🟢 低度重大"
+            elif score < high_limit:
+                return "🟡 中度重大"
+            else:
+                return "🟣 高度重大"
         
         valid_df["重大性等級"] = valid_df.apply(get_level, axis=1)
-        show_df = valid_df.sort_values(by="總分", ascending=False).reset_index(drop=True)
-        __st.dataframe(show_df[["面向", "重大議題", "總分", "重大性等級"]], use_container_width=True, hide_index=True, height=250)
+        show_df = valid_df.sort_values(by="重大主題指標", ascending=False).reset_index(drop=True)
+        __st.dataframe(show_df[["編號", "面向", "重大議題", "重大主題指標", "重大性等級"]], use_container_width=True, hide_index=True, height=250)
     else:
         __st.info("請在上方編輯器中新增資料。")
 
@@ -104,14 +161,63 @@ with col1:
     fig = go.Figure()
 
     # 5. 繪製背景分區 (低、中、高)
-    fig.add_shape(type="path", path=f"M 0,0 L {low_sum_limit},0 L 0,{low_sum_limit} Z", fillcolor="#f3f4f6", opacity=0.6, line_width=0, layer="below")
-    fig.add_shape(type="path", path=f"M {low_sum_limit},0 L {high_sum_limit},0 L 0,{high_sum_limit} L 0,{low_sum_limit} Z", fillcolor="#fef3c7", opacity=0.6, line_width=0, layer="below")
-    fig.add_shape(type="path", path=f"M {high_sum_limit},0 L 10,0 L 10,10 L 0,10 L 0,{high_sum_limit} Z", fillcolor="#ebd5fc", opacity=0.6, line_width=0, layer="below")
+    x_grid = np.linspace(0, 10, 200)
+    y_grid = np.linspace(0, 10, 200)
+    X, Y = np.meshgrid(x_grid, y_grid)
+    Z = X * Y
 
-    # 6. 新增背景區域文字標籤
-    fig.add_annotation(x=low_sum_limit/4, y=low_sum_limit/4, text="<b>低度重大</b>", showarrow=False, font=dict(size=14, color="#4b5563"))
-    fig.add_annotation(x=(low_sum_limit+high_sum_limit)/4, y=(low_sum_limit+high_sum_limit)/4, text="<b>中度重大</b>", showarrow=False, font=dict(size=14, color="#b45309"))
-    fig.add_annotation(x=(high_sum_limit+20)/4, y=(high_sum_limit+20)/4, text="<b>高度重大</b>", showarrow=False, font=dict(size=14, color="#6d28d9"))
+    # 平滑轉換 Z 以適配 go.Contour 的區間劃分
+    l1 = max(low_limit, 0.01)
+    l2 = max(high_limit, l1 + 0.01)
+    
+    conds = [Z < l1, (Z >= l1) & (Z < l2), Z >= l2]
+    v1 = Z / l1
+    v2 = 1.0 + (Z - l1) / (l2 - l1)
+    v3 = 2.0 + (Z - l2) / (100.0 - l2) if l2 < 100.0 else np.full_like(Z, 3.0)
+    Z_transformed = np.select(conds, [v1, v2, v3])
+
+    # 加入雙曲線背景等高線圖
+    fig.add_trace(go.Contour(
+        x=x_grid,
+        y=y_grid,
+        z=Z_transformed,
+        showscale=False,
+        zmin=0.0,
+        zmax=3.0,
+        contours=dict(
+            coloring='heatmap',
+            showlines=True,
+            type='levels',
+            start=1.0,
+            end=2.0,
+            size=1.0,
+        ),
+        line=dict(
+            width=1.5,
+            color='rgba(156, 163, 175, 0.35)'  # 灰色的雙曲線分界線
+        ),
+        colorscale=[
+            [0.0, "rgba(243, 244, 246, 0.6)"],    # 🟢 低優先 / 低度重大區 (#f3f4f6)
+            [0.333, "rgba(243, 244, 246, 0.6)"],
+            [0.333, "rgba(254, 243, 199, 0.6)"],   # 🟡 中優先 / 中度重大區 (#fef3c7)
+            [0.666, "rgba(254, 243, 199, 0.6)"],
+            [0.666, "rgba(235, 213, 252, 0.6)"],   # 🟣 高優先 / 高度重大區 (#ebd5fc)
+            [1.0, "rgba(235, 213, 252, 0.6)"]
+        ],
+        hoverinfo="skip"
+    ))
+
+    # 6. 新增背景區域文字標籤 (對角線動態置中定位)
+    low_diag = np.sqrt(low_limit)
+    high_diag = np.sqrt(high_limit)
+
+    x_low = y_low = max(0.8, low_diag / 2.0)
+    x_med = y_med = (low_diag + high_diag) / 2.0
+    x_high = y_high = min(9.2, (high_diag + 10.0) / 2.0)
+
+    fig.add_annotation(x=x_low, y=y_low, text="<b>低度重大</b>", showarrow=False, font=dict(size=14, color="#4b5563"))
+    fig.add_annotation(x=x_med, y=y_med, text="<b>中度重大</b>", showarrow=False, font=dict(size=14, color="#b45309"))
+    fig.add_annotation(x=x_high, y=y_high, text="<b>高度重大</b>", showarrow=False, font=dict(size=14, color="#6d28d9"))
 
     # 7. 繪製資料點與標籤
     if not valid_df.empty:
@@ -120,15 +226,28 @@ with col1:
         # 依面向分組繪製
         for name, group in valid_df.groupby("面向"):
             fig.add_trace(go.Scatter(
-                x=group["營運影響度"],
+                x=group["營營影響度"] if "營營影響度" in group else group["營運影響度"],  # 安全起見
                 y=group["關心度"],
                 mode="markers+text",
                 name=name,
                 marker=dict(size=12, color=color_map.get(name, "#757575"), line=dict(width=1.5, color='white')),
-                text=group["重大議題"],
+                text=group["編號"],  # 圖表上僅顯示編號
+                customdata=list(zip(
+                    group["重大主題指標"], 
+                    group["重大性等級"], 
+                    group["重大議題"],
+                    group["面向"]
+                )),
                 textposition="top right",
-                textfont=dict(size=11),  # 🎯 修正處：將 font 改為 textfont
-                hovertemplate="<b>%{text}</b><br>營運影響度: %{x}<br>關心度: %{y}<extra></extra>"
+                textfont=dict(size=11),
+                hovertemplate=(
+                    "<b>No.%{text} %{customdata[2]}</b><br>"
+                    "面向: %{customdata[3]}<br>"
+                    "營運影響度: %{x}<br>"
+                    "關心度: %{y}<br>"
+                    "指標值 (X*Y): %{customdata[0]:.1f}<br>"
+                    "重大性等級: %{customdata[1]}<extra></extra>"
+                )
             ))
 
     # 8. 圖表外觀與軸線設定
