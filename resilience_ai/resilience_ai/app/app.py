@@ -77,7 +77,7 @@ def ensure_backend_running():
 # 確保後端服務啟動中
 ensure_backend_running()
 
-# ── 初始化 Session State ─────────────────────────────────────
+# ── 初始化 Session State 與 Callbacks ─────────────────────────
 if "sim_carbon" not in st.session_state: st.session_state["sim_carbon"] = 1.45
 if "sim_yield" not in st.session_state: st.session_state["sim_yield"] = 79.3
 if "sim_user" not in st.session_state: st.session_state["sim_user"] = "EMP-2847"
@@ -88,6 +88,33 @@ if "sim_log" not in st.session_state: st.session_state["sim_log"] = (
     "2025-01-15 03:42 midnight high-volume download: user downloaded 67 compliance "
     "asset files from IP 192.168.1.105. Download count exceeded threshold."
 )
+
+def load_ehs_scenario():
+    st.session_state["sim_carbon"] = 1.65
+    st.session_state["sim_yield"] = 92.5
+    st.session_state["sim_user"] = "EHS_Monitor"
+    st.session_state["sim_dept"] = "製造一部"
+    st.session_state["sim_shift"] = "A班"
+    st.session_state["sim_equip"] = "BOILER-01"
+    st.session_state["sim_log"] = "EHS系統偵測：碳排放強度（1.65 kgCO₂e/unit）超標，觸發 ISO 14064-1 稽核程序。"
+
+def load_mes_scenario():
+    st.session_state["sim_carbon"] = 0.85
+    st.session_state["sim_yield"] = 79.3
+    st.session_state["sim_user"] = "生管主管"
+    st.session_state["sim_dept"] = "品保部"
+    st.session_state["sim_shift"] = "B班"
+    st.session_state["sim_equip"] = "SMT-LINE-03"
+    st.session_state["sim_log"] = "MES系統通報：製程良率大跌至 79.3%，低於標準門檻 85%，觸發 SOP-PROD-001 生產稽核。"
+
+def load_siem_scenario():
+    st.session_state["sim_carbon"] = 0.50
+    st.session_state["sim_yield"] = 99.1
+    st.session_state["sim_user"] = "unknown.user"
+    st.session_state["sim_dept"] = "資安部"
+    st.session_state["sim_shift"] = "C班"
+    st.session_state["sim_equip"] = "SERVER-SEC-01"
+    st.session_state["sim_log"] = "SIEM資安告警：偵測到深夜異常大量下載機密合規資產，來源IP 192.168.1.105，觸發 ISO 27001 A.8.16 審計。"
 
 # 全局模擬狀態控管
 if "global_sim_state" not in globals():
@@ -497,35 +524,9 @@ with tab2:
             st.markdown("**1. 快速載入情境範本：**")
             col_ehs, col_mes, col_siem = st.columns(3)
             
-            if col_ehs.button("🔋 載入 EHS 異常", use_container_width=True):
-                st.session_state["sim_carbon"] = 1.65
-                st.session_state["sim_yield"] = 92.5
-                st.session_state["sim_user"] = "EHS_Monitor"
-                st.session_state["sim_dept"] = "製造一部"
-                st.session_state["sim_shift"] = "A班"
-                st.session_state["sim_equip"] = "BOILER-01"
-                st.session_state["sim_log"] = "EHS系統偵測：碳排放強度（1.65 kgCO₂e/unit）超標，觸發 ISO 14064-1 稽核程序。"
-                st.rerun()
-                
-            if col_mes.button("⚙️ 載入 MES 異常", use_container_width=True):
-                st.session_state["sim_carbon"] = 0.85
-                st.session_state["sim_yield"] = 79.3
-                st.session_state["sim_user"] = "生管主管"
-                st.session_state["sim_dept"] = "品保部"
-                st.session_state["sim_shift"] = "B班"
-                st.session_state["sim_equip"] = "SMT-LINE-03"
-                st.session_state["sim_log"] = "MES系統通報：製程良率大跌至 79.3%，低於標準門檻 85%，觸發 SOP-PROD-001 生產稽核。"
-                st.rerun()
-                
-            if col_siem.button("🛡️ 載入 SIEM 異常", use_container_width=True):
-                st.session_state["sim_carbon"] = 0.50
-                st.session_state["sim_yield"] = 99.1
-                st.session_state["sim_user"] = "unknown.user"
-                st.session_state["sim_dept"] = "資安部"
-                st.session_state["sim_shift"] = "C班"
-                st.session_state["sim_equip"] = "SERVER-SEC-01"
-                st.session_state["sim_log"] = "SIEM資安告警：偵測到深夜異常大量下載機密合規資產，來源IP 192.168.1.105，觸發 ISO 27001 A.8.16 審計。"
-                st.rerun()
+            col_ehs.button("🔋 載入 EHS 異常", use_container_width=True, on_click=load_ehs_scenario)
+            col_mes.button("⚙️ 載入 MES 異常", use_container_width=True, on_click=load_mes_scenario)
+            col_siem.button("🛡️ 載入 SIEM 異常", use_container_width=True, on_click=load_siem_scenario)
             
             st.divider()
             st.markdown("**2. 全自動隨機轟擊：**")
