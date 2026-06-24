@@ -8,6 +8,7 @@ import json
 import requests
 import pandas as pd
 import streamlit as st
+import threading
 from datetime import datetime
 import os
 import sys
@@ -89,6 +90,14 @@ if "sim_log" not in st.session_state: st.session_state["sim_log"] = (
     "asset files from IP 192.168.1.105. Download count exceeded threshold."
 )
 
+# [DEMO FEATURE] 初始化情境展示 State
+if "demo_task_id" not in st.session_state:
+    st.session_state["demo_task_id"] = None
+if "demo_status" not in st.session_state:
+    st.session_state["demo_status"] = "idle"
+if "demo_report" not in st.session_state:
+    st.session_state["demo_report"] = None
+
 def load_ehs_scenario():
     st.session_state["sim_carbon"] = 1.65
     st.session_state["sim_yield"] = 92.5
@@ -116,11 +125,15 @@ def load_siem_scenario():
     st.session_state["sim_equip"] = "SERVER-SEC-01"
     st.session_state["sim_log"] = "SIEM資安告警：偵測到深夜異常大量下載機密合規資產，來源IP 192.168.1.105，觸發 ISO 27001 A.8.16 審計。"
 
-# 全局模擬狀態控管
-if "global_sim_state" not in globals():
-    globals()["global_sim_state"] = {"active": False, "thread": None}
+# 使用 st.session_state 控管模擬狀態
+if "sim_active" not in st.session_state:
+    st.session_state["sim_active"] = False
+if "sim_thread" not in st.session_state:
+    st.session_state["sim_thread"] = None
+if "sim_stop_event" not in st.session_state:
+    st.session_state["sim_stop_event"] = None
 
-def bombard_worker():
+def bombard_worker(stop_event):
     import requests
     import time
     import random
@@ -156,8 +169,7 @@ def bombard_worker():
         }
     ]
     
-    sim_state = globals()["global_sim_state"]
-    while sim_state["active"]:
+    while not stop_event.is_set():
         try:
             scenario = random.choice(scenarios).copy()
             if scenario["user_id"] == "EHS_Monitor":
@@ -167,7 +179,12 @@ def bombard_worker():
             requests.post(api_url, json=scenario, timeout=3)
         except Exception:
             pass
-        time.sleep(180)  # 改為 3 分鐘 (180 秒)，避免後端因太頻繁啟動 AI 推理而阻塞
+        
+        # 循環偵測 300 秒 (5 分鐘)，如果期間 stop_event 被設定則立即中斷，避免線程卡死
+        for _ in range(300):
+            if stop_event.is_set():
+                break
+            time.sleep(1)
 
 # ── 頁面基本設定 ─────────────────────────────────────────────
 st.set_page_config(
@@ -309,6 +326,178 @@ with st.sidebar:
 st.markdown("# 🛡️ 企業數位韌性 AI 導航系統")
 st.markdown("**地端安全私有化 AI 決策中樞** ｜ ISO 14064-1 × ISO 27001 × 生管 SOP 三合一合規稽核")
 st.divider()
+
+# [DEMO FEATURE] 快速情境展示
+with st.expander("🎬 快速情境展示", expanded=True):
+    st.markdown("點擊下方按鈕以發送情境模擬數據至後端，並自動觸發非同步 AI 稽核流程：")
+    col_demo1, col_demo2, col_demo3 = st.columns(3)
+    
+    # 嘗試從後端 API 取得 Mock Data 配置
+    scenarios_data = api_get("/api/v1/scenarios")
+    if not scenarios_data:
+        # Fallback 備份配置，確保後端未就緒時網頁不崩潰
+        scenarios_data = {
+            "scenario_1": {
+                "carbon_intensity": 0.52,
+                "user_id": "EMP-1024",
+                "event_log": "生產線警報：C線 SMT 區發生製程異常，當班良率自平均 98.5% 急遽跌至 82.1%，低於公司內部合規標準門檻 85%，觸發 SOP-PROD-001 生產合規稽核流程。",
+                "department": "生產部-SMT區",
+                "shift": "A班",
+                "equipment_id": "SMT-LINE-C",
+                "production_yield": 82.1
+            },
+            "scenario_2": {
+                "carbon_intensity": 0.45,
+                "user_id": "unknown.user",
+                "event_log": "SIEM資安告警：於凌晨 02:30 偵測到研發伺服器遭受來自海外不明來源之 15 次連續登入失敗嘗試，隨後有高達 5GB 的敏感專利代碼與合規文件遭異常下載導出，觸發 ISO 27001 A.8.16 資訊安全事件響應與審計。",
+                "department": "研發部",
+                "shift": "C班",
+                "equipment_id": "SERVER-RND-01",
+                "production_yield": 99.8
+            },
+            "scenario_3": {
+                "carbon_intensity": 24.75,
+                "user_id": "EHS_Auditor",
+                "event_log": "EHS系統警報：二廠當日電力消耗高達 50 萬度，合計產出 1 萬件產品，換算碳排放強度達 24.75 kgCO₂e/unit，已超標 15%，觸發 ISO 14064-1 溫室氣體盤查與矯正預警程序。",
+                "department": "製造二廠",
+                "shift": "B班",
+                "equipment_id": "FACTORY-02",
+                "production_yield": 98.2
+            }
+        }
+    
+    if col_demo1.button("情境一：生管異常", use_container_width=True):
+        st.toast("正在發送情境數據至後端...", icon="🎬")
+        result = api_post("/api/v1/trigger_audit", scenarios_data.get("scenario_1"))
+        if result and "task_id" in result:
+            st.session_state["demo_task_id"] = result["task_id"]
+            st.session_state["demo_status"] = "polling"
+            st.session_state["demo_report"] = None
+            st.rerun()
+        else:
+            st.error(f"觸發失敗: {result}")
+            
+    if col_demo2.button("情境二：資安威脅", use_container_width=True):
+        st.toast("正在發送情境數據至後端...", icon="🎬")
+        result = api_post("/api/v1/trigger_audit", scenarios_data.get("scenario_2"))
+        if result and "task_id" in result:
+            st.session_state["demo_task_id"] = result["task_id"]
+            st.session_state["demo_status"] = "polling"
+            st.session_state["demo_report"] = None
+            st.rerun()
+        else:
+            st.error(f"觸發失敗: {result}")
+            
+    if col_demo3.button("情境三：碳排超標", use_container_width=True):
+        st.toast("正在發送情境數據至後端...", icon="🎬")
+        result = api_post("/api/v1/trigger_audit", scenarios_data.get("scenario_3"))
+        if result and "task_id" in result:
+            st.session_state["demo_task_id"] = result["task_id"]
+            st.session_state["demo_status"] = "polling"
+            st.session_state["demo_report"] = None
+            st.rerun()
+        else:
+            st.error(f"觸發失敗: {result}")
+
+# [DEMO FEATURE] 當前模擬情境處理狀態顯示區 (Polling & Results Display)
+if st.session_state["demo_task_id"] is not None:
+    st.markdown("---")
+    st.markdown(f"### 📍 當前情境處理狀態顯示區 (Task ID: `{st.session_state['demo_task_id']}`)")
+    
+    if st.session_state["demo_status"] == "polling":
+        with st.status("🔄 正在進行非同步 AI 檢索與推理...") as status_box:
+            task_id = st.session_state["demo_task_id"]
+            report = None
+            for i in range(30):
+                time.sleep(2)
+                report = api_get(f"/api/task/{task_id}")
+                if report:
+                    current_status = report.get("status")
+                    if current_status == "processing":
+                        status_box.update(label=f"正在進行 AI 檢索與推理... ({(i+1)*2}秒)", state="running")
+                    elif current_status == "completed":
+                        status_box.update(label="AI 稽核與推理完成！", state="complete", expanded=True)
+                        st.session_state["demo_status"] = "completed"
+                        st.session_state["demo_report"] = report
+                        break
+                    elif current_status == "failed":
+                        status_box.update(label="AI 稽核與推理失敗！", state="error", expanded=True)
+                        st.session_state["demo_status"] = "failed"
+                        st.session_state["demo_report"] = report
+                        break
+                else:
+                    status_box.update(label="無法獲取後端狀態，正在重試...", state="running")
+            
+            if st.session_state["demo_status"] == "polling":
+                status_box.update(label="AI 稽核處理超時，請稍後至歷史報告中查看", state="error", expanded=True)
+                st.session_state["demo_status"] = "failed"
+            st.rerun()
+            
+    elif st.session_state["demo_status"] in ["completed", "failed"]:
+        report = st.session_state["demo_report"]
+        if report and report.get("status") == "completed":
+            risk = report.get("risk_assessment", {})
+            risk_lv = risk.get("risk_level", 1)
+            risk_lbl = risk.get("risk_label", "Level-1 輕微")
+            reasons = risk.get("reasons", [])
+            resp_time = risk.get("response_time", "")
+            
+            with st.container(border=True):
+                col_title, col_btn = st.columns([5, 1])
+                col_title.markdown(f"#### 🎬 模擬情境結果展示 (Task ID: `{st.session_state['demo_task_id']}`)")
+                if col_btn.button("🗑️ 關閉展示結果", use_container_width=True):
+                    st.session_state["demo_task_id"] = None
+                    st.session_state["demo_status"] = "idle"
+                    st.session_state["demo_report"] = None
+                    st.rerun()
+                    
+                st.divider()
+                
+                # 1. [AI 診斷結果]
+                st.markdown("### 📊 [AI 診斷結果]")
+                if risk_lv == 3:
+                    st.error(f"**風險級別：{risk_lbl}**")
+                elif risk_lv == 2:
+                    st.warning(f"**風險級別：{risk_lbl}**")
+                else:
+                    st.success(f"**風險級別：{risk_lbl}**")
+                
+                col_res1, col_res2 = st.columns([3, 2])
+                with col_res1:
+                    st.markdown("**判定原因：**")
+                    for r in reasons:
+                        st.markdown(f"- ⚠️ {r}")
+                with col_res2:
+                    st.markdown("**要求回應時限：**")
+                    st.info(f"⏱️ {resp_time}")
+                
+                st.divider()
+                
+                # 2. [Agent 執行動作]
+                st.markdown("### 🤖 [Agent 執行動作]")
+                agent_action = report.get("agent_notification")
+                if agent_action:
+                    st.info(f"{agent_action}")
+                else:
+                    st.info("無觸發任何 Agent 模擬防禦或通報動作。")
+                
+                st.divider()
+                
+                # 3. [生成之 CAPA 報告]
+                st.markdown("### 📄 [生成之 CAPA 報告]")
+                st.markdown(
+                    f'<div class="report-box">{report.get("ai_capa_report", "")}</div>',
+                    unsafe_allow_html=True
+                )
+                
+        elif report and report.get("status") == "failed":
+            st.error(f"❌ 模擬稽核失敗：{report.get('error')}")
+            if st.button("🗑️ 關閉結果"):
+                st.session_state["demo_task_id"] = None
+                st.session_state["demo_status"] = "idle"
+                st.session_state["demo_report"] = None
+                st.rerun()
+    st.markdown("---")
 
 # 頁籤導覽
 tab1, tab2, tab3, tab4 = st.tabs([
@@ -471,26 +660,57 @@ with tab2:
                     st.success(f"✅ 任務已接收！Task ID：`{task_id}`")
                     st.session_state["last_task_id"] = task_id
 
-                    # 等待並輪詢結果
+                    # [FEATURE] 導入非同步輪詢機制 (Streamlit Polling)
                     st.markdown("---")
-                    st.markdown("**⏳ 等待 AI 推理中...**")
-                    progress = st.progress(0, "初始化中...")
-
-                    for i in range(30):
-                        time.sleep(2)
-                        progress.progress((i + 1) / 30, f"AI 分析中... ({(i+1)*2}秒)")
-                        report = api_get(f"/api/v1/report/{task_id}")
-                        if report and report.get("status") in ("completed", "failed"):
-                            progress.progress(1.0, "完成！")
-                            break
+                    with st.status("正在進行 AI 檢索與推理...") as status_box:
+                        report = None
+                        for i in range(30):
+                            time.sleep(2)
+                            report = api_get(f"/api/task/{task_id}")
+                            if report:
+                                current_status = report.get("status")
+                                if current_status == "processing":
+                                    status_box.update(label=f"正在進行 AI 檢索與推理... ({(i+1)*2}秒)", state="running")
+                                elif current_status == "completed":
+                                    status_box.update(label="AI 稽核與推理完成！", state="complete", expanded=True)
+                                    break
+                                elif current_status == "failed":
+                                    status_box.update(label="AI 稽核與推理失敗！", state="error", expanded=True)
+                                    break
+                            else:
+                                status_box.update(label="無法獲取後端狀態，正在重試...", state="running")
 
                     if report and report.get("status") == "completed":
                         risk = report.get("risk_assessment", {})
-                        st.error(f"🚨 風險等級：{risk.get('risk_label', 'N/A')}")
-                        for reason in risk.get("reasons", []):
+                        risk_lv = risk.get("risk_level", 1)
+                        risk_lbl = risk.get("risk_label", "N/A")
+                        reasons = risk.get("reasons", [])
+                        resp_time = risk.get("response_time", "")
+                        
+                        # [AI 診斷結果]
+                        st.markdown("### 📊 [AI 診斷結果]")
+                        if risk_lv == 3:
+                            st.error(f"**風險級別：{risk_lbl}**")
+                        elif risk_lv == 2:
+                            st.warning(f"**風險級別：{risk_lbl}**")
+                        else:
+                            st.success(f"**風險級別：{risk_lbl}**")
+                        
+                        st.markdown("**判定原因：**")
+                        for reason in reasons:
                             st.warning(f"⚠️ {reason}")
+                        st.info(f"⏱️ 要求回應時限：{resp_time}")
 
-                        st.markdown("### 📄 AI 生成 CAPA 報告")
+                        # [Agent 執行動作]
+                        st.markdown("### 🤖 [Agent 執行動作]")
+                        agent_action = report.get("agent_notification")
+                        if agent_action:
+                            st.info(f"{agent_action}")
+                        else:
+                            st.info("無觸發任何 Agent 模擬防禦或通報動作。")
+
+                        # [生成之 CAPA 報告]
+                        st.markdown("### 📄 [生成之 CAPA 報告]")
                         st.markdown(
                             f'<div class="report-box">{report.get("ai_capa_report", "")}</div>',
                             unsafe_allow_html=True
@@ -531,23 +751,35 @@ with tab2:
             st.divider()
             st.markdown("**2. 全自動隨機轟擊：**")
             
-            sim_state = globals()["global_sim_state"]
-            import threading
-            
-            auto_btn = st.toggle("🚀 開啟全自動隨機轟擊 (每 3 秒自動模擬發送)", value=sim_state["active"])
-            if auto_btn != sim_state["active"]:
-                sim_state["active"] = auto_btn
+            # 使用 st.session_state 狀態來做開關
+            auto_btn = st.toggle("🚀 開啟全自動隨機轟擊 (每 5 分鐘自動模擬發送)", value=st.session_state["sim_active"])
+            if auto_btn != st.session_state["sim_active"]:
+                st.session_state["sim_active"] = auto_btn
                 if auto_btn:
-                    if sim_state["thread"] is None or not sim_state["thread"].is_alive():
-                        sim_state["thread"] = threading.Thread(target=bombard_worker, daemon=True)
-                        sim_state["thread"].start()
-                    st.success("背景隨機轟擊已啟動！系統正每 3 秒向後端發送一筆隨機異常。")
+                    stop_event = threading.Event()
+                    thread = threading.Thread(target=bombard_worker, args=(stop_event,), daemon=True)
+                    thread.start()
+                    st.session_state["sim_thread"] = thread
+                    st.session_state["sim_stop_event"] = stop_event
+                    st.success("背景隨機轟擊已啟動！系統正每 5 分鐘向後端發送一筆隨機異常。")
                 else:
+                    if st.session_state["sim_stop_event"] is not None:
+                        st.session_state["sim_stop_event"].set()
+                    st.session_state["sim_thread"] = None
+                    st.session_state["sim_stop_event"] = None
                     st.info("已停止自動隨機轟擊模式。")
                 st.rerun()
                 
-            if sim_state["active"]:
-                st.info("🟢 自動轟擊中：背景執行緒正在每 3 秒隨機打擊 API 接口。")
+            if st.session_state["sim_active"]:
+                # 雙重檢查執行緒是否還活著，避免意外中止
+                t = st.session_state["sim_thread"]
+                if t is None or not t.is_alive():
+                    stop_event = threading.Event()
+                    thread = threading.Thread(target=bombard_worker, args=(stop_event,), daemon=True)
+                    thread.start()
+                    st.session_state["sim_thread"] = thread
+                    st.session_state["sim_stop_event"] = stop_event
+                st.info("🟢 自動轟擊中：背景執行緒正在每 5 分鐘隨機打擊 API 接口。")
 
 
 # ─── Tab 3：歷史報告查閱 ─────────────────────────────────────
@@ -572,13 +804,67 @@ with tab3:
         if selected:
             detail = api_get(f"/api/v1/report/{selected}")
             if detail:
-                st.json(detail.get("risk_assessment", {}))
+                # 取得資料
+                risk = detail.get("risk_assessment", {})
+                risk_lv = risk.get("risk_level", 1)
+                risk_lbl = risk.get("risk_label", "Level-1 輕微")
+                reasons = risk.get("reasons", [])
+                resp_time = risk.get("response_time", "")
+                
+                # [DEMO FEATURE] 1. [AI 診斷結果]
+                st.markdown("### 📊 [AI 診斷結果]")
+                
+                # 依風險等級顯示不同顏色的 Alert
+                if risk_lv == 3:
+                    st.error(f"**風險級別：🔴 {risk_lbl}**")
+                elif risk_lv == 2:
+                    st.warning(f"**風險級別：🟠 {risk_lbl}**")
+                else:
+                    st.success(f"**風險級別：🟢 {risk_lbl}**")
+                
+                # 顯示原因清單與時限
+                col_info1, col_info2 = st.columns([2, 1])
+                with col_info1:
+                    st.markdown("**判定原因：**")
+                    for r in reasons:
+                        st.markdown(f"- ⚠️ {r}")
+                with col_info2:
+                    st.markdown("**要求回應時限：**")
+                    st.info(f"⏱️ {resp_time}")
+                
+                # 2. 顯示去識別化數據
+                st.markdown("---")
+                st.subheader("🔒 去識別化稽核數據 (已完成隱私防護)")
+                
+                anon = detail.get("anonymized_data", {})
+                if anon:
+                    c1, c2, c3, c4 = st.columns(4)
+                    c1.metric("去識別化操作員", anon.get("user_id", "N/A"))
+                    c2.metric("部門 / 班別", f"{anon.get('department', 'N/A')} / {anon.get('shift', 'N/A')}")
+                    c3.metric("碳排放強度 (kgCO₂e)", f"{anon.get('carbon_intensity', 0.0):.2f}")
+                    c4.metric("當班生產良率", f"{anon.get('yield_rate', 0.0):.1f}%" if anon.get('yield_rate') is not None else "N/A")
+                    
+                    st.markdown("**去識別化事件日誌：**")
+                    st.code(anon.get("event_log", "N/A"), language="text")
+                
+                # [DEMO FEATURE] 3. [Agent 執行動作]
+                st.markdown("---")
+                st.markdown("### 🤖 [Agent 執行動作]")
+                agent_action = detail.get("agent_notification")
+                if agent_action:
+                    st.info(agent_action)
+                else:
+                    st.info("無觸發任何 Agent 模擬防禦或通報動作。")
+
+                # [DEMO FEATURE] 4. [生成之 CAPA 報告]
                 if detail.get("ai_capa_report"):
-                    st.markdown("### 📄 CAPA 報告全文")
+                    st.markdown("---")
+                    st.markdown("### 📄 [生成之 CAPA 報告]")
                     st.markdown(
                         f'<div class="report-box">{detail["ai_capa_report"]}</div>',
                         unsafe_allow_html=True
                     )
+                    
                     # 下載按鈕
                     st.download_button(
                         "📥 下載報告（JSON）",

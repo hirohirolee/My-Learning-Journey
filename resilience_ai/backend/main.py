@@ -20,6 +20,12 @@ if os.path.exists(_DOTENV_PATH):
 else:
     load_dotenv()
 
+# [DEMO FEATURE] 確保 backend 目錄在 sys.path 中，使 scenario_config 能被正確 import
+import sys as _sys
+if _MAIN_DIR not in _sys.path:
+    _sys.path.insert(0, _MAIN_DIR)
+from scenario_config import SCENARIOS as DEMO_SCENARIOS
+
 import chromadb
 import httpx
 import requests
@@ -78,8 +84,9 @@ report_store: dict[str, dict] = {}
 # ║  資料模型（Pydantic Schemas）                            ║
 # ╚══════════════════════════════════════════════════════════╝
 
+# [DEMO FEATURE] 放寬碳強度上限至 100 以相容情境三的 24.75 kgCO2e 數據
 class AuditPayload(BaseModel):
-    carbon_intensity:   float   = Field(..., ge=0, le=10, description="碳排放強度 kgCO₂e/unit")
+    carbon_intensity:   float   = Field(..., ge=0, le=100, description="碳排放強度 kgCO₂e/unit")
     user_id:            str     = Field(..., min_length=1, description="操作人員 ID")
     event_log:          str     = Field(..., description="資安事件日誌原始內容")
     department:         Optional[str] = Field(None, description="部門代碼")
@@ -272,6 +279,34 @@ async def call_gemini_fallback(prompt: str) -> str:
         return f"[AI 暫時離線] 錯誤訊息：地端與雲端模型皆無法使用。最後錯誤：{str(e)}"
 
 
+# [DEMO FEATURE] 強化 Agent 行動模組以支援三大情境與個別行為區分
+async def agent_action_notify(payload_log: str, risk_level: int) -> str:
+    """
+    Agent 主動通知與行動模組：根據不同異常情境執行對應的模擬防禦或通報行動
+    """
+    log_lower = payload_log.lower()
+    
+    # 情境二：資安威脅
+    if any(k in log_lower for k in ["資安", "登入", "海外", "login", "ip", "匯出", "download", "leak"]):
+        action_msg = "[Agent Action] 模擬發送資安告警信給 CISO，並已對來源 IP 啟動防禦封鎖阻斷"
+        print(action_msg)  # 輸出至終端機
+        return action_msg
+        
+    # 情境三：碳排超標
+    elif any(k in log_lower for k in ["碳排", "14064", "電力", "度", "carbon"]):
+        action_msg = "[Agent Action] 模擬計算碳排強度，生成改善報告並指派給永續發展委員會"
+        print(action_msg)  # 輸出至終端機
+        return action_msg
+        
+    # 情境一 / 預設：生管良率或高風險異常
+    elif risk_level >= 2 or any(k in log_lower for k in ["良率", "smt", "生管", "sop"]):
+        action_msg = "[Agent Action] 模擬發送緊急通知信給生管主管，並通知 SMT 區線長處置"
+        print(action_msg)  # 輸出至終端機
+        return action_msg
+        
+    return ""
+
+
 async def run_audit(task_id: str, payload: AuditPayload):
     """
     完整稽核流程（非同步背景執行）
@@ -352,6 +387,9 @@ async def run_audit(task_id: str, payload: AuditPayload):
         log.info(f"🤖 [{task_id}] 啟動 AI 雙引擎推理...")
         ai_response = await call_ai_inference(prompt)
 
+        # [FEATURE] 呼叫 Agent 主動通知機制
+        notify_action = await agent_action_notify(payload.event_log, risk["risk_level"])
+
         # Step 6: 儲存報告
         report_store[task_id].update({
             "status":        "completed",
@@ -359,6 +397,7 @@ async def run_audit(task_id: str, payload: AuditPayload):
             "anonymized_data": safe_data,
             "risk_assessment": risk,
             "ai_capa_report":  ai_response,
+            "agent_notification": notify_action,  # 附加 Agent 行動紀錄
             "context_used":    context[:500] + "..."
         })
         log.info(f"✅ [{task_id}] 稽核完成，CAPA 報告已生成")
@@ -393,7 +432,7 @@ async def health():
 
     # 檢查 Ollama
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
+        async with httpx.AsyncClient(timeout=0.5) as client:
             r = await client.get(f"{OLLAMA_URL}/api/tags")
             checks["ollama"] = "online" if r.status_code == 200 else "degraded"
     except Exception:
@@ -413,6 +452,7 @@ async def health():
     return checks
 
 
+# [FEATURE] 導入非同步狀態追蹤，設定初始狀態為 processing
 @app.post("/api/v1/trigger_audit", tags=["稽核觸發"])
 async def trigger_audit(payload: AuditPayload, background_tasks: BackgroundTasks):
     """
@@ -422,7 +462,7 @@ async def trigger_audit(payload: AuditPayload, background_tasks: BackgroundTasks
     task_id = str(uuid.uuid4())[:8]
     report_store[task_id] = {
         "task_id":    task_id,
-        "status":     "queued",
+        "status":     "processing",  # 狀態改為 processing
         "created_at": datetime.now().isoformat(),
         "input": {
             "carbon_intensity": payload.carbon_intensity,
@@ -435,11 +475,27 @@ async def trigger_audit(payload: AuditPayload, background_tasks: BackgroundTasks
 
     log.info(f"📥 新稽核任務已接收：{task_id}")
     return {
-        "status":    "accepted",
+        "status":    "processing",  # 返回狀態設為 processing
         "task_id":   task_id,
         "message":   "稽核任務已非同步觸發，請使用 task_id 查詢結果",
-        "query_url": f"/api/v1/report/{task_id}"
+        "query_url": f"/api/task/{task_id}"  # 指向新的狀態查詢 API
     }
+
+
+# [FEATURE] 新增狀態查詢 API
+@app.get("/api/task/{task_id}", tags=["報告查詢"])
+async def get_task_status(task_id: str):
+    """狀態查詢 API：回傳任務當前的處理狀態或最終結果"""
+    if task_id not in report_store:
+        raise HTTPException(status_code=404, detail=f"任務 {task_id} 不存在")
+    return report_store[task_id]
+
+
+# [DEMO FEATURE] 新增情境腳本展示數據查詢 API
+@app.get("/api/v1/scenarios", tags=["情境模擬"])
+async def get_scenarios():
+    """情境腳本展示模組：回傳定義好的三個 Mock 情境數據"""
+    return DEMO_SCENARIOS
 
 
 @app.get("/api/v1/report/{task_id}", tags=["報告查詢"])
