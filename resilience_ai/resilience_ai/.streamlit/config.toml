@@ -1,0 +1,3 @@
+[server]
+# 關閉檔案監聽器，防止 SQLite3 資料庫查詢與日誌寫入時觸發網頁重複重載
+fileWatcherType = "none"
