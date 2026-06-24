@@ -1,0 +1,23 @@
+為了讓整套系統順利運作，你需要按照以下順序操作：
+
+先讓 AI 寫扣（執行 Prompts）：
+
+切換到網頁的「AI Agent Prompts (v3)」頁籤。
+
+複製 Prompt 1，貼給右側的 AI Agent，等它把 masking.py 寫好。
+
+接著複製 Prompt 2 給 AI Agent... 依序執行到 Prompt 6。
+
+目標：確保你的左側專案資料夾裡，已經出現了所有必要的 Python 檔案和測試檔。
+
+
+
+再下指令部署（執行部署指令）：
+
+確認程式碼都寫好後，切換到網頁的「完整部署 (v3)」頁籤。
+
+打開底下的 Terminal。
+
+從 Phase 1 開始，一行一行複製指令貼到 Terminal 執行（別忘了替換指令中的中文，像是 你的USER_ID）。
+
+一路執行到 Phase 3，把 Cloud Run 服務部署上線。

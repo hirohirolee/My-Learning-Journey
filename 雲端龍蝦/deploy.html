@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw Cloud Run 部署指南 (v3 企業展示版)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#F8F9FA;color:#202124;padding:20px}
+.wrap{max-width:850px;margin:0 auto;background:#fff;padding:2rem;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.05)}
+.phase{margin-bottom:2rem}
+.phase-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:0.5px solid #e0e0e0}
+.phase-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
+.phase-title{font-size:16px;font-weight:500;color:#202124}
+.phase-sub{font-size:12px;color:#5f6368;margin-top:2px}
+.step-list{display:flex;flex-direction:column;gap:8px}
+.step{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #e0e0e0;border-radius:8px}
+.step-check{width:20px;height:20px;border:1px solid #dadce0;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;margin-top:1px;transition:all .15s}
+.step-check.done{background:#1D9E75;border-color:#1D9E75}
+.step-check.done::after{content:"";display:block;width:10px;height:6px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.step-content{flex:1;min-width:0}
+.step-title{font-size:13px;font-weight:600;color:#202124;margin-bottom:3px}
+.step-desc{font-size:12px;color:#5f6368;line-height:1.5}
+.code-block{background:#f1f3f4;border:1px solid #e0e0e0;border-radius:6px;padding:10px 12px;margin-top:8px;font-family:monospace;font-size:12px;color:#202124;line-height:1.6;white-space:pre;overflow-x:auto;position:relative}
+.copy-btn{position:absolute;top:6px;right:6px;background:#fff;border:1px solid #dadce0;border-radius:4px;padding:4px 8px;font-size:11px;cursor:pointer;color:#5f6368;transition:all 0.2s}
+.copy-btn:hover{background:#e8eaed;color:#202124}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;margin-right:4px;font-weight:500}
+.b-blue{background:#E6F1FB;color:#0C447C}
+.b-green{background:#EAF3DE;color:#27500A}
+.b-amber{background:#FAEEDA;color:#633806}
+.b-red{background:#FCEBEB;color:#791F1F}
+.b-purple{background:#EEEDFE;color:#3C3489}
+.prompt-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;margin-bottom:16px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.02)}
+.prompt-header{padding:12px 14px;background:#f8f9fa;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between}
+.prompt-label{font-size:13px;font-weight:600;color:#202124;display:flex;align-items:center}
+.prompt-body{padding:14px;font-size:13px;color:#3c4043;line-height:1.6;font-family:monospace;white-space:pre-wrap;background:#fafafa}
+.progress-bar{height:6px;background:#e8eaed;border-radius:3px;overflow:hidden;margin-bottom:1.5rem}
+.progress-fill{height:100%;background:#1D9E75;border-radius:3px;transition:width .3s}
+.progress-label{font-size:13px;font-weight:500;color:#5f6368;text-align:right;margin-bottom:8px}
+.section-tab{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;border-bottom:1px solid #e0e0e0;padding-bottom:10px}
+.tab-btn{padding:8px 16px;font-size:14px;font-weight:500;border:none;border-radius:6px;cursor:pointer;background:transparent;color:#5f6368;transition:all .2s}
+.tab-btn:hover{background:#f1f3f4}
+.tab-btn.active{background:#e8f0fe;color:#1a73e8}
+.panel{display:none;animation:fadeIn 0.3s ease}
+.panel.active{display:block}
+.warn-box{background:#fef7e0;border:1px solid #fbbc04;border-radius:6px;padding:12px;font-size:13px;color:#b06000;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+.info-box{background:#e8f0fe;border:1px solid #8ab4f8;border-radius:6px;padding:12px;font-size:13px;color:#174ea6;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="section-tab">
+  <button class="tab-btn active" onclick="switchTab('deploy')"><i class="ti ti-rocket"></i> 完整部署 (v3)</button>
+  <button class="tab-btn" onclick="switchTab('prompts')"><i class="ti ti-message-bolt"></i> AI Agent Prompts (v3)</button>
+</div>
+
+<div id="panel-deploy" class="panel active">
+
+<div class="progress-label" id="prog-label">進度：0 / 14 步完成</div>
+<div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-num" style="background:#E1F5EE;color:#085041">0</div>
+    <div><div class="phase-title">本地環境與 Dockerfile</div><div class="phase-sub">資安加固的前置作業</div></div>
+  </div>
+  <div class="step-list">
+    <div class="step"><div class="step-check" onclick="toggle(this)"></div><div class="step-content">
+      <div class="step-title">確認 Dockerfile（安全層升級）</div>
+      <div class="code-block"><button class="copy-btn" onclick="cp(this)">複製</button>FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-num" style="background:#E6F1FB;color:#0C447C">1</div>
+    <div><div class="phase-title">GCP 初始化與基礎建設</div><div class="phase-sub">加入 DLQ 死信佇列防護</div></div>
+  </div>
+  <div class="step-list">
+    <div class="step"><div class="step-check" onclick="toggle(this)"></div><div class="step-content">
+      <div class="step-title">啟用必要 API</div>
+      <div class="code-block"><button class="copy-btn" onclick="cp(this)">複製</button>gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com aiplatform.googleapis.com drive.googleapis.com secretmanager.googleapis.com pubsub.googleapis.com firestore.googleapis.com cloudmonitoring.googleapis.com dlp.googleapis.com</div>
+    </div></div>
+    <div class="step"><div class="step-check" onclick="toggle(this)"></div><div class="step-content">
+      <div class="step-title">建立 Firestore 與 Pub/Sub (含 DLQ)</div>
+      <div class="step-desc">建立 Dead Letter Queue，防止爛任務無限重試燒毀算力。</div>
+      <div class="code-block"><button class="copy-btn" onclick="cp(this)">複製</button>gcloud firestore databases create --location=asia-east1 --type=firestore-native
+
+gcloud pubsub topics create openclaw-tasks
+gcloud pubsub topics create openclaw-deadletter
+
+gcloud pubsub subscriptions create openclaw-worker \
+  --topic=openclaw-tasks \
+  --ack-deadline=300 \
+  --dead-letter-topic=openclaw-deadletter \
+  --max-delivery-attempts=5</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-num" style="background:#EEEDFE;color:#3C3489">2</div>
+    <div><div class="phase-title">金鑰不落地 (ADC) 設定</div></div>
+  </div>
+  <div class="step-list">
+    <div class="step"><div class="step-check" onclick="toggle(this)"></div><div class="step-content">
+      <div class="step-title">建立服務帳號 (SA) 並賦權</div>
+      <div class="code-block"><button class="copy-btn" onclick="cp(this)">複製</button>gcloud iam service-accounts create openclaw-sa --display-name="OpenClaw SA"
+
+for role in "roles/aiplatform.user" "roles/datastore.user" "roles/secretmanager.secretAccessor" "roles/pubsub.publisher" "roles/dlp.user"; do
+  gcloud projects add-iam-policy-binding openclaw-proxy \
+    --member="serviceAccount:openclaw-sa@openclaw-proxy.iam.gserviceaccount.com" \
+    --role="$role"
+done</div>
+    </div></div>
+    <div class="step"><div class="step-check" onclick="toggle(this)"></div><div class="step-content">
+      <div class="step-title">儲存金鑰至 Secret Manager</div>
+      <div class="code-block"><button class="copy-btn" onclick="cp(this)">複製</button>echo -n "你的LINE_CHANNEL_SECRET" | gcloud secrets create LINE_CHANNEL_SECRET --data-file=-
+echo -n "你的LINE_ACCESS_TOKEN" | gcloud secrets create LINE_ACCESS_TOKEN --data-file=-
+echo -n "你的GEMINI_API_KEY" | gcloud secrets create GEMINI_API_KEY --data-file=-
+echo -n "你的FOLDER_ID" | gcloud secrets create DRIVE_FOLDER_ID --data-file=-</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-num" style="background:#E1F5EE;color:#085041">3</div>
+    <div><div class="phase-title">Cloud Run 雙容器部署 (v3)</div><div class="phase-sub">效能調校與 Secrets 注入</div></div>
+  </div>
+  <div class="info-box"><i class="ti ti-cpu" style="font-size:18px"></i>【v3 優化】：Webhook 增加記憶體與執行個體限制控制成本；Worker 關閉 CPU Throttling 以確保背景任務不中斷；利用 `--set-secrets` 自動將密鑰注入環境變數。</div>
+  <div class="step-list">
+    <div class="step"><div class="step-check" onclick="toggle(this)"></div><div class="step-content">
+      <div class="step-title">部署 Webhook 主服務</div>
+      <div class="code-block"><button class="copy-btn" onclick="cp(this)">複製</button>gcloud run deploy openclaw-proxy \
+  --source . \
+  --region asia-east1 \
+  --allow-unauthenticated \
+  --service-account openclaw-sa@openclaw-proxy.iam.gserviceaccount.com \
+  --memory 512Mi \
+  --max-instances 2 \
+  --min-instances 0 \
+  --set-env-vars GCP_PROJECT_ID=openclaw-proxy,ALLOWED_LINE_USER_ID=你的USER_ID,SERVICE_TYPE=webhook \
+  --set-secrets="LINE_CHANNEL_SECRET=LINE_CHANNEL_SECRET:latest,LINE_ACCESS_TOKEN=LINE_ACCESS_TOKEN:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest,DRIVE_FOLDER_ID=DRIVE_FOLDER_ID:latest"</div>
+    </div></div>
+    <div class="step"><div class="step-check" onclick="toggle(this)"></div><div class="step-content">
+      <div class="step-title">部署 Task Worker (No Throttling)</div>
+      <div class="code-block"><button class="copy-btn" onclick="cp(this)">複製</button>gcloud run deploy openclaw-worker \
+  --source . \
+  --region asia-east1 \
+  --no-allow-unauthenticated \
+  --no-cpu-throttling \
+  --service-account openclaw-sa@openclaw-proxy.iam.gserviceaccount.com \
+  --memory 1024Mi \
+  --max-instances 2 \
+  --min-instances 0 \
+  --set-env-vars GCP_PROJECT_ID=openclaw-proxy,SERVICE_TYPE=worker \
+  --set-secrets="LINE_CHANNEL_SECRET=LINE_CHANNEL_SECRET:latest,LINE_ACCESS_TOKEN=LINE_ACCESS_TOKEN:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest,DRIVE_FOLDER_ID=DRIVE_FOLDER_ID:latest"</div>
+    </div></div>
+  </div>
+</div>
+
+</div>
+
+<div id="panel-prompts" class="panel">
+
+<div class="info-box"><i class="ti ti-robot" style="font-size:18px"></i>請將下列 Prompt 逐一複製貼給 Antigravity AI Agent。涵蓋了 lifespan、DLQ 處理及完整的 QA 測試套件。</div>
+
+<div class="prompt-card">
+  <div class="prompt-header">
+    <div class="prompt-label"><i class="ti ti-shield"></i> Prompt 1 — GCP DLP 個資遮罩</div>
+    <span class="badge b-blue">資安升級</span>
+  </div>
+  <div class="prompt-body">你是熟悉 GCP 資安合規的 Python 工程師，請幫我生成 masking.py。
+
+需求：
+- 棄用 Regex，改用 `google-cloud-dlp` 套件，呼叫 DLP API 進行去識別化。
+- 必須遮罩：`TAIWAN_UI_NUMBER`, `PHONE_NUMBER`, `EMAIL_ADDRESS`, `CREDIT_CARD_NUMBER`。
+- 回傳格式：(遮罩後的文字, 偵測到的 PII 類型列表)。
+- 使用 Application Default Credentials (ADC) 自動驗證。
+
+產出完整實作碼，並附上 mock DLP 回應的 pytest。</div>
+</div>
+
+<div class="prompt-card">
+  <div class="prompt-header">
+    <div class="prompt-label"><i class="ti ti-git-branch"></i> Prompt 2 — AI Router 上下文升級</div>
+    <span class="badge b-purple">邏輯升級</span>
+  </div>
+  <div class="prompt-body">你是 ML 系統工程師，請優化 LINE Bot 的 AI Routing 模組 (router.py)。
+
+需求：
+- 接收參數：`text: str`, `context_length: int`。
+- 評分標準：關鍵字 (+3), 字數>200 (+2), context_length>3 (+2)。
+- 總分 >= 3 路由至 `Gemini 1.5 Pro`，否則使用 `Flash`。支援 @pro/@flash 強制指定。
+
+產出完整程式碼與邊界測試。</div>
+</div>
+
+<div class="prompt-card">
+  <div class="prompt-header">
+    <div class="prompt-label"><i class="ti ti-coin"></i> Prompt 3 — Firestore Batching (FastAPI lifespan)</div>
+    <span class="badge b-green">企業級防護</span>
+  </div>
+  <div class="prompt-body">你是 GCP 架構師，請實作成本追蹤器 (cost_tracker.py)。
+
+【v3 關鍵需求】：解決 Firestore Rate Limit 與 Cloud Run SIGTERM 遺漏問題！
+- 請實作「記憶體內微型批次 (In-memory Batching)」。
+- 絕對不要依賴 `atexit`。請利用 FastAPI 的 `lifespan` event handler (`@asynccontextmanager`)，確保在應用程式關閉前，觸發 `flush_batch()` 強制寫入 Firestore。
+- 權限走 ADC，不讀 JSON。
+
+請產出 `cost_tracker.py` 與對應的 `main.py` lifespan 整合範例。</div>
+</div>
+
+<div class="prompt-card">
+  <div class="prompt-header">
+    <div class="prompt-label"><i class="ti ti-arrows-split"></i> Prompt 4 — Pub/Sub 時序與 DLQ 防護</div>
+    <span class="badge b-amber">架構優化</span>
+  </div>
+  <div class="prompt-body">你是系統架構師，請利用 Pub/Sub 解決 Webhook 超時，並實作 `webhook_handler.py` 與 `task_worker.py`。
+
+【v3 關鍵需求】：解決 Reply Token 過期與 DLQ 降級防護！
+1. Webhook 收到訊息：
+   - 若為 Flash：直接執行並用 Reply API 回覆。
+   - 若為 Pro：先用 Reply API 送出「處理複雜任務中...」，**再**將任務送進 Pub/Sub enqueue。
+   - 如果 enqueue 失敗，立刻降級交給 Flash 直接處理，不讓用戶看到沉默。
+2. Task Worker：
+   - 收到任務處理完畢後，使用 LINE Push API 回覆。
+   - 若拋出致命錯誤，記錄 log，允許系統透過 GCP 的 DLQ (Dead Letter Queue) 機制自動接管，不進行無限重試。
+
+產出兩個模組的完整程式碼。</div>
+</div>
+
+<div class="prompt-card">
+  <div class="prompt-header">
+    <div class="prompt-label"><i class="ti ti-eye"></i> Prompt 5 — 結構化 Logging 與 Log Explorer</div>
+    <span class="badge b-blue">ISO 審計標準</span>
+  </div>
+  <div class="prompt-body">你是 SRE 工程師。請建立 logger.py 與 FastAPI middleware。
+
+需求：
+- Log 時間戳強制為 `Asia/Taipei` (UTC+8) ISO 8601。
+- 包含 `request_id`, `timestamp`, `user_id_hash`, `latency_ms`。異常時標記 `"alert_level": "CRITICAL"`。
+
+【重要】：請在輸出的註解中，提供一段精確的 GCP Log Explorer 查詢語法 (Query)，讓我可以一次篩選出「2026年之後、來自 Cloud Run 且 alert_level 為 CRITICAL」的事件。</div>
+</div>
+
+<div class="prompt-card">
+  <div class="prompt-header">
+    <div class="prompt-label"><i class="ti ti-player-play"></i> Prompt 6 — 完整 QA 整合測試套件</div>
+    <span class="badge b-purple">面試火力展示</span>
+  </div>
+  <div class="prompt-body">你是 QA 工程師，請為這個具備 DLQ 與 lifespan 的 AI Proxy 建立完整測試套件。
+
+請產出：
+1. `tests/integration/test_webhook_flow.py`：
+   - 模擬 LINE Webhook 請求。
+   - 驗證「Reply API 優先於 Enqueue」的執行順序是否正確。
+   - 模擬 Pub/Sub enqueue 失敗時，是否正確觸發 Flash 降級機制。
+2. `tests/integration/test_lifespan.py`：
+   - 模擬 FastAPI app 啟動與關閉的 lifespan 週期。
+   - 驗證 `flush_batch()` 是否在關閉時被正確呼叫且清空記憶體緩存。
+
+產出完整 pytest 代碼及 `conftest.py` 設定檔。</div>
+</div>
+
+</div>
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.closest('.tab-btn').classList.add('active');
+}
+function toggle(el) {
+  el.classList.toggle('done');
+  updateProgress();
+}
+function updateProgress() {
+  const all = document.querySelectorAll('.step-check');
+  const done = document.querySelectorAll('.step-check.done');
+  const pct = Math.round(done.length / all.length * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = `進度：${done.length} / ${all.length} 步完成`;
+}
+function cp(btn) {
+  const code = btn.parentElement.textContent.replace('複製','').trim();
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = '已複製';
+    setTimeout(() => btn.textContent = '複製', 1500);
+  });
+}
+</script>
+</body>
+</html>

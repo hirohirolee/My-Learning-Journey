@@ -7,3 +7,7 @@ __pycache__/
 # Operating System Files
 .DS_Store
 Thumbs.db
+
+# Project-specific ignores
+SHRIMP.zip
+SHRIMP/
