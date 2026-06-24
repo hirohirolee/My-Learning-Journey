@@ -77,6 +77,71 @@ def ensure_backend_running():
 # 確保後端服務啟動中
 ensure_backend_running()
 
+# ── 初始化 Session State ─────────────────────────────────────
+if "sim_carbon" not in st.session_state: st.session_state["sim_carbon"] = 1.45
+if "sim_yield" not in st.session_state: st.session_state["sim_yield"] = 79.3
+if "sim_user" not in st.session_state: st.session_state["sim_user"] = "EMP-2847"
+if "sim_dept" not in st.session_state: st.session_state["sim_dept"] = "製造一部"
+if "sim_shift" not in st.session_state: st.session_state["sim_shift"] = "A班"
+if "sim_equip" not in st.session_state: st.session_state["sim_equip"] = "SMT-LINE-03"
+if "sim_log" not in st.session_state: st.session_state["sim_log"] = (
+    "2025-01-15 03:42 midnight high-volume download: user downloaded 67 compliance "
+    "asset files from IP 192.168.1.105. Download count exceeded threshold."
+)
+
+# 全局模擬狀態控管
+if "global_sim_state" not in globals():
+    globals()["global_sim_state"] = {"active": False, "thread": None}
+
+def bombard_worker():
+    import requests
+    import time
+    import random
+    
+    api_url = "http://localhost:8000/api/v1/trigger_audit"
+    scenarios = [
+        {
+            "carbon_intensity": 1.65,
+            "user_id": "EHS_Monitor",
+            "event_log": "EHS系統偵測：碳排放強度（1.65 kgCO₂e/unit）超標，觸發 ISO 14064-1 稽核程序。",
+            "department": "製造一部",
+            "shift": "A班",
+            "equipment_id": "BOILER-01",
+            "production_yield": 92.5
+        },
+        {
+            "carbon_intensity": 0.85,
+            "user_id": "生管主管",
+            "event_log": "MES系統通報：製程良率大跌至 79.3%，低於標準門檻 85%，觸發 SOP-PROD-001 生產稽核。",
+            "department": "品保部",
+            "shift": "B班",
+            "equipment_id": "SMT-LINE-03",
+            "production_yield": 79.3
+        },
+        {
+            "carbon_intensity": 0.50,
+            "user_id": "unknown.user",
+            "event_log": "SIEM資安告警：偵測到深夜異常下載機密合規資產，來源IP 192.168.1.105，觸發 ISO 27001 A.8.16 審計。",
+            "department": "資安部",
+            "shift": "C班",
+            "equipment_id": "SERVER-SEC-01",
+            "production_yield": 99.1
+        }
+    ]
+    
+    sim_state = globals()["global_sim_state"]
+    while sim_state["active"]:
+        try:
+            scenario = random.choice(scenarios).copy()
+            if scenario["user_id"] == "EHS_Monitor":
+                scenario["carbon_intensity"] = round(random.uniform(1.2, 2.5), 2)
+            elif scenario["user_id"] == "生管主管":
+                scenario["production_yield"] = round(random.uniform(65.0, 84.0), 1)
+            requests.post(api_url, json=scenario, timeout=3)
+        except Exception:
+            pass
+        time.sleep(3)
+
 # ── 頁面基本設定 ─────────────────────────────────────────────
 st.set_page_config(
     page_title="企業數位韌性 AI 導航系統",
@@ -316,7 +381,8 @@ with tab2:
         with st.container(border=True):
             carbon = st.slider(
                 "碳排放強度（kgCO₂e/unit）",
-                min_value=0.0, max_value=3.0, value=1.45, step=0.05,
+                min_value=0.0, max_value=3.0, step=0.05,
+                key="sim_carbon",
                 help="ISO 14064-1 規定上限為 1.0"
             )
 
@@ -330,18 +396,12 @@ with tab2:
             else:
                 st.error(f"🔴 緊急超標（{carbon:.2f}，Level-3）")
 
-            yield_rate = st.slider("當班良率（%）", 0.0, 100.0, 79.3, 0.1)
-            user_id    = st.text_input("操作人員 ID", "EMP-2847")
-            department = st.selectbox("部門", ["製造一部", "製造二部", "品保部", "資安部"])
-            shift      = st.selectbox("班別", ["A班", "B班", "C班"])
-            equip_id   = st.text_input("設備編號", "SMT-LINE-03")
-
-            log_text = st.text_area(
-                "資安事件日誌",
-                "2025-01-15 03:42 midnight high-volume download: user downloaded 67 compliance "
-                "asset files from IP 192.168.1.105. Download count exceeded threshold.",
-                height=120
-            )
+            yield_rate = st.slider("當班良率（%）", 0.0, 100.0, step=0.1, key="sim_yield")
+            user_id    = st.text_input("操作人員 ID", key="sim_user")
+            department = st.selectbox("部門", ["製造一部", "製造二部", "品保部", "資安部"], key="sim_dept")
+            shift      = st.selectbox("班別", ["A班", "B班", "C班"], key="sim_shift")
+            equip_id   = st.text_input("設備編號", key="sim_equip")
+            log_text   = st.text_area("資安事件日誌", key="sim_log", height=120)
 
     with col_right:
         st.markdown("### 🤖 AI 稽核執行")
@@ -431,6 +491,62 @@ with tab2:
                     for r in risk.get("reasons", []):
                         st.warning(r)
                     st.info(f"⏱️ 回應時限：{risk.get('response_time')}")
+
+        st.markdown("### ⚙️ 系統模擬控制中心")
+        with st.container(border=True):
+            st.markdown("**1. 快速載入情境範本：**")
+            col_ehs, col_mes, col_siem = st.columns(3)
+            
+            if col_ehs.button("🔋 載入 EHS 異常", use_container_width=True):
+                st.session_state["sim_carbon"] = 1.65
+                st.session_state["sim_yield"] = 92.5
+                st.session_state["sim_user"] = "EHS_Monitor"
+                st.session_state["sim_dept"] = "製造一部"
+                st.session_state["sim_shift"] = "A班"
+                st.session_state["sim_equip"] = "BOILER-01"
+                st.session_state["sim_log"] = "EHS系統偵測：碳排放強度（1.65 kgCO₂e/unit）超標，觸發 ISO 14064-1 稽核程序。"
+                st.rerun()
+                
+            if col_mes.button("⚙️ 載入 MES 異常", use_container_width=True):
+                st.session_state["sim_carbon"] = 0.85
+                st.session_state["sim_yield"] = 79.3
+                st.session_state["sim_user"] = "生管主管"
+                st.session_state["sim_dept"] = "品保部"
+                st.session_state["sim_shift"] = "B班"
+                st.session_state["sim_equip"] = "SMT-LINE-03"
+                st.session_state["sim_log"] = "MES系統通報：製程良率大跌至 79.3%，低於標準門檻 85%，觸發 SOP-PROD-001 生產稽核。"
+                st.rerun()
+                
+            if col_siem.button("🛡️ 載入 SIEM 異常", use_container_width=True):
+                st.session_state["sim_carbon"] = 0.50
+                st.session_state["sim_yield"] = 99.1
+                st.session_state["sim_user"] = "unknown.user"
+                st.session_state["sim_dept"] = "資安部"
+                st.session_state["sim_shift"] = "C班"
+                st.session_state["sim_equip"] = "SERVER-SEC-01"
+                st.session_state["sim_log"] = "SIEM資安告警：偵測到深夜異常大量下載機密合規資產，來源IP 192.168.1.105，觸發 ISO 27001 A.8.16 審計。"
+                st.rerun()
+            
+            st.divider()
+            st.markdown("**2. 全自動隨機轟擊：**")
+            
+            sim_state = globals()["global_sim_state"]
+            import threading
+            
+            auto_btn = st.toggle("🚀 開啟全自動隨機轟擊 (每 3 秒自動模擬發送)", value=sim_state["active"])
+            if auto_btn != sim_state["active"]:
+                sim_state["active"] = auto_btn
+                if auto_btn:
+                    if sim_state["thread"] is None or not sim_state["thread"].is_alive():
+                        sim_state["thread"] = threading.Thread(target=bombard_worker, daemon=True)
+                        sim_state["thread"].start()
+                    st.success("背景隨機轟擊已啟動！系統正每 3 秒向後端發送一筆隨機異常。")
+                else:
+                    st.info("已停止自動隨機轟擊模式。")
+                st.rerun()
+                
+            if sim_state["active"]:
+                st.info("🟢 自動轟擊中：背景執行緒正在每 3 秒隨機打擊 API 接口。")
 
 
 # ─── Tab 3：歷史報告查閱 ─────────────────────────────────────
