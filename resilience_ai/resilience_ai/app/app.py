@@ -48,8 +48,8 @@ def ensure_backend_running():
         else:
             env["PYTHONPATH"] = _PROJECT_ROOT
             
-        # 啟動後端子程序 (並記錄日誌以利排錯)
-        log_path = os.path.join(_PROJECT_ROOT, "backend.log")
+        # 啟動後端子程序 (並記錄日誌以利排錯，放在 .venv 底下防止 Streamlit 檔案監聽器觸發重複重載)
+        log_path = os.path.join(_PROJECT_ROOT, ".venv", "backend.log")
         log_file = open(log_path, "a", encoding="utf-8")
         log_file.write(f"\n--- Starting backend at {datetime.now()} ---\n")
         log_file.write(f"sys.executable: {sys.executable}\n")
