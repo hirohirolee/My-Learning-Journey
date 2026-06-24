@@ -167,7 +167,7 @@ def bombard_worker():
             requests.post(api_url, json=scenario, timeout=3)
         except Exception:
             pass
-        time.sleep(3)
+        time.sleep(180)  # 改為 3 分鐘 (180 秒)，避免後端因太頻繁啟動 AI 推理而阻塞
 
 # ── 頁面基本設定 ─────────────────────────────────────────────
 st.set_page_config(
@@ -242,7 +242,7 @@ st.markdown("""
 
 def api_get(path: str) -> dict | None:
     try:
-        r = requests.get(f"{BACKEND}{path}", timeout=5)
+        r = requests.get(f"{BACKEND}{path}", timeout=1)  # 縮短為 1 秒超時，防止後端忙碌時卡住前端網頁畫面
         return r.json()
     except Exception:
         return None
