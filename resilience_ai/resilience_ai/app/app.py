@@ -9,6 +9,73 @@ import requests
 import pandas as pd
 import streamlit as st
 from datetime import datetime
+import os
+import sys
+import socket
+import subprocess
+from dotenv import load_dotenv
+
+# ── 環境變數與自動啟動後端 ──────────────────────────────────
+# 載入專案根目錄的 .env 檔案 (本地測試與 Streamlit 運作設定)
+_CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+_PROJECT_ROOT = os.path.dirname(_CURRENT_DIR)
+_DOTENV_PATH = os.path.join(_PROJECT_ROOT, ".env")
+if os.path.exists(_DOTENV_PATH):
+    load_dotenv(_DOTENV_PATH)
+else:
+    load_dotenv()
+
+def is_port_in_use(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(1.0)
+        return s.connect_ex(('127.0.0.1', port)) == 0
+
+def ensure_backend_running():
+    port = 8000
+    if is_port_in_use(port):
+        return True
+    
+    try:
+        backend_main = os.path.join(_PROJECT_ROOT, "backend", "main.py")
+        if not os.path.exists(backend_main):
+            st.warning(f"⚠️ 找不到後端主程式：{backend_main}")
+            return False
+        
+        # 設定環境變數 PYTHONPATH，讓 uvicorn 能夠正確 import backend.main
+        env = os.environ.copy()
+        if "PYTHONPATH" in env:
+            env["PYTHONPATH"] = f"{_PROJECT_ROOT}{os.pathsep}{env['PYTHONPATH']}"
+        else:
+            env["PYTHONPATH"] = _PROJECT_ROOT
+            
+        # 啟動後端子程序 (並記錄日誌以利排錯)
+        log_path = os.path.join(_PROJECT_ROOT, "backend.log")
+        log_file = open(log_path, "a", encoding="utf-8")
+        log_file.write(f"\n--- Starting backend at {datetime.now()} ---\n")
+        log_file.write(f"sys.executable: {sys.executable}\n")
+        log_file.write(f"PYTHONPATH: {env.get('PYTHONPATH')}\n")
+        log_file.flush()
+        
+        subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "backend.main:app", "--host", "127.0.0.1", "--port", str(port)],
+            cwd=_PROJECT_ROOT,
+            env=env,
+            stdout=log_file,
+            stderr=log_file
+        )
+        
+        # 等待後端啟動完成 (最多等待 10 秒)
+        for _ in range(10):
+            time.sleep(1)
+            if is_port_in_use(port):
+                return True
+        return False
+    except Exception as e:
+        st.error(f"❌ 無法啟動後端子程序：{e}")
+        return False
+
+# 確保後端服務啟動中
+ensure_backend_running()
 
 # ── 頁面基本設定 ─────────────────────────────────────────────
 st.set_page_config(

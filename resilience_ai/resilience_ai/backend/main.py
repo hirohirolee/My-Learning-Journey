@@ -10,6 +10,15 @@ import logging
 import asyncio
 from datetime import datetime
 from typing import Optional
+from dotenv import load_dotenv
+
+# 載入環境變數
+_MAIN_DIR = os.path.dirname(os.path.abspath(__file__))
+_DOTENV_PATH = os.path.join(_MAIN_DIR, "..", ".env")
+if os.path.exists(_DOTENV_PATH):
+    load_dotenv(_DOTENV_PATH)
+else:
+    load_dotenv()
 
 import chromadb
 import httpx
@@ -38,8 +47,8 @@ if not os.path.exists(_TARGET_DB_PATH):
     # 若上一層目錄沒有，嘗試尋找同目錄 (backend) 下的 audit_db
     _TARGET_DB_PATH = os.path.join(_CURRENT_DIR, "audit_db")
 
-# 計算出相對於目前工作目錄的相對路徑，傳遞給 ChromaDB
-DB_PATH      = os.path.relpath(_TARGET_DB_PATH, os.getcwd())
+# 計算出絕對路徑，傳遞給 ChromaDB
+DB_PATH      = os.path.abspath(_TARGET_DB_PATH)
 COLLECTION   = "compliance_rules"
 OLLAMA_URL   = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:14b")
