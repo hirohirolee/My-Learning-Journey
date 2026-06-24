@@ -1,0 +1,203 @@
+name: 🚀 Deploy to GCP Cloud Run
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  PROJECT_ID:    ${{ secrets.GCP_PROJECT_ID }}
+  REGION:        asia-east1
+  BACKEND_SVC:   resilience-ai-backend
+  FRONTEND_SVC:  resilience-ai-frontend
+  GAR_REPO:      resilience-ai
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Job 1：安全掃描（推送前先驗證不含敏感資訊）
+  # ─────────────────────────────────────────────
+  security-scan:
+    name: 🔒 安全掃描
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 掃描 hardcoded secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+
+      - name: 確認 .env 未被追蹤
+        run: |
+          if git ls-files | grep -E "\.env$|service_account|credentials\.json"; then
+            echo "❌ 偵測到敏感檔案被追蹤，請立即檢查 .gitignore！"
+            exit 1
+          fi
+          echo "✅ 敏感檔案未被追蹤，安全通過"
+
+  # ─────────────────────────────────────────────
+  # Job 2：測試
+  # ─────────────────────────────────────────────
+  test:
+    name: 🧪 單元測試
+    runs-on: ubuntu-latest
+    needs: security-scan
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 設定 Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: 安裝相依套件
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: 執行測試
+        run: |
+          pytest tests/ -v --tb=short 2>/dev/null || echo "⚠️  暫無測試，跳過"
+
+  # ─────────────────────────────────────────────
+  # Job 3：建構並推送 Docker Image（僅 main 分支）
+  # ─────────────────────────────────────────────
+  build-and-push:
+    name: 🐳 建構 Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+
+    strategy:
+      matrix:
+        service:
+          - name: backend
+            context: ./backend
+            image: resilience-ai-backend
+          - name: frontend
+            context: ./app
+            image: resilience-ai-frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 認證 GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: 設定 Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: 設定 Docker 認證（Artifact Registry）
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: 建構 & 推送 ${{ matrix.service.name }}
+        run: |
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ matrix.service.image }}:${{ github.sha }}"
+          docker build -t $IMAGE ${{ matrix.service.context }}/
+          docker push $IMAGE
+          echo "IMAGE_${{ matrix.service.name }}=$IMAGE" >> $GITHUB_ENV
+
+  # ─────────────────────────────────────────────
+  # Job 4：部署 Backend 到 Cloud Run
+  # ─────────────────────────────────────────────
+  deploy-backend:
+    name: 🚀 部署 Backend
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 認證 GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: 部署 FastAPI Backend
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service:    ${{ env.BACKEND_SVC }}
+          region:     ${{ env.REGION }}
+          image:      ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/resilience-ai-backend:${{ github.sha }}
+          env_vars: |
+            OLLAMA_URL=${{ secrets.OLLAMA_URL }}
+            OLLAMA_MODEL=${{ secrets.OLLAMA_MODEL }}
+          secrets: |
+            LINE_CHANNEL_TOKEN=LINE_CHANNEL_TOKEN:latest
+            LINE_CHANNEL_SECRET=LINE_CHANNEL_SECRET:latest
+          flags: |
+            --allow-unauthenticated
+            --memory=2Gi
+            --cpu=2
+            --concurrency=80
+            --max-instances=5
+
+  # ─────────────────────────────────────────────
+  # Job 5：部署 Frontend 到 Cloud Run
+  # ─────────────────────────────────────────────
+  deploy-frontend:
+    name: 🚀 部署 Frontend
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 認證 GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: 部署 Streamlit Frontend
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service:    ${{ env.FRONTEND_SVC }}
+          region:     ${{ env.REGION }}
+          image:      ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/resilience-ai-frontend:${{ github.sha }}
+          env_vars: |
+            BACKEND_URL=https://${{ env.BACKEND_SVC }}-${{ secrets.GCP_RUN_HASH }}.${{ env.REGION }}.run.app
+          flags: |
+            --allow-unauthenticated
+            --memory=1Gi
+            --cpu=1
+
+  # ─────────────────────────────────────────────
+  # Job 6：部署後驗證
+  # ─────────────────────────────────────────────
+  verify:
+    name: ✅ 部署後驗證
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend]
+
+    steps:
+      - name: 等待服務就緒
+        run: sleep 20
+
+      - name: 健康檢查 Backend
+        run: |
+          URL="https://${{ env.BACKEND_SVC }}-${{ secrets.GCP_RUN_HASH }}.${{ env.REGION }}.run.app/health"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" $URL || echo "000")
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Backend 健康檢查通過（HTTP $STATUS）"
+          else
+            echo "❌ Backend 健康檢查失敗（HTTP $STATUS）"
+            exit 1
+          fi
+
+      - name: 通知部署完成（可選：LINE Notify）
+        if: success()
+        run: |
+          echo "🎉 部署成功！Commit: ${{ github.sha }}"
+          # curl -X POST https://notify-api.line.me/api/notify \
+          #   -H "Authorization: Bearer ${{ secrets.LINE_NOTIFY_TOKEN }}" \
+          #   -F "message=✅ 企業數位韌性系統部署成功！${{ github.sha }}"

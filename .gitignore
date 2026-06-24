@@ -11,3 +11,10 @@ Thumbs.db
 # Project-specific ignores
 SHRIMP.zip
 SHRIMP/
+
+# Environments and Secrets
+.env
+.env.*
+.venv/
+venv/
+*.json
