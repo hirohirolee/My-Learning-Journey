@@ -51,6 +51,7 @@ def ensure_backend_running():
             
         # 啟動後端子程序 (並記錄日誌以利排錯，放在 .venv 底下防止 Streamlit 檔案監聽器觸發重複重載)
         log_path = os.path.join(_PROJECT_ROOT, ".venv", "backend.log")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
         log_file = open(log_path, "a", encoding="utf-8")
         log_file.write(f"\n--- Starting backend at {datetime.now()} ---\n")
         log_file.write(f"sys.executable: {sys.executable}\n")
@@ -420,6 +421,11 @@ if st.session_state["demo_task_id"] is not None:
                         st.session_state["demo_status"] = "completed"
                         st.session_state["demo_report"] = report
                         break
+                    elif current_status == "pending_approval":
+                        status_box.update(label="AI 稽核完成，等待審核！", state="complete", expanded=True)
+                        st.session_state["demo_status"] = "pending_approval"
+                        st.session_state["demo_report"] = report
+                        break
                     elif current_status == "failed":
                         status_box.update(label="AI 稽核與推理失敗！", state="error", expanded=True)
                         st.session_state["demo_status"] = "failed"
@@ -433,9 +439,117 @@ if st.session_state["demo_task_id"] is not None:
                 st.session_state["demo_status"] = "failed"
             st.rerun()
             
-    elif st.session_state["demo_status"] in ["completed", "failed"]:
+    elif st.session_state["demo_status"] in ["completed", "failed", "pending_approval", "rejected"]:
         report = st.session_state["demo_report"]
-        if report and report.get("status") == "completed":
+        
+        # [FEATURE] HITL 審核機制：待審批狀態顯示
+        if report and report.get("status") == "pending_approval":
+            risk = report.get("risk_assessment", {})
+            risk_lv = risk.get("risk_level", 1)
+            risk_lbl = risk.get("risk_label", "Level-1 輕微")
+            reasons = risk.get("reasons", [])
+            resp_time = risk.get("response_time", "")
+            
+            with st.container(border=True):
+                col_title, col_btn = st.columns([5, 1])
+                col_title.markdown(f"#### 🔒 待審核稽核報告 (Task ID: `{st.session_state['demo_task_id']}`)")
+                if col_btn.button("🗑️ 關閉展示結果", use_container_width=True, key="close_pending"):
+                    st.session_state["demo_task_id"] = None
+                    st.session_state["demo_status"] = "idle"
+                    st.session_state["demo_report"] = None
+                    st.rerun()
+                    
+                st.warning("⚠️ [FEATURE] HITL 審核機制：此任務包含重大決策，需要管理階層審核後方可執行 Agent 行動。")
+                st.divider()
+                
+                # 1. [AI 診斷結果]
+                st.markdown("### 📊 [AI 診斷結果]")
+                if risk_lv == 3:
+                    st.error(f"**風險級別：{risk_lbl}**")
+                elif risk_lv == 2:
+                    st.warning(f"**風險級別：{risk_lbl}**")
+                else:
+                    st.success(f"**風險級別：{risk_lbl}**")
+                
+                col_res1, col_res2 = st.columns([3, 2])
+                with col_res1:
+                    st.markdown("**判定原因：**")
+                    for r in reasons:
+                        st.markdown(f"- ⚠️ {r}")
+                with col_res2:
+                    st.markdown("**要求回應時限：**")
+                    st.info(f"⏱️ {resp_time}")
+                
+                st.divider()
+                
+                # 2. [預計執行的 Agent 動作]
+                st.markdown("### 🤖 [預計執行的 Agent 動作]")
+                proposed_action = report.get("proposed_action", "")
+                if proposed_action:
+                    st.info(f"{proposed_action}")
+                else:
+                    st.info("無擬定之 Agent 模擬防禦或通報動作。")
+                
+                st.divider()
+                
+                # 3. [生成之 CAPA 報告]
+                st.markdown("### 📄 [AI 草擬之 CAPA 報告]")
+                st.markdown(
+                    f'<div class="report-box">{report.get("ai_capa_report", "")}</div>',
+                    unsafe_allow_html=True
+                )
+                
+                st.divider()
+                
+                # 審核表單
+                st.markdown("### ✍️ 人工審核 (Human-in-the-Loop)")
+                approver = st.text_input("審核人主管姓名 / 員編 ID", value="CISO_Manager", key="hitl_approver")
+                
+                col_app, col_rej = st.columns(2)
+                if col_app.button("✅ 核准並執行 (Approve & Execute)", type="primary", use_container_width=True):
+                    res = api_post(f"/api/task/{st.session_state['demo_task_id']}/approve", {"approver": approver})
+                    if res and res.get("status") == "completed":
+                        st.toast("✅ 核准成功！Agent 行動已觸發執行。", icon="🚀")
+                        st.session_state["demo_status"] = "completed"
+                        st.session_state["demo_report"] = res
+                        st.rerun()
+                    else:
+                        st.error(f"核准執行失敗：{res}")
+                        
+                if col_rej.button("❌ 退回重擬 (Reject)", type="secondary", use_container_width=True):
+                    res = api_post(f"/api/task/{st.session_state['demo_task_id']}/reject", {"rejected_by": approver, "reason": "退回重擬"})
+                    if res and res.get("status") == "rejected":
+                        st.toast("❌ 稽核報告已退回重擬。", icon="↩️")
+                        st.session_state["demo_status"] = "rejected"
+                        st.session_state["demo_report"] = res
+                        st.rerun()
+                    else:
+                        st.error(f"退回失敗：{res}")
+
+        # [FEATURE] HITL 審核機制：退回狀態顯示
+        elif report and report.get("status") == "rejected":
+            with st.container(border=True):
+                col_title, col_btn = st.columns([5, 1])
+                col_title.markdown(f"#### ❌ 稽核報告已退回 (Task ID: `{st.session_state['demo_task_id']}`)")
+                if col_btn.button("🗑️ 關閉展示結果", use_container_width=True, key="close_rejected"):
+                    st.session_state["demo_task_id"] = None
+                    st.session_state["demo_status"] = "idle"
+                    st.session_state["demo_report"] = None
+                    st.rerun()
+                
+                st.error(f"🔴 此稽核報告已被 **{report.get('rejected_by')}** 退回重擬。")
+                st.info(f"💬 退回原因：{report.get('reject_reason', '無')}")
+                
+                st.divider()
+                
+                # 3. [生成之 CAPA 報告]
+                st.markdown("### 📄 [退回之 CAPA 報告草稿]")
+                st.markdown(
+                    f'<div class="report-box">{report.get("ai_capa_report", "")}</div>',
+                    unsafe_allow_html=True
+                )
+
+        elif report and report.get("status") == "completed":
             risk = report.get("risk_assessment", {})
             risk_lv = risk.get("risk_level", 1)
             risk_lbl = risk.get("risk_label", "Level-1 輕微")
@@ -445,7 +559,7 @@ if st.session_state["demo_task_id"] is not None:
             with st.container(border=True):
                 col_title, col_btn = st.columns([5, 1])
                 col_title.markdown(f"#### 🎬 模擬情境結果展示 (Task ID: `{st.session_state['demo_task_id']}`)")
-                if col_btn.button("🗑️ 關閉展示結果", use_container_width=True):
+                if col_btn.button("🗑️ 關閉展示結果", use_container_width=True, key="close_completed"):
                     st.session_state["demo_task_id"] = None
                     st.session_state["demo_status"] = "idle"
                     st.session_state["demo_report"] = None
@@ -490,9 +604,29 @@ if st.session_state["demo_task_id"] is not None:
                     unsafe_allow_html=True
                 )
                 
+                # [FEATURE] 匯出正式報告功能
+                st.divider()
+                st.markdown("### 📥 報告匯出")
+                try:
+                    export_task_id = st.session_state['demo_task_id']
+                    res = requests.get(f"{BACKEND}/api/task/{export_task_id}/export", timeout=5)
+                    if res.status_code == 200:
+                        st.download_button(
+                            label="📥 下載官方 ISO 改善對策報告 (Word)",
+                            data=res.content,
+                            file_name=f"ISO_Audit_Report_{export_task_id}.docx",
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            use_container_width=True,
+                            key="btn_export_completed"
+                        )
+                    else:
+                        st.error("⚠️ 無法從後端取得 Word 改善報告")
+                except Exception as e:
+                    st.error(f"⚠️ 讀取 Word 報告出錯：{e}")
+                
         elif report and report.get("status") == "failed":
             st.error(f"❌ 模擬稽核失敗：{report.get('error')}")
-            if st.button("🗑️ 關閉結果"):
+            if st.button("🗑️ 關閉結果", key="close_failed"):
                 st.session_state["demo_task_id"] = None
                 st.session_state["demo_status"] = "idle"
                 st.session_state["demo_report"] = None
@@ -657,68 +791,12 @@ with tab2:
 
                 if result and "task_id" in result:
                     task_id = result["task_id"]
-                    st.success(f"✅ 任務已接收！Task ID：`{task_id}`")
-                    st.session_state["last_task_id"] = task_id
-
-                    # [FEATURE] 導入非同步輪詢機制 (Streamlit Polling)
-                    st.markdown("---")
-                    with st.status("正在進行 AI 檢索與推理...") as status_box:
-                        report = None
-                        for i in range(30):
-                            time.sleep(2)
-                            report = api_get(f"/api/task/{task_id}")
-                            if report:
-                                current_status = report.get("status")
-                                if current_status == "processing":
-                                    status_box.update(label=f"正在進行 AI 檢索與推理... ({(i+1)*2}秒)", state="running")
-                                elif current_status == "completed":
-                                    status_box.update(label="AI 稽核與推理完成！", state="complete", expanded=True)
-                                    break
-                                elif current_status == "failed":
-                                    status_box.update(label="AI 稽核與推理失敗！", state="error", expanded=True)
-                                    break
-                            else:
-                                status_box.update(label="無法獲取後端狀態，正在重試...", state="running")
-
-                    if report and report.get("status") == "completed":
-                        risk = report.get("risk_assessment", {})
-                        risk_lv = risk.get("risk_level", 1)
-                        risk_lbl = risk.get("risk_label", "N/A")
-                        reasons = risk.get("reasons", [])
-                        resp_time = risk.get("response_time", "")
-                        
-                        # [AI 診斷結果]
-                        st.markdown("### 📊 [AI 診斷結果]")
-                        if risk_lv == 3:
-                            st.error(f"**風險級別：{risk_lbl}**")
-                        elif risk_lv == 2:
-                            st.warning(f"**風險級別：{risk_lbl}**")
-                        else:
-                            st.success(f"**風險級別：{risk_lbl}**")
-                        
-                        st.markdown("**判定原因：**")
-                        for reason in reasons:
-                            st.warning(f"⚠️ {reason}")
-                        st.info(f"⏱️ 要求回應時限：{resp_time}")
-
-                        # [Agent 執行動作]
-                        st.markdown("### 🤖 [Agent 執行動作]")
-                        agent_action = report.get("agent_notification")
-                        if agent_action:
-                            st.info(f"{agent_action}")
-                        else:
-                            st.info("無觸發任何 Agent 模擬防禦或通報動作。")
-
-                        # [生成之 CAPA 報告]
-                        st.markdown("### 📄 [生成之 CAPA 報告]")
-                        st.markdown(
-                            f'<div class="report-box">{report.get("ai_capa_report", "")}</div>',
-                            unsafe_allow_html=True
-                        )
-                    elif report and report.get("status") == "failed":
-                        st.error(f"❌ 稽核失敗：{report.get('error')}")
-                    else:
-                        st.info("⏳ AI 仍在推理中，請至「歷史報告」頁籤查詢結果")
+                    # [FEATURE] HITL 審核機制：統一將手動觸發任務重導向至頁面頂部的狀態顯示區以維持狀態
+                    st.session_state["demo_task_id"] = task_id
+                    st.session_state["demo_status"] = "polling"
+                    st.session_state["demo_report"] = None
+                    st.toast("✅ 任務已接收，開始非同步稽核！", icon="📡")
+                    st.rerun()
                 else:
                     st.error(f"❌ API 呼叫失敗：{result}")
 
@@ -848,9 +926,15 @@ with tab3:
                     st.code(anon.get("event_log", "N/A"), language="text")
                 
                 # [DEMO FEATURE] 3. [Agent 執行動作]
+                # [FEATURE] HITL 審核機制：支援待審核與退回狀態之 Agent 行動說明
                 st.markdown("---")
                 st.markdown("### 🤖 [Agent 執行動作]")
                 agent_action = detail.get("agent_notification")
+                if not agent_action and detail.get("status") == "pending_approval":
+                    agent_action = f"[待審批] 預計執行行動：{detail.get('proposed_action', '無')}"
+                elif not agent_action and detail.get("status") == "rejected":
+                    agent_action = f"[已退回] 由 {detail.get('rejected_by')} 退回，原因：{detail.get('reject_reason')}"
+                
                 if agent_action:
                     st.info(agent_action)
                 else:
@@ -872,6 +956,21 @@ with tab3:
                         file_name=f"capa_report_{selected}.json",
                         mime="application/json"
                     )
+
+                    # [FEATURE] 匯出正式報告功能
+                    if detail.get("status") == "completed":
+                        try:
+                            res = requests.get(f"{BACKEND}/api/task/{selected}/export", timeout=5)
+                            if res.status_code == 200:
+                                st.download_button(
+                                    label="📥 下載官方 ISO 改善對策報告 (Word)",
+                                    data=res.content,
+                                    file_name=f"ISO_Audit_Report_{selected}.docx",
+                                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                    key=f"btn_export_history_{selected}"
+                                )
+                        except Exception as e:
+                            st.error(f"⚠️ 無法下載 Word 報告：{e}")
     else:
         st.info("📭 尚無稽核報告，請至「手動觸發稽核」頁籤觸發第一筆稽核")
 

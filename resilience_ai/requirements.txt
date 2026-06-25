@@ -8,3 +8,4 @@ pandas
 requests
 chromadb
 google-genai
+python-docx

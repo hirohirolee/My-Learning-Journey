@@ -37,6 +37,13 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from chromadb.utils import embedding_functions
 
+# [FEATURE] 匯出正式報告功能
+import io
+from docx import Document
+from docx.shared import Pt, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from fastapi.responses import StreamingResponse
+
 # ── 日誌設定 ─────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
@@ -99,6 +106,15 @@ class AuditStatus(BaseModel):
     status:     str
     created_at: str
     report:     Optional[dict] = None
+
+# [FEATURE] HITL 審核機制
+class ApprovePayload(BaseModel):
+    approver: str = Field(..., description="審核人姓名/員工ID")
+
+# [FEATURE] HITL 審核機制
+class RejectPayload(BaseModel):
+    rejected_by: str = Field(..., description="退回人姓名/員工ID")
+    reason: str = Field("退回重擬", description="退回原因")
 
 
 # ╔══════════════════════════════════════════════════════════╗
@@ -307,6 +323,95 @@ async def agent_action_notify(payload_log: str, risk_level: int) -> str:
     return ""
 
 
+# [FEATURE] HITL 審核機制
+async def execute_agent_action(action_msg: str, approver: str):
+    """
+    執行核准後的實際 Agent 行動
+    """
+    log_msg = f"[HITL Action Execution] 審核人 {approver} 已核准，正在執行動作：{action_msg}"
+    print(log_msg)  # 輸出至終端機
+    log.info(log_msg)
+
+
+# [FEATURE] 匯出正式報告功能
+def build_docx_report(task_id: str, task_data: dict) -> io.BytesIO:
+    doc = Document()
+    
+    # 設置標題 Style
+    title = doc.add_paragraph()
+    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = title.add_run("《企業數位韌性 - 國際標準合規與自主稽核改善報告》")
+    run.font.name = "Microsoft JhengHei"
+    run.font.size = Pt(18)
+    run.font.bold = True
+    run.font.color.rgb = RGBColor(30, 64, 175) # 深藍色 (Dark Blue)
+    
+    # 1. 基本資訊
+    doc.add_heading("【一、基本資訊】", level=2)
+    p_info = doc.add_paragraph()
+    p_info.add_run("• 任務 ID: ").bold = True
+    p_info.add_run(f"{task_id}\n")
+    
+    created_at = task_data.get("created_at", "")
+    p_info.add_run("• 生成時間: ").bold = True
+    p_info.add_run(f"{created_at}\n")
+    
+    risk_assessment = task_data.get("risk_assessment", {})
+    risk_lbl = risk_assessment.get("risk_label", "Level-1 輕微")
+    p_info.add_run("• 稽核項目與風險等級: ").bold = True
+    p_info.add_run(f"{risk_lbl}\n")
+    
+    # 2. 異常數據摘要
+    doc.add_heading("【二、異常數據摘要】", level=2)
+    anon_data = task_data.get("anonymized_data", {})
+    p_anon = doc.add_paragraph()
+    p_anon.add_run("• 操作人員 ID (去識別化): ").bold = True
+    p_anon.add_run(f"{anon_data.get('user_id', 'N/A')}\n")
+    p_anon.add_run("• 部門 / 班別: ").bold = True
+    p_anon.add_run(f"{anon_data.get('department', 'N/A')} / {anon_data.get('shift', 'N/A')}\n")
+    p_anon.add_run("• 碳排放強度: ").bold = True
+    p_anon.add_run(f"{anon_data.get('carbon_intensity', 0.0):.2f} kgCO₂e/unit\n")
+    p_anon.add_run("• 當班良率: ").bold = True
+    p_anon.add_run(f"{anon_data.get('yield_rate', 0.0):.1f}%\n" if anon_data.get('yield_rate') is not None else "N/A\n")
+    p_anon.add_run("• 異常日誌: ").bold = True
+    p_anon.add_run(f"{anon_data.get('event_log', 'N/A')}")
+    
+    # 3. AI 專家診斷與防呆建議
+    doc.add_heading("【三、AI 專家診斷與防呆建議 (CAPA)】", level=2)
+    capa_report = task_data.get("ai_capa_report", "")
+    for line in capa_report.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith("### "):
+            doc.add_heading(line.replace("### ", ""), level=3)
+        elif line.startswith("## "):
+            doc.add_heading(line.replace("## ", ""), level=2)
+        elif line.startswith("# "):
+            doc.add_heading(line.replace("# ", ""), level=1)
+        elif line.startswith("- ") or line.startswith("* "):
+            doc.add_paragraph(line[2:], style='List Bullet')
+        else:
+            doc.add_paragraph(line)
+            
+    # 4. 審計與簽核軌跡
+    doc.add_heading("【四、審計與簽核軌跡】", level=2)
+    p_sign = doc.add_paragraph()
+    p_sign.add_run("• 簽核狀態: ").bold = True
+    p_sign.add_run("人類主管已核准執行 (Approved & Executed)\n")
+    p_sign.add_run("• 核准人 (Approver): ").bold = True
+    p_sign.add_run(f"{task_data.get('approved_by', 'N/A')}\n")
+    p_sign.add_run("• 核准時間: ").bold = True
+    p_sign.add_run(f"{task_data.get('approved_at', 'N/A')}\n")
+    p_sign.add_run("• 執行的 Agent 動作: ").bold = True
+    p_sign.add_run(f"{task_data.get('agent_notification', 'N/A')}\n")
+    
+    file_stream = io.BytesIO()
+    doc.save(file_stream)
+    file_stream.seek(0)
+    return file_stream
+
+
 async def run_audit(task_id: str, payload: AuditPayload):
     """
     完整稽核流程（非同步背景執行）
@@ -390,17 +495,17 @@ async def run_audit(task_id: str, payload: AuditPayload):
         # [FEATURE] 呼叫 Agent 主動通知機制
         notify_action = await agent_action_notify(payload.event_log, risk["risk_level"])
 
+        # [FEATURE] HITL 審核機制：暫存擬定的 Agent 行動，原本狀態為 completed，現在改為 pending_approval
         # Step 6: 儲存報告
         report_store[task_id].update({
-            "status":        "completed",
-            "completed_at":  datetime.now().isoformat(),
-            "anonymized_data": safe_data,
-            "risk_assessment": risk,
-            "ai_capa_report":  ai_response,
-            "agent_notification": notify_action,  # 附加 Agent 行動紀錄
-            "context_used":    context[:500] + "..."
+            "status":             "pending_approval",
+            "anonymized_data":    safe_data,
+            "risk_assessment":    risk,
+            "ai_capa_report":     ai_response,
+            "proposed_action":    notify_action,  # 暫存擬定行動
+            "context_used":       context[:500] + "..."
         })
-        log.info(f"✅ [{task_id}] 稽核完成，CAPA 報告已生成")
+        log.info(f"✅ [{task_id}] 稽核完成，報告已生成，等待審核")
 
     except Exception as e:
         log.error(f"❌ [{task_id}] 稽核任務失敗：{e}")
@@ -491,6 +596,57 @@ async def get_task_status(task_id: str):
     return report_store[task_id]
 
 
+# [FEATURE] HITL 審核機制：核准並執行端點
+@app.post("/api/task/{task_id}/approve", tags=["報告審核"])
+async def approve_task(task_id: str, payload: ApprovePayload):
+    """核准任務並執行實際的 Agent 動作"""
+    if task_id not in report_store:
+        raise HTTPException(status_code=404, detail=f"任務 {task_id} 不存在")
+    
+    task_data = report_store[task_id]
+    if task_data.get("status") != "pending_approval":
+        raise HTTPException(status_code=400, detail=f"任務狀態為 {task_data.get('status')}，非待審核狀態")
+    
+    proposed_action = task_data.get("proposed_action", "")
+    
+    # 執行實際的 Agent 動作
+    await execute_agent_action(proposed_action, payload.approver)
+    
+    # 更新狀態為 completed，並記錄審核人與審核時間
+    task_data.update({
+        "status": "completed",
+        "completed_at": datetime.now().isoformat(),
+        "approved_by": payload.approver,
+        "approved_at": datetime.now().isoformat(),
+        "agent_notification": f"[已執行] 由 {payload.approver} 於 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} 核准並執行：{proposed_action}"
+    })
+    
+    return task_data
+
+
+# [FEATURE] HITL 審核機制：退回重擬端點
+@app.post("/api/task/{task_id}/reject", tags=["報告審核"])
+async def reject_task(task_id: str, payload: RejectPayload):
+    """退回任務並填寫退回原因"""
+    if task_id not in report_store:
+        raise HTTPException(status_code=404, detail=f"任務 {task_id} 不存在")
+    
+    task_data = report_store[task_id]
+    if task_data.get("status") != "pending_approval":
+        raise HTTPException(status_code=400, detail=f"任務狀態為 {task_data.get('status')}，非待審核狀態")
+    
+    # 更新狀態為 rejected，並記錄退回人與退回原因
+    task_data.update({
+        "status": "rejected",
+        "rejected_at": datetime.now().isoformat(),
+        "rejected_by": payload.rejected_by,
+        "reject_reason": payload.reason,
+        "agent_notification": f"[已退回] 由 {payload.rejected_by} 於 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} 退回，原因：{payload.reason}"
+    })
+    
+    return task_data
+
+
 # [DEMO FEATURE] 新增情境腳本展示數據查詢 API
 @app.get("/api/v1/scenarios", tags=["情境模擬"])
 async def get_scenarios():
@@ -504,6 +660,30 @@ async def get_report(task_id: str):
     if task_id not in report_store:
         raise HTTPException(status_code=404, detail=f"任務 {task_id} 不存在")
     return report_store[task_id]
+
+
+# [FEATURE] 匯出正式報告功能
+@app.get("/api/task/{task_id}/export", tags=["報告匯出"])
+async def export_task_report(task_id: str):
+    """將已核准完成的報告匯出為正式 Word (DOCX) 文件"""
+    if task_id not in report_store:
+        raise HTTPException(status_code=404, detail=f"任務 {task_id} 不存在")
+    
+    task_data = report_store[task_id]
+    if task_data.get("status") != "completed":
+        raise HTTPException(status_code=400, detail="任務尚未核准完成，無法匯出正式報告")
+    
+    # 產生 DOCX 檔案流
+    file_stream = build_docx_report(task_id, task_data)
+    
+    headers = {
+        "Content-Disposition": f"attachment; filename=ISO_Audit_Report_{task_id}.docx"
+    }
+    return StreamingResponse(
+        file_stream, 
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", 
+        headers=headers
+    )
 
 
 @app.get("/api/v1/reports", tags=["報告查詢"])
