@@ -138,8 +138,10 @@ def bombard_worker(stop_event):
     import requests
     import time
     import random
+    import os
     
-    api_url = "http://localhost:8000/api/v1/trigger_audit"
+    backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+    api_url = f"{backend_url}/api/v1/trigger_audit"
     scenarios = [
         {
             "carbon_intensity": 1.65,
@@ -195,7 +197,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-BACKEND = "http://localhost:8000"
+# [FEATURE] Docker 容器化：支援環境變數讀取後端 URL
+BACKEND = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 # ── 自定義 CSS ───────────────────────────────────────────────
 st.markdown("""

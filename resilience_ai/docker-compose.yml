@@ -1,0 +1,42 @@
+# [FEATURE] Docker 容器化一鍵部署配置
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: resilience_ai_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # 資料持久化：確保容器重啟時稽核紀錄與 ChromaDB 不會流失
+      - ./audit_db:/app/audit_db
+      - ./vector_db:/app/vector_db
+    environment:
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=qwen2.5:14b
+    extra_hosts:
+      # 允許容器存取地端宿主機運行的 Ollama 服務
+      - "host.docker.internal:host-gateway"
+    networks:
+      - resilience_network
+    restart: always
+
+  frontend:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    container_name: resilience_ai_frontend
+    ports:
+      - "8501:8501"
+    environment:
+      # 在 Docker 內網中藉由服務名稱與後端連接
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - resilience_network
+    restart: always
+
+networks:
+  resilience_network:
+    driver: bridge

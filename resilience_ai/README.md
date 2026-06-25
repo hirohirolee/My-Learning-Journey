@@ -127,6 +127,42 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 ---
 
+## 🐳 Docker 一鍵部署說明 (多容器環境)
+
+本專案支援使用 Docker 與 Docker Compose 進行一鍵容器化部署。此方式會將前端 (Streamlit)、後端 (FastAPI) 分別打包成獨立容器，並在 Docker 內部網路中進行安全互聯。
+
+### 前置準備
+- 本地需安裝 [Docker](https://www.docker.com/products/docker-desktop/) 與 Docker Compose。
+- 若需要地端 LLM 支援，請確保宿主機已啟動 Ollama 且本地模型加載完成（例如 `qwen2.5:14b`）。
+
+### 部署步驟
+
+#### 1. 建立 `.env` 環境變數檔
+在專案根目錄下確認 `.env` 檔案存在，並設定對應的環境變數：
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+*(注意：在 `docker-compose.yml` 內部，已預設將後端的 `OLLAMA_URL` 指向宿主機的 `http://host.docker.internal:11434`。)*
+
+#### 2. 一鍵構建與啟動容器
+在專案根目錄執行以下命令，在背景構建並啟動服務：
+```bash
+docker-compose up --build -d
+```
+
+#### 3. 驗證服務連通性
+- **Streamlit 前端網頁**：請在瀏覽器中訪問 [http://localhost:8501](http://localhost:8501)
+- **FastAPI 後端 API**：可在瀏覽器訪問 [http://localhost:8000/docs](http://localhost:8000/docs) 查看自動生成的 API 文件。
+
+#### 4. 停止與清理服務
+若要停止運行並刪除容器，請執行：
+```bash
+docker-compose down
+```
+*(資料持久化：您的 ChromaDB 向量庫與審計日誌掛載於宿主機的 `./vector_db` 與 `./audit_db` 目錄中，即使容器被刪除，數據仍會保留。)*
+
+---
+
 ## 💼 商業價值與 ROI 論述
 
 本系統的架構設計能為上市櫃製造企業帶來顯著的商業價值：
