@@ -151,6 +151,16 @@ if "demo_status" not in st.session_state:
 if "demo_report" not in st.session_state:
     st.session_state["demo_report"] = None
 
+# [Agentic HITL] 內建 AI 授權執行動作的 Session State
+# recommended_action: 儲存 AI 建議的執行動作字典（從任務狀態 API 回傳）
+# action_executed:    防呄旗標，一旦執行即設為 True，避免重複發送請求
+if "ai_recommended_action" not in st.session_state:
+    st.session_state["ai_recommended_action"] = None
+if "ai_action_executed" not in st.session_state:
+    st.session_state["ai_action_executed"] = False
+if "ai_action_result" not in st.session_state:
+    st.session_state["ai_action_result"] = None
+
 def load_ehs_scenario():
     st.session_state["sim_carbon"] = 1.65
     st.session_state["sim_yield"] = 92.5
@@ -461,6 +471,66 @@ st.markdown("""
         display: inline-block;
         font-weight: 600;
     }
+
+    /* ====== Agentic Action 授權按鈕樣式 ====== */
+    /* 微發光瘩色按鈕：符合 Dark Mode 審美，與 AI 小控台卡片協調 */
+    .btn-authorize-action {
+        display: inline-block;
+        width: 100%;
+        padding: 12px 20px;
+        margin-top: 12px;
+        background: linear-gradient(135deg, #1a1200 0%, #2d1f00 100%);
+        border: 1px solid #F59E0B;
+        border-radius: 8px;
+        color: #FCD34D;
+        font-size: 1.0rem;
+        font-weight: 700;
+        font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+        text-align: center;
+        cursor: pointer;
+        letter-spacing: 0.03em;
+        box-shadow:
+            0 0 12px rgba(245, 158, 11, 0.25),
+            0 0 24px rgba(245, 158, 11, 0.10),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        transition: all 0.25s ease;
+        text-decoration: none;
+    }
+    .btn-authorize-action:hover {
+        background: linear-gradient(135deg, #2d1f00 0%, #3d2a00 100%);
+        border-color: #FCD34D;
+        box-shadow:
+            0 0 20px rgba(245, 158, 11, 0.45),
+            0 0 40px rgba(245, 158, 11, 0.20),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        color: #FDE68A;
+    }
+    /* 執行成功狀態樣式：綠色微發光 */
+    .action-success-badge {
+        background: linear-gradient(135deg, #0a1e0f 0%, #0d2016 100%);
+        border: 1px solid #2ED573;
+        border-radius: 8px;
+        padding: 14px 18px;
+        color: #2ED573;
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-top: 12px;
+        box-shadow: 0 0 15px rgba(46, 213, 115, 0.20);
+        text-align: center;
+        line-height: 1.6;
+    }
+    /* 執行資訊明細卡 */
+    .action-detail-card {
+        background: rgba(46, 213, 115, 0.05);
+        border: 1px solid rgba(46, 213, 115, 0.2);
+        border-radius: 6px;
+        padding: 10px 14px;
+        margin-top: 8px;
+        font-size: 0.82rem;
+        color: #94a3b8;
+        line-height: 1.6;
+    }
+    .action-detail-card strong { color: #CBD5E1; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -1242,27 +1312,32 @@ with tab1:
                 if not ai_prompt:
                     st.warning("⚠️ 請輸入諮詢問題")
                 else:
+                    # [Agentic HITL] 每次發出新請求時，重置上一次的執行防呆旗標與結果
+                    st.session_state["ai_recommended_action"] = None
+                    st.session_state["ai_action_executed"]    = False
+                    st.session_state["ai_action_result"]      = None
+
                     try:
                         headers = {"Authorization": f"Bearer {token}"}
                         # 1. 提交非同步任務請求
                         with st.spinner("🚀 正在送出 AI 決策請求..."):
                             r = requests.post(
-                                f"{BACKEND}/api/ai/generate_advice", 
-                                json={"prompt": ai_prompt}, 
-                                headers=headers, 
+                                f"{BACKEND}/api/ai/generate_advice",
+                                json={"prompt": ai_prompt},
+                                headers=headers,
                                 timeout=15
                             )
-                        
+
                         if r.status_code == 200:
                             res_data = r.json()
-                            task_id = res_data.get("task_id")
-                            
+                            task_id  = res_data.get("task_id")
+
                             # 2. 建立動態輪詢 placeholder
                             status_placeholder = st.empty()
-                            finished = False
+                            finished    = False
                             max_retries = 60
                             retry_count = 0
-                            
+
                             while not finished and retry_count < max_retries:
                                 # 查詢最新狀態
                                 status_resp = requests.get(
@@ -1271,9 +1346,9 @@ with tab1:
                                     timeout=5
                                 )
                                 if status_resp.status_code == 200:
-                                    task_info = status_resp.json()
+                                    task_info  = status_resp.json()
                                     cur_status = task_info.get("status")
-                                    
+
                                     if cur_status == "PENDING":
                                         status_placeholder.warning("⏳ 系統忙碌中，AI 正在排隊中...")
                                     elif cur_status == "RUNNING":
@@ -1281,9 +1356,15 @@ with tab1:
                                     elif cur_status == "SUCCESS":
                                         status_placeholder.empty()
                                         st.success("🟢 AI 建議分析完成！")
-                                        st.markdown(f"**🤖 地端大腦建議：**")
+                                        st.markdown("**🤖 地端大腦建議：**")
                                         st.info(task_info.get("advice"))
-                                        st.markdown(f'<div class="ai-latency-tag">⏱️ 耗時：{task_info.get("latency_ms")} ms</div>', unsafe_allow_html=True)
+                                        st.markdown(
+                                            f'<div class="ai-latency-tag">⏱️ 耗時：{task_info.get("latency_ms")} ms</div>',
+                                            unsafe_allow_html=True
+                                        )
+                                        # [Agentic HITL] 將 recommended_action 存入 session_state
+                                        # Streamlit rerun 後會在下方渲染授權執行按鈕
+                                        st.session_state["ai_recommended_action"] = task_info.get("recommended_action")
                                         finished = True
                                     elif cur_status == "FAILED":
                                         status_placeholder.empty()
@@ -1292,14 +1373,14 @@ with tab1:
                                 else:
                                     status_placeholder.error(f"⚠️ 查詢狀態異常 ({status_resp.status_code})")
                                     finished = True
-                                    
+
                                 if not finished:
                                     time.sleep(2)
                                     retry_count += 1
-                                    
+
                             if not finished and retry_count >= max_retries:
                                 status_placeholder.error("❌ 輪詢逾時，請稍後重試")
-                                
+
                         elif r.status_code == 403:
                             st.error("❌ 403 Forbidden: 權限不足，拒絕存取 AI 諮詢端點")
                         elif r.status_code == 400:
@@ -1308,6 +1389,111 @@ with tab1:
                             st.error(f"⚠️ 後端伺服器異常 ({r.status_code})：{r.text}")
                     except Exception as e:
                         st.error(f"❌ 呼叫 AI 端點失敗：{e}")
+
+            # ────────────────────────────────────────────────────────────────
+            # [Agentic HITL] 授權執行按鈕渲染區
+            # 此區塊跟「向 AI 請求分析建議」按鈕並列，在每次 Streamlit rerun 時重新渲染。
+            # 串接邏輯：
+            #   (A) 有 recommended_action 且尚未執行 → 顯示【⚡ 授權執行】按鈕
+            #   (B) 已授權執行                       → 顯示執行成功詳細資訊
+            #   (C) 無 recommended_action            → 不顯示任何額外元素
+            # ────────────────────────────────────────────────────────────────
+            rec_action  = st.session_state.get("ai_recommended_action")
+            is_executed = st.session_state.get("ai_action_executed", False)
+
+            # (A) 有建議動作且尚未執行 — 顯示授權按鈕
+            if rec_action and not is_executed:
+                display_name = rec_action.get("display_name") or rec_action.get("action_type", "未知動作")
+                action_type  = rec_action.get("action_type", "")
+                target       = rec_action.get("target", "未指定")
+                reason       = rec_action.get("reason", "")
+
+                # AI 建議執行動作說明卡（瑩光橙色卡）
+                st.markdown(f"""
+                <div style="
+                    background: rgba(245,158,11,0.06);
+                    border: 1px solid rgba(245,158,11,0.30);
+                    border-radius: 8px;
+                    padding: 12px 16px;
+                    margin-top: 14px;
+                ">
+                    <div style="color:#F59E0B; font-size:0.78rem; font-weight:600;
+                                letter-spacing:0.05em; text-transform:uppercase; margin-bottom:6px;">
+                        ⚡ AI 建議執行動作
+                    </div>
+                    <div style="color:#FCD34D; font-size:1.05rem; font-weight:700; margin-bottom:4px;">
+                        {display_name}
+                    </div>
+                    <div style="color:#94a3b8; font-size:0.82rem;">🎯 目標：{target}</div>
+                    <div style="color:#64748b; font-size:0.80rem; margin-top:4px;">💬 {reason}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # 【⚡ 授權 AI 執行】按鈕
+                # 防呆機制：利用 session_state["ai_action_executed"] = True 在點擊瞬間阻斷重複請求
+                if st.button(
+                    f"⚡ 授權 AI 執行：{display_name}",
+                    key="btn_authorize_action",
+                    use_container_width=True,
+                    type="primary"
+                ):
+                    # 防呆：先將旗標設為 True，避免使用者在 spinner 期間重複點擊
+                    st.session_state["ai_action_executed"] = True
+
+                    with st.spinner("🤖 AI 正在連線執行中..."):
+                        try:
+                            exec_resp = requests.post(
+                                f"{BACKEND}/api/actions/execute",
+                                json={
+                                    "action_type": action_type,
+                                    "payload": {
+                                        "target":     target,
+                                        "issue_type": rec_action.get("issue_type", ""),
+                                        "department": rec_action.get("department", ""),
+                                        "reason":     reason,
+                                    }
+                                },
+                                headers={"Authorization": f"Bearer {token}"},
+                                timeout=20
+                            )
+
+                            if exec_resp.status_code == 200:
+                                # 執行成功，儲存結果至 session_state
+                                st.session_state["ai_action_result"] = exec_resp.json()
+                            else:
+                                # 執行失敗：重置防呆旗標，讓使用者可重試
+                                st.session_state["ai_action_executed"] = False
+                                st.error(f"❌ 執行失敗 ({exec_resp.status_code})：{exec_resp.text}")
+                        except Exception as ex:
+                            st.session_state["ai_action_executed"] = False
+                            st.error(f"❌ 連線後端執行 API 失敗：{ex}")
+
+                    # 執行完成後重新渲染頁面，進入 (B) 狀態顯示成功結果
+                    st.rerun()
+
+            # (B) 已授權執行 — 顯示執行成功詳細資訊
+            elif rec_action and is_executed:
+                exec_data   = st.session_state.get("ai_action_result") or {}
+                inner       = exec_data.get("result", {})
+                result_text = inner.get("result", "執行完成") if inner else "執行完成"
+                executed_at = inner.get("executed_at", "") if inner else ""
+
+                # 執行成功——綠色微發光資訊卡
+                st.markdown("""
+                <div class="action-success-badge">
+                    ✅ 動作已成功執行，並寫入系統稽核軌跡
+                </div>""", unsafe_allow_html=True)
+
+                if result_text:
+                    st.markdown(f"""
+                    <div class="action-detail-card">
+                        <strong>📄 執行結果：</strong><br>{result_text}
+                        {'<br><strong>⏰ 執行時間：</strong> ' + executed_at if executed_at else ''}
+                    </div>""", unsafe_allow_html=True)
+
+                st.caption("🔒 防呆：授權按鈕已失效。請重新發出 AI 諮詢以執行新動作。")
+
+
 
 
 # ─── Tab 2：手動觸發稽核 ─────────────────────────────────────

@@ -734,7 +734,12 @@ async def ai_inference_worker():
             await asyncio.sleep(random.uniform(1.5, 3.0))
 
             prompt_lower = masked_prompt.lower()
-            if "資安" in prompt_lower or "事件" in prompt_lower or "下載" in prompt_lower or "sec" in prompt_lower:
+
+            # ── Agentic Action 對應邏輯 ────────────────────────────────
+            # 依據 prompt 關鍵字，規則式決定 AI 建議的「推薦執行動作」(recommended_action)。
+            # 採用規則式（非 LLM 輸出解析）確保格式穩定，避免 LLM 幻覺造成執行錯誤。
+            # 資安/IP/下載類 → BLOCK_IP；碳排/ESG 類 → CREATE_CAPA；良率/供應商類 → NOTIFY_SUPPLIER
+            if "資安" in prompt_lower or "事件" in prompt_lower or "下載" in prompt_lower or "sec" in prompt_lower or "ip" in prompt_lower:
                 ai_res_raw = (
                     f"【地端 AI (RAG 增強建議)】\n"
                     f"根據檢索到的 ISO 27001 A.8.16 參考條文，針對大量下載行為，建議採取以下對策：\n"
@@ -742,13 +747,44 @@ async def ai_inference_worker():
                     f"2. 隔離涉事主體 (已遮蔽代碼: {masked_prompt})；\n"
                     f"3. 立即重置該帳號的 SSO 登入 Token，並在 2 小時內向 CISO 進行事故通報。"
                 )
-            elif "碳" in prompt_lower or "carbon" in prompt_lower or "14064" in prompt_lower:
+                # Agentic: 建議執行「封鎖異常 IP」動作（資安情境）
+                recommended_action = {
+                    "action_type": "BLOCK_IP",
+                    "display_name": "封鎖異常 IP (防火牆)",
+                    "target": "[IP_REMOVED]",   # IP 已被 Guardrails 遮蔽，符合個資保護
+                    "issue_type": "ISO 27001 A.8.16 資安事件",
+                    "reason": "偵測到異常下載行為或資安事件，建議立即封鎖來源 IP"
+                }
+            elif "碳" in prompt_lower or "carbon" in prompt_lower or "14064" in prompt_lower or "esg" in prompt_lower:
                 ai_res_raw = (
                     f"【地端 AI (RAG 增強建議)】\n"
                     f"根據檢索到的 ISO 14064-1 參考條文，碳強度指標超標矯正措施：\n"
                     f"1. 立即啟動 Level-1 / Level-2 矯正改善程序；\n"
                     f"2. 自動指派碳強度異常檢討單至永續發展委員會，通報廠長召開緊急減碳會議 (已遮蔽代碼: {masked_prompt})。"
                 )
+                # Agentic: 建議執行「建立 CAPA 矯正單」動作（ESG/碳排情境）
+                recommended_action = {
+                    "action_type": "CREATE_CAPA",
+                    "display_name": "建立 CAPA 矯正單 (MES)",
+                    "target": "FACTORY-ESG",
+                    "department": "永續發展委員會",
+                    "reason": "碳排放強度超標，依 ISO 14064-1 要求建立矯正預防單"
+                }
+            elif "供應商" in prompt_lower or "supplier" in prompt_lower or "esg" in prompt_lower:
+                ai_res_raw = (
+                    f"【地端 AI (RAG 增強建議)】\n"
+                    f"根據供應商管理 SOP 規範，建議對異常供應商進行通知：\n"
+                    f"1. 立即發送異常通知信給供應商窗口，要求 72 小時內回覆矯正計畫；\n"
+                    f"2. 在 ERP 系統中建立供應商異常工單，追蹤矯正進度。"
+                )
+                # Agentic: 建議執行「發送供應商通知」動作（供應商異常情境）
+                recommended_action = {
+                    "action_type": "NOTIFY_SUPPLIER",
+                    "display_name": "發送供應商異常通知 (Email)",
+                    "target": "供應商 (Vendor)",
+                    "issue_type": "ESG 或交期異常",
+                    "reason": "偵測到供應商異常，建議發送通知以要求矯正改善"
+                }
             else:
                 ai_res_raw = (
                     f"【地端 AI (RAG 增強建議)】\n"
@@ -756,6 +792,14 @@ async def ai_inference_worker():
                     f"1. 製程組長與品保工程師應於 4 小時內草擬 CAPA 報告；\n"
                     f"2. 立即排查貼片機吸嘴磨損情況，並校正回焊爐加熱區溫度設定。"
                 )
+                # Agentic: 建議執行「建立 CAPA 矯正單」動作（生管良率情境）
+                recommended_action = {
+                    "action_type": "CREATE_CAPA",
+                    "display_name": "建立 CAPA 矯正單 (MES)",
+                    "target": "SMT-Line",
+                    "department": "品保部",
+                    "reason": "生產良率低於標準門檻 85%，依 SOP-PROD-001 要求建立矯正預防單"
+                }
 
             latency = int((time.time() - start_time) * 1000)
 
@@ -773,13 +817,14 @@ async def ai_inference_worker():
                 latency_ms=latency
             )
 
-            # 5. 更新狀態表為 SUCCESS
+            # 5. 更新狀態表為 SUCCESS，同時儲存 recommended_action 供前端 HITL 按鈕渲染
             ai_tasks_registry[task_id].update({
-                "status": "SUCCESS",
-                "advice": ai_res_unmasked,
-                "latency_ms": latency
+                "status":             "SUCCESS",
+                "advice":             ai_res_unmasked,
+                "latency_ms":         latency,
+                "recommended_action": recommended_action,  # Agentic: 附加推薦執行動作
             })
-            log.info(f"✅ [Queue Worker] 任務 {task_id} 處理完成")
+            log.info(f"✅ [Queue Worker] 任務 {task_id} 處理完成，推薦動作: {recommended_action.get('action_type')}")
 
         except Exception as e:
             log.error(f"❌ [Queue Worker] 任務處理失敗: {e}")
@@ -883,8 +928,11 @@ async def get_task_status(task_id: str, current_user: User = Depends(get_current
         "status": task["status"]
     }
     if task["status"] == "SUCCESS":
-        result["advice"] = task["advice"]
-        result["latency_ms"] = task["latency_ms"]
+        result["advice"]             = task["advice"]
+        result["latency_ms"]         = task["latency_ms"]
+        # Agentic: 回傳 recommended_action 供前端 Human-in-the-Loop 按鈕渲染
+        # 前端可依此欄位決定是否顯示「⚡ 授權 AI 執行」按鈕
+        result["recommended_action"] = task.get("recommended_action")
     elif task["status"] == "FAILED":
         result["error"] = task.get("error", "任務執行失敗")
 
@@ -1295,4 +1343,119 @@ async def quick_risk(payload: AuditPayload):
     return {
         "risk":    risk,
         "suggest": "建議立即觸發 /api/v1/trigger_audit 進行完整 AI 稽核" if risk["risk_level"] >= 2 else "持續監控中"
+    }
+
+
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Agentic Actions — 授權 AI 自動化執行端點                ║
+# ╚══════════════════════════════════════════════════════════╝
+
+class ActionExecuteRequest(BaseModel):
+    """
+    前端授權 AI 執行動作時，傳遞給後端的請求 Schema。
+    action_type 必須是 action_service 定義的合法動作類型。
+    payload 為執行動作所需的參數字典（target、department 等），
+    必須確保不含未遮蔽的個人資料 (PII)，由 action_service 內建 Guardrails 驗證。
+    """
+    action_type: str  = Field(..., description="動作類型: CREATE_CAPA | BLOCK_IP | NOTIFY_SUPPLIER")
+    payload:     dict = Field(default={}, description="執行動作所需的參數字典")
+
+
+@app.post("/api/actions/execute", tags=["Agentic Actions"])
+async def execute_agentic_action(
+    req: ActionExecuteRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Agentic Action 授權執行端點
+    ─────────────────────────────────────────────────────────────
+    Human-in-the-Loop 串接流程：
+      前端 ⚡ 授權按鈕 → POST /api/actions/execute
+        → action_service.execute_action() (含 Guardrails 驗證)
+          → 模擬執行 (asyncio.sleep)
+            → 回傳結果 + 寫入 audit_logs (Action_Executed)
+
+    權限：需有效 JWT Token（任何已登入使用者均可觸發授權動作）
+    防呆：action_service 內部驗證 payload 不含 PII（Guardrails）
+    """
+    import time as _time
+    from database import log_audit_event
+    from action_service import execute_action, VALID_ACTION_TYPES, ACTION_DISPLAY_NAMES
+
+    start_time = _time.time()
+
+    # ── Step 1: 驗證 action_type 是否在合法白名單內 ─────────────
+    if req.action_type not in VALID_ACTION_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"不支援的動作類型：'{req.action_type}'。合法動作：{', '.join(VALID_ACTION_TYPES)}"
+        )
+
+    # ── Step 2: 補充授權人資訊至 payload（供稽核軌跡追蹤）────────
+    # 將授權人的使用者名稱注入 payload，action_service 可記錄於執行結果中
+    enriched_payload = {
+        **req.payload,
+        "triggered_by":    current_user.username,
+        "authorized_by":   current_user.username,
+        "authorized_role": current_user.role,
+    }
+
+    log.info(
+        f"⚡ [Agentic Action] 使用者 {current_user.username} ({current_user.role}) "
+        f"授權執行 {req.action_type} — 目標: {req.payload.get('target', '未指定')}"
+    )
+
+    # ── Step 3: 呼叫 action_service 執行模擬動作 ────────────────
+    # action_service 內建 Guardrails 驗證，若 payload 含 PII 則拋出 ValueError
+    try:
+        execution_result = await execute_action(req.action_type, enriched_payload)
+    except ValueError as ve:
+        # Guardrails 阻斷或非法動作類型
+        log.warning(f"⚠️ [Agentic Action] 執行被阻斷: {ve}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(ve)
+        )
+    except Exception as ex:
+        log.error(f"❌ [Agentic Action] 執行失敗: {ex}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"動作執行時發生內部錯誤：{str(ex)}"
+        )
+
+    latency_ms = int((_time.time() - start_time) * 1000)
+
+    # ── Step 4: 寫入稽核日誌（標記為 Action_Executed）────────────
+    # 此筆日誌是完整 Agentic Workflow 的關鍵稽核軌跡，
+    # 記錄誰、在何時、授權 AI 執行了什麼動作、對哪個目標。
+    action_display = ACTION_DISPLAY_NAMES.get(req.action_type, req.action_type)
+    audit_detail = (
+        f"[Agentic Action] 使用者 {current_user.username} 授權 AI 執行「{action_display}」。"
+        f"目標：{req.payload.get('target', '未指定')}。"
+        f"執行結果：{execution_result.get('result', 'N/A')[:120]}"
+    )
+
+    log_audit_event(
+        username=current_user.username,
+        role=current_user.role,
+        action_type="Action_Executed",       # 標記為 Action_Executed，區別一般 LLM_Generation 事件
+        action_details=audit_detail,
+        ai_response=str(execution_result),
+        latency_ms=latency_ms
+    )
+
+    log.info(
+        f"✅ [Agentic Action] {req.action_type} 執行完成，"
+        f"耗時 {latency_ms}ms，已寫入稽核日誌。"
+    )
+
+    # ── Step 5: 回傳執行結果 ──────────────────────────────────────
+    return {
+        "status":       "success",
+        "action_type":  req.action_type,
+        "display_name": action_display,
+        "result":       execution_result,
+        "executed_by":  current_user.username,
+        "latency_ms":   latency_ms,
+        "audit_logged": True,   # 確認已寫入稽核日誌
     }
