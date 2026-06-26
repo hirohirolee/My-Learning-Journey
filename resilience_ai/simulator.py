@@ -57,7 +57,7 @@ def main():
         print("[1] 手動模擬 EHS 異常（碳強度超標）")
         print("[2] 手動模擬 MES 異常（良率低下）")
         print("[3] 手動模擬 SIEM 異常（深夜資安威脅）")
-        print("[4] 全自動隨機轟擊（每 3 秒自動隨機生成異常，Ctrl+C 終止）")
+        print("[4] 全自動隨機轟擊（每 5 分鐘自動隨機生成異常，Ctrl+C 終止）")
         print("[0] 離開")
         
         choice = input("請輸入數字 (0-4): ").strip()
@@ -69,7 +69,7 @@ def main():
             scenario_idx = int(choice)
             send_payload(SCENARIOS[scenario_idx])
         elif choice == '4':
-            print("\n[*] 啟動全自動隨機轟擊模式！每 3 秒發射一次，請按 Ctrl+C 終止...")
+            print("\n[*] 啟動全自動隨機轟擊模式！每 5 分鐘發射一次，請按 Ctrl+C 終止...")
             try:
                 while True:
                     scenario_idx = random.choice([1, 2, 3])
@@ -81,7 +81,7 @@ def main():
                         payload["production_yield"] = round(random.uniform(65.0, 84.0), 1)
                     
                     send_payload(payload)
-                    time.sleep(3)
+                    time.sleep(300)
             except KeyboardInterrupt:
                 print("\n[!] 隨機轟擊已手動終止。")
         else:
