@@ -95,3 +95,7 @@ htmlcov/
 # Streamlit Cloud 部署需要單機讀取本地 RAG 知識庫，在此將其強制加入版本控制追蹤
 !audit_db/
 !audit_db/**
+
+# ── 專案特殊排除（憑證與備份） ─────────────────────
+credentials.md
+chroma_db/

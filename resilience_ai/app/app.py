@@ -80,6 +80,58 @@ def ensure_backend_running():
 ensure_backend_running()
 
 # ── 初始化 Session State 與 Callbacks ─────────────────────────
+if "token" not in st.session_state:
+    st.session_state["token"] = None
+if "role" not in st.session_state:
+    st.session_state["role"] = None
+
+# 阻斷式登入表單
+if not st.session_state["token"]:
+    st.markdown("""
+    <div style="text-align: center; padding: 2rem;">
+        <h1 style="color: #1e40af; font-family: 'Outfit', sans-serif;">🛡️ 私有化 AI 稽核決策中心</h1>
+        <p style="color: #94a3b8; font-size: 1.1rem;">ISO 14064-1 ｜ ISO 27001 ｜ ISO 9001 決策中樞</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col_log1, col_log2, col_log3 = st.columns([1, 2, 1])
+    with col_log2:
+        with st.container(border=True):
+            st.subheader("🔑 帳號身分驗證")
+            username = st.text_input("帳號 (Username)", placeholder="例如: admin, qms, ciso")
+            password = st.text_input("密碼 (Password)", type="password", placeholder="請輸入密碼")
+            submit = st.button("🚀 登入系統", use_container_width=True, type="primary")
+            
+            if submit:
+                if not username or not password:
+                    st.error("⚠️ 請輸入帳號與密碼")
+                else:
+                    try:
+                        backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+                        r = requests.post(f"{backend_url}/api/login", json={"username": username, "password": password}, timeout=5)
+                        if r.status_code == 200:
+                            data = r.json()
+                            st.session_state["token"] = data.get("token")
+                            st.session_state["role"] = data.get("role")
+                            st.success("🎉 登入成功！正在載入戰情系統...")
+                            time.sleep(1)
+                            st.rerun()
+                        else:
+                            st.error("❌ 登入失敗：帳號或密碼錯誤")
+                    except Exception as e:
+                        st.error(f"❌ 連線後端伺服器失敗：{e}")
+            
+            st.divider()
+            st.markdown("""
+            <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">
+                <strong>💡 測試帳號提示：</strong><br>
+                • 系統管理員：<code>admin</code> / <code>admin123</code> (角色: <code>admin</code>)<br>
+                • 生管經理：<code>qms</code> / <code>qms123</code> (角色: <code>qms_manager</code>)<br>
+                • 資安長：<code>ciso</code> / <code>ciso123</code> (角色: <code>ciso</code>)
+            </div>
+            """, unsafe_allow_html=True)
+    st.stop()
+
 if "sim_carbon" not in st.session_state: st.session_state["sim_carbon"] = 1.45
 if "sim_yield" not in st.session_state: st.session_state["sim_yield"] = 79.3
 if "sim_user" not in st.session_state: st.session_state["sim_user"] = "EMP-2847"
@@ -203,56 +255,212 @@ BACKEND = os.getenv("BACKEND_URL", "http://localhost:8000")
 # ── 自定義 CSS ───────────────────────────────────────────────
 st.markdown("""
 <style>
-    /* 主色調 */
-    :root {
-        --primary:   #1e40af;
-        --warning:   #d97706;
-        --danger:    #dc2626;
-        --success:   #16a34a;
-        --surface:   #1e293b;
+    /* 強制隱藏 Streamlit 預設裝飾 */
+    header { visibility: hidden !important; }
+    footer { visibility: hidden !important; }
+    #MainMenu { visibility: hidden !important; }
+    .stDeployButton { display: none !important; }
+    
+    /* 全局背景色與文字 */
+    body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+        background-color: #0A1128 !important;
+        color: #FFFFFF !important;
+        font-family: 'Outfit', 'Noto Sans TC', sans-serif !important;
     }
-
-    /* 卡片樣式 */
+    
+    /* 調整側邊欄樣式 */
+    [data-testid="stSidebar"] {
+        background-color: #060B1E !important;
+        border-right: 1px solid #1E295D !important;
+    }
+    
+    /* 統一 st.markdown 容器圓角邊框 (Card Container) */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #111936 !important;
+        border: 1px solid #1E295D !important;
+        border-radius: 6px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    }
+    
+    /* 自訂戰情室卡片樣式 */
     .metric-card {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        border: 1px solid #334155;
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
-        color: white;
+        background-color: #111936;
+        border: 1px solid #1E295D;
+        border-radius: 6px;
+        padding: 16px 20px;
+        text-align: left;
+        color: #FFFFFF;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background-color: #00D2D3;
+    }
+    
+    /* 警示級別霓虹左側邊條 */
+    .metric-card-severe::before { background-color: #FF4D4D; box-shadow: 0 0 10px #FF4D4D; }
+    .metric-card-warning::before { background-color: #FFA934; box-shadow: 0 0 10px #FFA934; }
+    .metric-card-success::before { background-color: #2ED573; box-shadow: 0 0 10px #2ED573; }
+    .metric-card-info::before { background-color: #22A6B3; box-shadow: 0 0 10px #22A6B3; }
+    
+    .metric-label {
+        font-size: 0.8rem;
+        color: #8A99AD;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
     }
     .metric-value {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         font-weight: 700;
-        margin: 8px 0;
+        margin: 4px 0;
+        line-height: 1.2;
     }
-    .metric-label {
-        font-size: 0.85rem;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+    .metric-sub {
+        font-size: 0.75rem;
+        color: #64748B;
     }
-
-    /* 狀態標籤 */
-    .badge-safe     { background:#16a34a20; color:#16a34a; padding:4px 12px; border-radius:20px; font-size:0.8rem; border:1px solid #16a34a40; }
-    .badge-warn     { background:#d9770620; color:#d97706; padding:4px 12px; border-radius:20px; font-size:0.8rem; border:1px solid #d9770640; }
-    .badge-critical { background:#dc262620; color:#dc2626; padding:4px 12px; border-radius:20px; font-size:0.8rem; border:1px solid #dc262640; }
-
-    /* 報告區塊 */
-    .report-box {
-        background: #0f172a;
-        border: 1px solid #1e40af;
-        border-radius: 8px;
+    
+    /* 微型標籤/徽章 */
+    .badge-mini {
+        position: absolute;
+        right: 12px;
+        top: 12px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    .badge-mini-red { background: rgba(255, 77, 77, 0.15); color: #FF4D4D; border: 1px solid rgba(255, 77, 77, 0.3); }
+    .badge-mini-yellow { background: rgba(255, 169, 52, 0.15); color: #FFA934; border: 1px solid rgba(255, 169, 52, 0.3); }
+    .badge-mini-green { background: rgba(46, 213, 115, 0.15); color: #2ED573; border: 1px solid rgba(46, 213, 115, 0.3); }
+    .badge-mini-cyan { background: rgba(0, 210, 211, 0.15); color: #00D2D3; border: 1px solid rgba(0, 210, 211, 0.3); }
+    
+    /* AI 霓虹控制台卡片 */
+    .ai-console-card {
+        background-color: #111936;
+        border: 1px solid #00D2D3;
+        border-radius: 6px;
         padding: 20px;
-        color: #e2e8f0;
-        font-family: 'Noto Sans TC', monospace;
-        line-height: 1.8;
+        box-shadow: 0 0 15px rgba(0, 210, 211, 0.15);
+        position: relative;
+    }
+    .ai-latency-tag {
+        font-size: 0.7rem;
+        color: #00D2D3;
+        opacity: 0.8;
+        text-align: right;
+        margin-top: 8px;
+    }
+    
+    /* 狀態標籤 */
+    .badge-safe     { background:#2ED57320; color:#2ED573; padding:4px 12px; border-radius:20px; font-size:0.8rem; border:1px solid #2ED57340; }
+    .badge-warn     { background:#FFA93420; color:#FFA934; padding:4px 12px; border-radius:20px; font-size:0.8rem; border:1px solid #FFA93440; }
+    .badge-critical { background:#FF4D4D20; color:#FF4D4D; padding:4px 12px; border-radius:20px; font-size:0.8rem; border:1px solid #FF4D4D40; }
+    
+    /* 報告區塊樣式 */
+    .report-box {
+        background-color: #060B1E;
+        border: 1px solid #1E295D;
+        border-radius: 6px;
+        padding: 16px 20px;
+        color: #E2E8F0;
+        font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+        line-height: 1.7;
         white-space: pre-wrap;
+        font-size: 0.95rem;
+    }
+    
+    /* 表格視覺優化 */
+    div[data-testid="stTable"] table {
+        background-color: #111936 !important;
+        color: #FFFFFF !important;
+        border-collapse: collapse;
+        border: 1px solid #1E295D !important;
+        width: 100%;
+    }
+    div[data-testid="stTable"] th {
+        background-color: #162047 !important;
+        color: #00D2D3 !important;
+        font-weight: 600;
+        border: 1px solid #1E295D !important;
+        padding: 10px;
+        text-align: left;
+    }
+    div[data-testid="stTable"] td {
+        border: 1px solid #1E295D !important;
+        padding: 8px 10px;
+    }
+    div[data-testid="stTable"] tr:nth-child(even) {
+        background-color: #151E3D !important; /* 斑馬紋 */
+    }
+    div[data-testid="stTable"] tr:hover {
+        background-color: #1E2A5C !important; /* 懸停 */
+        transition: background-color 0.2s ease;
     }
 
-    /* 隱藏 Streamlit 預設元素 */
-    #MainMenu { visibility: hidden; }
-    footer    { visibility: hidden; }
+    /* [Step 5 ESG] ESG 碳排預警卡片樣式：使用 #2ED573 綠色霧光系表示環境維度指標 */
+    .esg-card {
+        background: linear-gradient(135deg, #0A1E12 0%, #111936 100%);
+        border: 1px solid #2ED573;
+        border-radius: 6px;
+        padding: 16px 20px;
+        text-align: left;
+        color: #FFFFFF;
+        box-shadow: 0 0 18px rgba(46, 213, 115, 0.18), 0 4px 15px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+    /* ESG 卡片左側標誌條 */
+    .esg-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, #2ED573, #00D2D3);
+        box-shadow: 0 0 12px rgba(46, 213, 115, 0.8);
+    }
+    /* ESG 卡片頁簽 */
+    .esg-label {
+        font-size: 0.75rem;
+        color: #2ED573;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+    .esg-value {
+        font-size: 2.0rem;
+        font-weight: 700;
+        color: #2ED573;
+        margin: 4px 0;
+        line-height: 1.2;
+    }
+    .esg-sub {
+        font-size: 0.72rem;
+        color: #7FC99B;
+    }
+    /* ESG 告警列表：高亮字欲 */
+    .esg-alert-badge {
+        background: rgba(46, 213, 115, 0.12);
+        color: #2ED573;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        border: 1px solid rgba(46, 213, 115, 0.35);
+        display: inline-block;
+        font-weight: 600;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -263,14 +471,20 @@ st.markdown("""
 
 def api_get(path: str) -> dict | None:
     try:
-        r = requests.get(f"{BACKEND}{path}", timeout=1)  # 縮短為 1 秒超時，防止後端忙碌時卡住前端網頁畫面
+        headers = {}
+        if "token" in st.session_state and st.session_state["token"]:
+            headers["Authorization"] = f"Bearer {st.session_state['token']}"
+        r = requests.get(f"{BACKEND}{path}", headers=headers, timeout=5)
         return r.json()
     except Exception:
         return None
 
 def api_post(path: str, data: dict) -> dict | None:
     try:
-        r = requests.post(f"{BACKEND}{path}", json=data, timeout=10)
+        headers = {}
+        if "token" in st.session_state and st.session_state["token"]:
+            headers["Authorization"] = f"Bearer {st.session_state['token']}"
+        r = requests.post(f"{BACKEND}{path}", json=data, headers=headers, timeout=10)
         return r.json()
     except Exception as e:
         return {"error": str(e)}
@@ -289,21 +503,58 @@ def carbon_gauge_emoji(value: float) -> str:
 # ║  側邊欄：系統設定                                        ║
 # ╚══════════════════════════════════════════════════════════╝
 
+@st.cache_data(ttl=15)
+def get_cached_detailed_health() -> dict | None:
+    try:
+        headers = {}
+        if "token" in st.session_state and st.session_state["token"]:
+            headers["Authorization"] = f"Bearer {st.session_state['token']}"
+        r = requests.get(f"{BACKEND}/api/health/detailed", headers=headers, timeout=2.0)
+        if r.status_code == 200:
+            return r.json()
+    except Exception:
+        pass
+    return None
+
 with st.sidebar:
     st.markdown("## 🛡️ 系統控制台")
     st.divider()
 
-    # 系統狀態
-    health = api_get("/health")
-    if health:
-        st.markdown("### 📡 子系統狀態")
-        for key, val in health.items():
-            if key == "active_tasks":
-                st.metric("進行中稽核", val)
-                continue
-            color = "🟢" if "online" in str(val) else "🔴"
-            st.markdown(f"{color} **{key.upper()}**: `{val}`")
+    # 顯示登入身分與登出
+    st.markdown("### 👤 當前使用者")
+    st.success(f"帳號角色: **{st.session_state.role}**")
+    if st.button("🚪 登出系統", use_container_width=True):
+        st.session_state["token"] = None
+        st.session_state["role"] = None
+        st.rerun()
+
+    st.divider()
+
+    # 呼叫 /api/health/detailed 監測系統健康狀態並使用快取防卡頓
+    detailed_health = get_cached_detailed_health()
+
+    # 1. 地端大腦狀態
+    st.markdown("### 🧠 地端大腦狀態")
+    if detailed_health and detailed_health.get("ollama") == "online":
+        st.success("🟢 Ollama 在線 (Online)")
     else:
+        st.error("🔴 Ollama 離線 (Offline)")
+        if st.button("🔄 重新連線 Ollama", key="reconnect_ollama_btn", use_container_width=True):
+            get_cached_detailed_health.clear()
+            st.rerun()
+
+    st.divider()
+
+    # 2. 子系統狀態
+    if detailed_health:
+        st.markdown("### 📡 子系統狀態")
+        st.metric("進行中稽核", detailed_health.get("active_tasks", 0))
+        st.markdown("🟢 **API**: `online`")
+        chroma_val = detailed_health.get("chromadb", "offline")
+        chroma_color = "🟢" if "online" in str(chroma_val) else "🔴"
+        st.markdown(f"{chroma_color} **CHROMADB**: `{chroma_val}`")
+    else:
+        st.markdown("### 📡 子系統狀態")
         st.error("❌ 無法連線後端 API\n請確認 FastAPI 已啟動於 :8000")
 
     st.divider()
@@ -319,6 +570,61 @@ with st.sidebar:
         st.rerun()
 
     st.divider()
+
+    # 3. 詳細系統健康面板
+    if detailed_health:
+        st.markdown("### 📊 資料庫統計")
+        db_s = detailed_health.get("db_stats", {})
+        col_s1, col_s2 = st.columns(2)
+        col_s1.metric("📋 總報告數", db_s.get("total_reports", 0))
+        col_s2.metric("✅ 已完成",   db_s.get("completed_reports", 0))
+        col_s3, col_s4 = st.columns(2)
+        col_s3.metric("⏳ 待審核",   db_s.get("pending_approval", 0))
+        col_s4.metric("📅 今日稽核", db_s.get("today_reports", 0))
+
+        q_depth = detailed_health.get("task_queue_depth", 0)
+        if q_depth > 0:
+            st.warning(f"🔄 AI 佇列深度：{q_depth} 筆等待中")
+        else:
+            st.success("🔄 AI 佇列：閒置 (Idle)")
+        st.markdown(f"`SQLite:` {detailed_health.get('sqlite', 'unknown')}")
+
+    # [Step 5] 報表中心 (僅限 admin 與 ciso)
+    if st.session_state.get("role") in ["admin", "ciso"]:
+        st.divider()
+        st.markdown("### 📊 報表中心")
+        with st.container(border=True):
+            st.markdown("##### 📥 稽核週報一鍵匯出")
+            st.caption("自動彙整近 7 日稽核軌跡，由 AI 撰寫合規摘要並輸出 Word。")
+            if st.button("🔄 生成本週 AI 稽核報告", use_container_width=True, key="btn_trigger_weekly_report"):
+                with st.spinner("🚀 正在撈取日誌並呼叫 AI 產生查核報告..."):
+                    try:
+                        headers = {}
+                        if "token" in st.session_state and st.session_state["token"]:
+                            headers["Authorization"] = f"Bearer {st.session_state['token']}"
+                        r = requests.get(f"{BACKEND}/api/reports/generate", headers=headers, timeout=35)
+                        if r.status_code == 200:
+                            st.session_state["weekly_report_bytes"] = r.content
+                            st.success("🟢 報告生成成功！")
+                        elif r.status_code == 403:
+                            st.error("❌ 權限不足：限 admin/ciso 下載")
+                        else:
+                            st.error(f"❌ 生成失敗 ({r.status_code})：{r.text}")
+                    except Exception as e:
+                        st.error(f"❌ 連線後端報表 API 失敗：{e}")
+
+            if "weekly_report_bytes" in st.session_state and st.session_state["weekly_report_bytes"]:
+                today_filename = datetime.now().strftime("%Y%m%d")
+                st.download_button(
+                    label="📥 下載 Word 稽核報告 (.docx)",
+                    data=st.session_state["weekly_report_bytes"],
+                    file_name=f"Audit_Report_{today_filename}.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True,
+                    key="btn_download_weekly_report"
+                )
+
+    st.divider()
     st.caption(f"🕐 最後更新：{datetime.now().strftime('%H:%M:%S')}")
     st.caption("© 2025 企業數位韌性系統 v2.0")
 
@@ -330,6 +636,9 @@ with st.sidebar:
 st.markdown("# 🛡️ 企業數位韌性 AI 導航系統")
 st.markdown("**地端安全私有化 AI 決策中樞** ｜ ISO 14064-1 × ISO 27001 × 生管 SOP 三合一合規稽核")
 st.divider()
+
+role = st.session_state.role
+token = st.session_state.token
 
 # [DEMO FEATURE] 快速情境展示
 with st.expander("🎬 快速情境展示", expanded=True):
@@ -612,7 +921,10 @@ if st.session_state["demo_task_id"] is not None:
                 st.markdown("### 📥 報告匯出")
                 try:
                     export_task_id = st.session_state['demo_task_id']
-                    res = requests.get(f"{BACKEND}/api/task/{export_task_id}/export", timeout=5)
+                    headers = {}
+                    if "token" in st.session_state and st.session_state["token"]:
+                        headers["Authorization"] = f"Bearer {st.session_state['token']}"
+                    res = requests.get(f"{BACKEND}/api/task/{export_task_id}/export", headers=headers, timeout=5)
                     if res.status_code == 200:
                         st.download_button(
                             label="📥 下載官方 ISO 改善對策報告 (Word)",
@@ -650,76 +962,352 @@ with tab1:
     st.markdown("## 📊 產線即時狀態（模擬 Power BI 數據饋入）")
     st.caption("數據來源：MES 系統 Webhook → FastAPI 後端 → 去識別化 → AI 分析")
 
-    # 模擬即時數據
-    col1, col2, col3, col4 = st.columns(4)
+    # [Step 5 ESG] 頂部指標區：5 欄配置（前 4 欄套用原樣式，第 5 欄新增 ESG 碳排預警卡片）
+    col1, col2, col3, col4, col_esg = st.columns([1, 1, 1, 1, 1])
+
+    # [Step 4] 動態讀取報告數據計算 KPI
+    _all_reports = api_get("/api/v1/reports") or []
+    _today_str   = datetime.now().strftime("%Y-%m-%d")
+    _today_done  = sum(1 for r in _all_reports if r.get("status") == "completed"
+                       and (_today_str in (r.get("created_at") or "")))
+    _pending_cnt = sum(1 for r in _all_reports if r.get("status") == "pending_approval")
+    _max_risk    = max((r.get("risk_level", 1) for r in _all_reports), default=1)
+    _total_cnt   = len(_all_reports)
+
+    # 定義 _high_risk_reports 以解決 NameError 告警事件錯誤
+    _high_risk_reports = []
+    for r in _all_reports:
+        if r.get("risk_level", 1) >= 2:
+            if "risk_label" not in r and "risk_level" in r:
+                lv = r.get("risk_level", 1)
+                r["risk_label"] = {1: "Level-1 輕微", 2: "Level-2 嚴重", 3: "Level-3 緊急"}.get(lv, f"Level-{lv}")
+            _high_risk_reports.append(r)
+
+    # KPI 色彩映射
+    _risk_color_map = {1: "metric-card-success", 2: "metric-card-warning", 3: "metric-card-severe"}
+    _risk_label_map = {1: "🟢 正常", 2: "🟡 警示", 3: "🔴 緊急"}
+    _risk_badge_map = {1: "badge-mini-green", 2: "badge-mini-yellow", 3: "badge-mini-red"}
+    _max_risk_cls   = _risk_color_map.get(_max_risk, "metric-card-info")
+    _max_risk_lbl   = _risk_label_map.get(_max_risk, "未知")
+    _max_risk_bdg   = _risk_badge_map.get(_max_risk, "badge-mini-cyan")
 
     with col1:
-        st.markdown("""
-        <div class="metric-card">
-            <div class="metric-label">碳排放強度</div>
-            <div class="metric-value" style="color:#d97706">1.45</div>
-            <div class="metric-label">kgCO₂e/unit ⚠️ 超標</div>
+        st.markdown(f"""
+        <div class="metric-card metric-card-info">
+            <span class="badge-mini badge-mini-cyan">📋 所有</span>
+            <div class="metric-label">總稽核報告數</div>
+            <div class="metric-value" style="color:#00D2D3">{_total_cnt}</div>
+            <div class="metric-sub">SQLite 持久化儲存</div>
         </div>
         """, unsafe_allow_html=True)
 
     with col2:
-        st.markdown("""
-        <div class="metric-card">
-            <div class="metric-label">當班良率</div>
-            <div class="metric-value" style="color:#dc2626">79.3%</div>
-            <div class="metric-label">目標 85% 🔴 未達標</div>
+        st.markdown(f"""
+        <div class="metric-card metric-card-success">
+            <span class="badge-mini badge-mini-green">✅ 今日</span>
+            <div class="metric-label">今日完成稽核</div>
+            <div class="metric-value" style="color:#2ED573">{_today_done}</div>
+            <div class="metric-sub">已核准並歸檔</div>
         </div>
         """, unsafe_allow_html=True)
 
     with col3:
-        st.markdown("""
-        <div class="metric-card">
-            <div class="metric-label">資安事件</div>
-            <div class="metric-value" style="color:#dc2626">2</div>
-            <div class="metric-label">過去 24 小時 🔴</div>
+        _pending_color = "metric-card-warning" if _pending_cnt > 0 else "metric-card-success"
+        _pending_badge = "badge-mini-yellow" if _pending_cnt > 0 else "badge-mini-green"
+        _pending_icon  = "⏳ 待審" if _pending_cnt > 0 else "✅ 清空"
+        st.markdown(f"""
+        <div class="metric-card {_pending_color}">
+            <span class="badge-mini {_pending_badge}">{_pending_icon}</span>
+            <div class="metric-label">待人工審核</div>
+            <div class="metric-value" style="color:#FFA934">{_pending_cnt}</div>
+            <div class="metric-sub">HITL 簽核佇列</div>
         </div>
         """, unsafe_allow_html=True)
 
     with col4:
-        st.markdown("""
-        <div class="metric-card">
-            <div class="metric-label">AI 稽核任務</div>
-            <div class="metric-value" style="color:#16a34a">7</div>
-            <div class="metric-label">今日完成 🟢</div>
+        st.markdown(f"""
+        <div class="metric-card {_max_risk_cls}">
+            <span class="badge-mini {_max_risk_bdg}">最高</span>
+            <div class="metric-label">當前最高風險等級</div>
+            <div class="metric-value" style="font-size:1.4rem;margin-top:6px">{_max_risk_lbl}</div>
+            <div class="metric-sub">Level-{_max_risk} 事件存在</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+
+    # [Step 5 ESG] 第 5 欄：ESG 碳排預警卡片，使用 #2ED573 綠色系識別環境維度
+    with col_esg:
+        # 模擬本月廠區平均碳排放強度（生產環境中應從 EHS 系統 API 讀取）
+        _avg_carbon = 1.45  # kgCO₂e/unit，模擬值
+        _data_missing_count = 3  # 能耗數據缺漏件數，模擬值
+
+        # 若有真實報告，略微調整模擬數字以顯示動態感
+        if _all_reports:
+            _completed_real = sum(1 for r in _all_reports if r.get("status") == "completed")
+            # 真實完成筆數越多，缺漏件數遞減（模擬數據修復進度）
+            _data_missing_count = max(0, 3 - _completed_real)
+
+        # 碳排強度狀態判斷（顏色與文字）
+        if _avg_carbon <= 1.0:
+            _ci_color  = "#2ED573"
+            _ci_icon   = "✅"
+            _ci_status = "合規"
+        elif _avg_carbon <= 1.5:
+            _ci_color  = "#FFA934"
+            _ci_icon   = "⚠️"
+            _ci_status = "輕度超標"
+        else:
+            _ci_color  = "#FF4D4D"
+            _ci_icon   = "🔴"
+            _ci_status = "嚴重超標"
+
+        st.markdown(f"""
+        <div class="esg-card">
+            <span style="position:absolute;right:12px;top:12px;background:rgba(46,213,115,0.15);
+                color:#2ED573;border:1px solid rgba(46,213,115,0.3);padding:2px 6px;
+                border-radius:4px;font-size:0.7rem;font-weight:600;">
+                {_ci_icon} {_ci_status}
+            </span>
+            <div class="esg-label">🌱 ESG 碳排預警</div>
+            <div class="esg-value" style="color:{_ci_color}">{_avg_carbon:.2f}</div>
+            <div class="esg-sub">kgCO₂e/unit 本月均強度</div>
+            <div style="margin-top:8px;font-size:0.72rem;color:#7FC99B;">
+                📊 能耗缺漏: <strong style="color:#FFA934">{_data_missing_count}</strong> 件
+                &nbsp;|&nbsp; Scope 2 查核中
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
     st.divider()
 
-    # 模擬趨勢圖表
-    col_a, col_b = st.columns(2)
 
-    with col_a:
-        st.markdown("### 碳排放強度趨勢（過去 8 班）")
-        carbon_data = pd.DataFrame({
-            "班別":   ["A班-1", "B班-1", "C班-1", "A班-2", "B班-2", "C班-2", "A班-3", "B班-3"],
-            "碳強度": [0.92, 1.05, 0.88, 1.23, 1.45, 1.31, 1.67, 1.45],
-            "上限":   [1.0] * 8
-        })
-        st.line_chart(carbon_data.set_index("班別")[["碳強度", "上限"]])
+    # 左右大雙欄配置
+    main_left, main_right = st.columns([3, 1])
 
-    with col_b:
-        st.markdown("### 良率趨勢（過去 8 班）")
-        yield_data = pd.DataFrame({
-            "班別": ["A班-1", "B班-1", "C班-1", "A班-2", "B班-2", "C班-2", "A班-3", "B班-3"],
-            "良率": [91.2, 88.5, 92.0, 85.3, 82.1, 79.3, 81.0, 79.3],
-            "目標": [85.0] * 8
-        })
-        st.line_chart(yield_data.set_index("班別")[["良率", "目標"]])
+    with main_left:
+        st.markdown("### 📈 產線趨勢監控 (Realtime Trends)")
+        
+        # [Step 4] 動態趨勢圖：從真實報告中提取數據，無數據時使用模擬數據
+        col_chart_a, col_chart_b = st.columns(2)
+        with col_chart_a:
+            st.markdown("##### 📈 碳排放強度趨勢（最近稽核）")
+            _carbon_vals = [
+                r.get("data_json") for r in _all_reports[:8]
+                if r.get("data_json")
+            ] if False else None  # DB列表不含data_json
+            # 從 API 已有的 _all_reports 列表無法取到 carbon 數值，需用模擬數據
+            carbon_data = pd.DataFrame({
+                "班別":   ["A班-1", "B班-1", "C班-1", "A班-2", "B班-2", "C班-2", "A班-3", "B班-3"],
+                "碳強度": [0.92, 1.05, 0.88, 1.23, 1.45, 1.31, 1.67, 1.45],
+                "上限":   [1.0] * 8
+            })
+            st.line_chart(carbon_data.set_index("班別")[["碳強度", "上限"]])
+            if _total_cnt > 0:
+                st.caption(f"📊 系統已累積 **{_total_cnt}** 筆稽核記錄於 SQLite")
 
-    st.divider()
-    st.markdown("### 🚨 近期告警事件")
-    alerts = [
-        {"時間": "03:42", "類型": "資安", "嚴重度": "🔴 Level-3", "說明": "深夜大量下載合規清冊（ISO 27001 A.8.16）"},
-        {"時間": "06:15", "類型": "碳排放", "嚴重度": "🟠 Level-2", "說明": "碳強度 1.67 超標（上限 1.0）"},
-        {"時間": "08:30", "類型": "生產", "嚴重度": "🟡 Level-2", "說明": "良率 79.3% 低於目標 85%"},
-    ]
-    st.dataframe(pd.DataFrame(alerts), use_container_width=True, hide_index=True)
+        with col_chart_b:
+            st.markdown("##### 📊 稽核任務狀態分布")
+            if _all_reports:
+                _status_counts = {}
+                for r in _all_reports:
+                    s = r.get("status", "unknown")
+                    _status_counts[s] = _status_counts.get(s, 0) + 1
+                status_df = pd.DataFrame([
+                    {"狀態": k, "數量": v}
+                    for k, v in _status_counts.items()
+                ])
+                st.bar_chart(status_df.set_index("狀態"))
+            else:
+                yield_data = pd.DataFrame({
+                    "班別": ["A班-1", "B班-1", "C班-1", "A班-2", "B班-2", "C班-2", "A班-3", "B班-3"],
+                    "良率": [91.2, 88.5, 92.0, 85.3, 82.1, 79.3, 81.0, 79.3],
+                    "目標": [85.0] * 8
+                })
+                st.line_chart(yield_data.set_index("班別")[["良率", "目標"]])
+                st.caption("尚無稽核記錄，顯示模擬數據")
+
+        st.divider()
+        st.markdown("### 🚨 近期告警事件")
+        # [Step 5 ESG] 在真實告警中插入 ESG 範疇二告警
+        _esg_mock_alert = {
+            "時間":   datetime.now().strftime("%H:%M"),
+            "部門":   "SMT 第三廠區",
+            "嚴重度": "🟢 Level-2 ESG",  # 綠色表示環境維度別
+            "任務ID": "ESG-SCO2",
+            "狀態":   "起源: SMT 設備能耗數據傳輸中斷 | 影響範疇二 (Scope 2) 盈查"
+        }
+        if _high_risk_reports:
+            alerts = []
+            for r in _high_risk_reports:
+                _ts = (r.get("created_at") or "")[:16].replace("T", " ")
+                _rl = r.get("risk_level", 1)
+                _lbl = r.get("risk_label", "Level-1")
+                _icon = "🔴" if _rl == 3 else "🟠"
+                _dept = r.get("department", "未知部門")
+                _tid  = r.get("task_id", "")
+                alerts.append({
+                    "時間":   _ts,
+                    "部門":   _dept,
+                    "嚴重度": f"{_icon} {_lbl}",
+                    "任務ID": _tid[:8],
+                    "狀態":   r.get("status", "")
+                })
+            # 將 ESG 告警插入列表首位
+            alerts.insert(0, _esg_mock_alert)
+            st.dataframe(pd.DataFrame(alerts), use_container_width=True, hide_index=True)
+        else:
+            # 無真實資料時顯示模擬告警
+            alerts = [
+                _esg_mock_alert,  # [Step 5] ESG 告警排在首位
+                {"時間": "03:42", "部門": "研發部", "嚴重度": "🔴 Level-3", "任務ID": "SEC-001", "狀態": "深夜大量下載合規清冊（ISO 27001 A.8.16）"},
+                {"時間": "06:15", "部門": "製造二廠", "嚴重度": "🟠 Level-2", "任務ID": "EHS-002", "狀態": "碳強度 1.67 超標（上限 1.0）"},
+                {"時間": "08:30", "部門": "品保部", "嚴重度": "🟡 Level-2", "任務ID": "QMS-003", "狀態": "良率 79.3% 低於目標 85%"},
+            ]
+            st.dataframe(pd.DataFrame(alerts), use_container_width=True, hide_index=True)
+            st.caption("⚠️ 尚無真實高風險告警，顯示模擬資料")
+
+        # ── ISO 27001 內部審計稽核軌跡 (Audit Trail) - 限 admin / ciso ──
+        if role in ["admin", "ciso"]:
+            st.divider()
+            st.markdown("### 📜 ISO 27001 內部審計稽核軌跡 (Audit Trail)")
+            st.caption("此區域即時呈現 `audit.db` 資料庫內最新的 50 筆使用者操作與 AI 呼叫日誌。")
+            
+            if st.button("🔄 重新整理審計日誌", key="btn_refresh_audit_logs"):
+                st.toast("審計軌跡已刷新")
+            
+            logs = api_get("/api/audit/logs")
+            if logs is not None:
+                if isinstance(logs, list):
+                    if len(logs) > 0:
+                        df_logs = pd.DataFrame(logs)
+                        cols_order = ["timestamp", "username", "role", "action_type", "action_details", "prompt", "ai_response", "latency_ms"]
+                        df_logs = df_logs[cols_order]
+                        st.dataframe(df_logs, use_container_width=True, hide_index=True)
+                    else:
+                        st.info("📭 目前尚無審計日誌紀錄")
+                else:
+                    st.error(f"⚠️ 讀取日誌格式錯誤：{logs}")
+            else:
+                st.error("❌ 無法取得稽核日誌，請檢查後端服務與 Token")
+
+    with main_right:
+        st.markdown("### 📥 決策控制中心")
+        
+        # 待我處理簽核清單
+        st.markdown("#### 📋 待我處理")
+        has_pending = False
+        
+        # QMS 審核
+        if role in ["admin", "qms_manager"]:
+            has_pending = True
+            with st.container(border=True):
+                st.markdown("##### ⚙️ 品質管理系統 (QMS)")
+                st.info("待簽核：SMT 製程良率異常 CAPA 矯正對策")
+                if st.button("✅ 核准生管 CAPA (QMS)", key="btn_approve_qms", use_container_width=True, type="primary"):
+                    st.success("🎉 生管 CAPA 已成功核准並歸檔！")
+        
+        # CISO 審核
+        if role in ["admin", "ciso"]:
+            has_pending = True
+            with st.container(border=True):
+                st.markdown("##### 🔒 資訊安全事件 (CISO)")
+                st.info("待簽核：深夜異常專利外傳安全告警")
+                if st.button("🚨 核准資安警報 (CISO)", key="btn_approve_ciso", use_container_width=True, type="primary"):
+                    headers = {"Authorization": f"Bearer {token}"}
+                    try:
+                        with st.spinner("正在向後端 API 提交資安核准..."):
+                             r = requests.post(f"{BACKEND}/api/audit/approve_sec", headers=headers, timeout=5)
+                        if r.status_code == 200:
+                            st.success(f"🟢 {r.json().get('message')}")
+                            st.balloons()
+                        elif r.status_code == 403:
+                            st.error(f"❌ 權限不足！此操作已被安全中樞拒絕。")
+                        else:
+                            st.error(f"⚠️ 異常 ({r.status_code})：{r.text}")
+                    except Exception as e:
+                        st.error(f"❌ 連線後端 API 失敗：{e}")
+                        
+        if not has_pending:
+            st.markdown("🔒 *您的身分目前無待簽核項目*")
+            
+        st.divider()
+        
+        # 🤖 LLM 智慧輔助決策控制台
+        st.markdown("#### 🤖 智慧輔助決策")
+        with st.container(border=True):
+            st.markdown('<div class="ai-console-marker"></div>', unsafe_allow_html=True)
+            st.markdown("##### 🧠 地端大腦建議 (Ollama)")
+            ai_prompt = st.text_input("輸入對策諮詢問題", value="請評估當前資安告警並提供防範對策", key="ai_advice_prompt")
+            if st.button("💡 向 AI 請求分析建議", use_container_width=True):
+                if not ai_prompt:
+                    st.warning("⚠️ 請輸入諮詢問題")
+                else:
+                    try:
+                        headers = {"Authorization": f"Bearer {token}"}
+                        # 1. 提交非同步任務請求
+                        with st.spinner("🚀 正在送出 AI 決策請求..."):
+                            r = requests.post(
+                                f"{BACKEND}/api/ai/generate_advice", 
+                                json={"prompt": ai_prompt}, 
+                                headers=headers, 
+                                timeout=15
+                            )
+                        
+                        if r.status_code == 200:
+                            res_data = r.json()
+                            task_id = res_data.get("task_id")
+                            
+                            # 2. 建立動態輪詢 placeholder
+                            status_placeholder = st.empty()
+                            finished = False
+                            max_retries = 60
+                            retry_count = 0
+                            
+                            while not finished and retry_count < max_retries:
+                                # 查詢最新狀態
+                                status_resp = requests.get(
+                                    f"{BACKEND}/api/ai/task_status/{task_id}",
+                                    headers=headers,
+                                    timeout=5
+                                )
+                                if status_resp.status_code == 200:
+                                    task_info = status_resp.json()
+                                    cur_status = task_info.get("status")
+                                    
+                                    if cur_status == "PENDING":
+                                        status_placeholder.warning("⏳ 系統忙碌中，AI 正在排隊中...")
+                                    elif cur_status == "RUNNING":
+                                        status_placeholder.info("🤖 地端模型正在推理中...")
+                                    elif cur_status == "SUCCESS":
+                                        status_placeholder.empty()
+                                        st.success("🟢 AI 建議分析完成！")
+                                        st.markdown(f"**🤖 地端大腦建議：**")
+                                        st.info(task_info.get("advice"))
+                                        st.markdown(f'<div class="ai-latency-tag">⏱️ 耗時：{task_info.get("latency_ms")} ms</div>', unsafe_allow_html=True)
+                                        finished = True
+                                    elif cur_status == "FAILED":
+                                        status_placeholder.empty()
+                                        st.error(f"❌ AI 推理失敗：{task_info.get('error', '未知錯誤')}")
+                                        finished = True
+                                else:
+                                    status_placeholder.error(f"⚠️ 查詢狀態異常 ({status_resp.status_code})")
+                                    finished = True
+                                    
+                                if not finished:
+                                    time.sleep(2)
+                                    retry_count += 1
+                                    
+                            if not finished and retry_count >= max_retries:
+                                status_placeholder.error("❌ 輪詢逾時，請稍後重試")
+                                
+                        elif r.status_code == 403:
+                            st.error("❌ 403 Forbidden: 權限不足，拒絕存取 AI 諮詢端點")
+                        elif r.status_code == 400:
+                            st.error(f"🛡️ 安全中樞攔截阻斷：{r.json().get('detail')}")
+                        else:
+                            st.error(f"⚠️ 後端伺服器異常 ({r.status_code})：{r.text}")
+                    except Exception as e:
+                        st.error(f"❌ 呼叫 AI 端點失敗：{e}")
 
 
 # ─── Tab 2：手動觸發稽核 ─────────────────────────────────────
@@ -875,8 +1463,15 @@ with tab3:
     reports = api_get("/api/v1/reports")
 
     if reports:
+        # [Step 4] 支援 risk_label 欄位（舊 API 是 risk_level 字串欄位名稱不一致，統一修正）
+        for r in reports:
+            if "risk_label" not in r and "risk_level" in r:
+                lv = r.get("risk_level", 1)
+                r["risk_label"] = {1: "Level-1 輕微", 2: "Level-2 嚴重", 3: "Level-3 緊急"}.get(lv, str(lv))
         df = pd.DataFrame(reports)
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        # 保留有意義的欄位
+        display_cols = [c for c in ["task_id", "status", "created_at", "risk_label", "department", "shift"] if c in df.columns]
+        st.dataframe(df[display_cols], use_container_width=True, hide_index=True)
 
         st.markdown("---")
         task_ids = [r["task_id"] for r in reports]
@@ -963,7 +1558,10 @@ with tab3:
                     # [FEATURE] 匯出正式報告功能
                     if detail.get("status") == "completed":
                         try:
-                            res = requests.get(f"{BACKEND}/api/task/{selected}/export", timeout=5)
+                            headers = {}
+                            if "token" in st.session_state and st.session_state["token"]:
+                                headers["Authorization"] = f"Bearer {st.session_state['token']}"
+                            res = requests.get(f"{BACKEND}/api/task/{selected}/export", headers=headers, timeout=5)
                             if res.status_code == 200:
                                 st.download_button(
                                     label="📥 下載官方 ISO 改善對策報告 (Word)",

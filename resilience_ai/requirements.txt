@@ -9,3 +9,5 @@ requests
 chromadb
 google-genai
 python-docx
+passlib[bcrypt]
+python-jose[cryptography]

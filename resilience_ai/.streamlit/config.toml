@@ -1,3 +1,10 @@
 [server]
 # 關閉檔案監聽器，防止 SQLite3 資料庫查詢與日誌寫入時觸發網頁重複重載
 fileWatcherType = "none"
+
+[theme]
+primaryColor = "#00D2D3"
+backgroundColor = "#0A1128"
+secondaryBackgroundColor = "#111936"
+textColor = "#FFFFFF"
+font = "sans serif"
