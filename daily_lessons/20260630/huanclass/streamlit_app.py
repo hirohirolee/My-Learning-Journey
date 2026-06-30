@@ -75,6 +75,10 @@ if "config" not in st.session_state:
     st.session_state.config = load_config()
 config = st.session_state.config
 
+if "expander_expanded" not in st.session_state:
+    st.session_state.expander_expanded = False
+
+
 # 2. Localized Text Maps
 t_zh = {
     "page_title": "CineBot - 電影搜尋與 AI 助理",
@@ -146,8 +150,39 @@ st.markdown("""
     header, [data-testid="stHeader"] {
         background: transparent !important;
     }
+    
+    /* Floating Expander Style for Chatbot */
+    div[data-testid="stExpander"] {
+        position: fixed !important;
+        bottom: 25px !important;
+        right: 25px !important;
+        width: 400px !important;
+        z-index: 999999 !important;
+        background: rgba(15, 23, 42, 0.95) !important;
+        border: 1px solid rgba(99, 102, 241, 0.4) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+        backdrop-filter: blur(15px) !important;
+        -webkit-backdrop-filter: blur(15px) !important;
+    }
+    
+    div[data-testid="stExpander"] summary {
+        background: rgba(30, 41, 59, 0.8) !important;
+        color: #22d3ee !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        border-radius: 15px !important;
+    }
+    
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+        max-height: 450px !important;
+        overflow-y: auto !important;
+        background: transparent !important;
+        padding: 10px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
+
 
 # 4. Sidebar Panel for Controls
 st.sidebar.markdown("<h2 style='text-align: center; color: #22d3ee;'>🎬 Cine<span>Bot</span> Settings</h2>", unsafe_allow_html=True)
@@ -421,9 +456,8 @@ def get_movie_poster(movie):
 st.markdown(f"<h1 style='text-align: center; font-weight: 800; color: #f3f4f6;'>Cine<span style='color: #22d3ee;'>Bot</span></h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #9ca3af; margin-bottom: 30px;'>Top 100 Scraped Movies & AI Chat Assistant</p>", unsafe_allow_html=True)
 
-tab_gallery, tab_chat = st.tabs([t["tab_gallery"], t["tab_chat"]])
+with st.container():
 
-with tab_gallery:
     # Search and Filter Form Controls
     col_search, col_genre = st.columns([2, 1])
     with col_search:
@@ -548,9 +582,15 @@ with tab_gallery:
                         # Add a tiny button to ask chatbot about this movie
                         if st.button(f"Ask CineBot 💬", key=f"ask_{movie['index']}", use_container_width=True):
                             st.session_state.chat_input_val = t["ask_template"].format(movie["title_zh"])
+                            st.session_state.expander_expanded = True
                             st.toast(f"Prompt set: '{st.session_state.chat_input_val}'")
+                            st.rerun()
 
-with tab_chat:
+# ----------------- CineBot 浮動對話視窗 -----------------
+with st.expander("💬 CineBot 助理 (Chat)", expanded=st.session_state.expander_expanded):
+    # 重設展開狀態，讓使用者可點擊收合
+    st.session_state.expander_expanded = False
+
     # Initialize Chat Messages
     if "messages" not in st.session_state:
         st.session_state.messages = []
