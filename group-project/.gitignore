@@ -1,0 +1,16 @@
+# Python temporary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables (Crucial for security!)
+.env
+
+# ChromaDB persistence folders (keeps repository clean)
+chroma_db/
+chroma_db_laws/
+chroma_db_menu/
+
+# Streamlit config / cache
+.streamlit/
