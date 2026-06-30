@@ -11,6 +11,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.vectorstores import Chroma
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, START, END
+from supabase_db import save_pr_report
+
 
 # 初始化 FastAPI 應用程式
 app = FastAPI(
@@ -501,6 +503,17 @@ def analyze_review_api(req: AnalyzeRequest):
         }
         
         final_state = app_workflow.invoke(initial_state)
+        
+        # 同步至 Supabase 資料庫
+        save_pr_report(
+            review=req.review,
+            rating=req.rating,
+            sentiment=final_state.get("sentiment"),
+            risk_percent=final_state.get("risk_percent"),
+            report_content=final_state.get("result_text"),
+            engine=initial_state["engine"]
+        )
+
         
         return {
             "sentiment": final_state["sentiment"],

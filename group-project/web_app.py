@@ -8,6 +8,10 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.vectorstores import Chroma
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, START, END
+from supabase_db import save_pr_report, fetch_all_reports, supabase, init_dynamic_client
+
+
+
 
 # 設定網頁標題與風格
 st.set_page_config(
@@ -64,8 +68,33 @@ with st.sidebar:
     }
     selected_tone_instruction = tone_guidelines[tone_option]
     
+    st.markdown("---")
+    st.header("🔌 Supabase 資料庫連線設定")
+    
+    # 預設載入 .env 內的值（若有）
+    default_url = os.environ.get("SUPABASE_URL", "https://mzonkpfagqdhaqwybtuo.supabase.co")
+    default_key = os.environ.get("SUPABASE_KEY", "")
+    default_table = os.environ.get("SUPABASE_TABLE_NAME", "reviews")
+    
+    # 網頁側邊欄提供輸入框
+    input_url = st.text_input("Supabase 網址", value=default_url, help="Supabase 專案 URL")
+    input_key = st.text_input("Supabase 金鑰 (Anon Key)", value=default_key, type="password", help="可在 Supabase Settings -> API 取得")
+    input_table = st.text_input("資料表名稱 (Table Name)", value=default_table)
+    
+    # 動態嘗試進行連線與初始化
+    if input_url and input_key:
+        is_connected = init_dynamic_client(input_url, input_key, input_table)
+        if is_connected:
+            st.success("🟢 已成功連線至 Supabase 資料庫！")
+        else:
+            st.error("🔴 連線失敗，請檢查 URL 與 Key")
+    else:
+        st.warning("🟡 尚未設定 Supabase 金鑰")
+
+
     st.markdown("""
     ### 系統特色：
+
     1. **雙引擎自由切換**：可選擇呼叫 OpenAI 雲端模型，或是 100% 本地運行的免費開源 Ollama。
     2. **LangGraph 循環審查機制**：若生成的回覆不夠真誠，會自動退回重寫（最多 2 次）。
     3. **雙 RAG 知識庫**：
@@ -591,6 +620,21 @@ if st.button("🚀 開始分析評論與生成報告", type="primary"):
                 st.session_state.final_state = final_state
                 st.success("✅ LangGraph 工作流執行成功！")
                 
+                # 同步至 Supabase 資料庫
+                db_res = save_pr_report(
+                    review=customer_review,
+                    rating=rating,
+                    sentiment=final_state.get("sentiment"),
+                    risk_percent=final_state.get("risk_percent"),
+                    report_content=final_state.get("result_text"),
+                    engine=engine_choice
+                )
+                if db_res.get("status") == "success":
+                    st.info("💾 報告已成功同步備份至 Supabase 資料庫！")
+                elif db_res.get("message") != "Supabase client not initialized":
+                    st.warning(f"⚠️ 報告同步至 Supabase 失敗: {db_res.get('message')}")
+
+                
             except Exception as e:
                 st.error(f"執行過程中發生錯誤（請確保本地已安裝啟動 Ollama 且模型已被拉取）：{str(e)}")
 
@@ -637,7 +681,33 @@ if "final_state" in st.session_state:
             
     st.markdown("---")
     
+    # === 新增：RAG 檢索文獻來源標註 & Token 耗用與成本估算 ===
+    col_rag_src, col_token_est = st.columns(2)
+    with col_rag_src:
+        st.subheader("📚 RAG 檢索參考原文與法條背景")
+        st.info(final_state.get("cheat_sheet") if final_state.get("cheat_sheet") else "無 RAG 檢索資料。")
+        
+    with col_token_est:
+        st.subheader("🪙 LLM Token 消耗與成本估算")
+        input_chars = len(final_state.get("customer_review") or "") + len(final_state.get("cheat_sheet") or "")
+        output_chars = len(final_state.get("result_text") or "")
+        est_in_tokens = int(input_chars * 1.2)
+        est_out_tokens = int(output_chars * 1.2)
+        
+        if "OpenAI" in final_state.get("engine", ""):
+            cost = (est_in_tokens * 0.00000015) + (est_out_tokens * 0.00000060)
+            cost_str = f"${cost:.6f} USD"
+        else:
+            cost_str = "$0.00 USD (本地/模擬免費)"
+            
+        st.metric(label="📥 輸入 Tokens (預估)", value=f"{est_in_tokens}")
+        st.metric(label="📤 輸出 Tokens (預估)", value=f"{est_out_tokens}")
+        st.metric(label="💵 本次消耗成本", value=cost_str)
+        
+    st.markdown("---")
+    
     st.subheader("📋 最終審查通過報告")
+
     st.markdown(report_content)
     
     st.download_button(
@@ -696,3 +766,32 @@ if "final_state" in st.session_state:
                     st.rerun()
             except Exception as e:
                 st.error(f"微調時發生錯誤：{str(e)}")
+
+# ----------------- Supabase 歷史紀錄 -----------------
+st.markdown("---")
+col_db_title, col_db_refresh = st.columns([4, 1])
+with col_db_title:
+    st.subheader("📚 Supabase 歷史分析資料表 (最新 10 筆)")
+with col_db_refresh:
+    if st.button("🔄 重新整理資料庫"):
+        st.rerun()
+
+if supabase is not None:
+    try:
+        reports = fetch_all_reports()
+        if reports:
+            import pandas as pd
+            df = pd.DataFrame(reports)
+            # 將 created_at 排序排到最前方，方便閱讀
+            if "created_at" in df.columns:
+                cols = ["created_at"] + [c for c in df.columns if c != "created_at"]
+                df = df[cols]
+            st.dataframe(df, use_container_width=True)
+
+        else:
+            st.info("ℹ️ 目前 Supabase 資料表中尚無任何分析紀錄。")
+    except Exception as e:
+        st.error(f"讀取歷史紀錄時發生錯誤: {e}")
+else:
+    st.info("ℹ️ 請在左側設定 Supabase 以啟用歷史分析紀錄查詢。")
+
