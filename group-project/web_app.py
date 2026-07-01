@@ -11,6 +11,18 @@ from langgraph.graph import StateGraph, START, END
 from supabase_db import save_pr_report, fetch_all_reports, supabase, init_dynamic_client
 
 
+def load_prompt(filename, default_prompt):
+    import os
+    filepath = os.path.join(os.path.dirname(__file__), "prompts", filename)
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                return f.read().strip()
+        except Exception:
+            pass
+    return default_prompt
+
+
 
 
 # 設定網頁標題與風格
@@ -235,7 +247,9 @@ def sentiment_analyzer_node(state: AgentState):
     else:
         llm = ChatOllama(model="qwen2.5:1.5b", base_url=state["ollama_url"])
         
-    prompt = f"請判定以下顧客評論的客訴本質為正面（好評）還是負面（抱怨/客訴）？僅需輸出「正面」或「負面」二字，不要輸出其他字眼。\n\n評論：{state['customer_review']}"
+    default_prompt = "請判定以下顧客評論的客訴本質為正面（好評）還是負面（抱怨/客訴）？僅需輸出「正面」或「負面」二字，不要輸出其他字眼。\n\n評論：{customer_review}"
+    prompt_template = load_prompt("sentiment_analyzer.txt", default_prompt)
+    prompt = prompt_template.format(customer_review=state['customer_review'])
     response = llm.invoke(prompt)
     sentiment = "正面" if "正面" in response.content else "負面"
     
@@ -350,80 +364,76 @@ def pr_generator_node(state: AgentState):
         
     if engine == "Ollama (本地開源)":
         if sentiment == "負面":
-            system_template = f"""
-            你現在是台南知名排隊名店【文章牛肉湯】的「資深公關危機總監」。請根據提供的【法律小抄】和【客訴評論】，撰寫一份精簡的公關回應報告。
-            請勿產出多餘字眼，總長度控制在 150 字內，格式必須嚴格如下：
-            
-            ### 📊 1. 危機評估
-            * 危機等級：🔴 高 (涉及食品安全)
-            * 核心關鍵字：食品衛生
-            
-            ### 📢 2. 公開回覆草稿 (Google 評論回覆)
-            > 敬愛的顧客您好，我是文章牛肉湯負責人。非常抱歉讓您遇到碗湯內有異物及不佳服務。我們已加強清潔與教育訓練。請私訊我們以便為您退款與補償，非常抱歉。
-            
-            ---
-            【法律小抄】：{{laws}}
-            """
+            default_template = """你現在是台南知名排隊名店【文章牛肉湯】的「資深公關危機總監」。請根據提供的【法律小抄】和【客訴評論】，撰寫一份精簡的公關回應報告。
+請勿產出多餘字眼，總長度控制在 150 字內，格式必須嚴格如下：
+
+### 📊 1. 危機評估
+* 危機等級：🔴 高 (涉及食品安全)
+* 核心關鍵字：食品衛生
+
+### 📢 2. 公開回覆草稿 (Google 評論回覆)
+> 敬愛的顧客您好，我是文章牛肉湯負責人。非常抱歉讓您遇到碗湯內有異物及不佳服務。我們已加強清潔與教育訓練。請私訊我們以便為您退款與補償，非常抱歉。
+
+---
+【法律小抄】：{laws}"""
+            system_template = load_prompt("pr_generator_ollama_negative.txt", default_template)
         else:
-            system_template = f"""
-            你現在是【文章牛肉湯】的「首席社群行銷經理」。請根據提供的【菜單小抄】和【好評評論】，寫一封精簡的回信。
-            總長度控制在 150 字內，格式如下：
-            
-            ### 📢 1. 公開致謝與推薦回覆
-            > [熱情感謝顧客，並根據菜單小抄精簡推薦 1 道招牌菜色，限制在 100 字內]
-            
-            ---
-            【菜單小抄】：{{laws}}
-            """
+            default_template = """你現在是【文章牛肉湯】的「隱藏版社群行銷經理」。請根據提供的【菜單小抄】和【好評評論】，寫一封精簡的回信。
+總長度控制在 150 字內，格式如下：
+
+### 📢 1. 公開致謝與推薦回覆
+> [熱情感謝顧客，並根據菜單小抄精簡推薦 1 道招牌菜色，限制在 100 字內]
+
+---
+【菜單小抄】：{laws}"""
+            system_template = load_prompt("pr_generator_ollama_positive.txt", default_template)
     else:
         if sentiment == "負面":
-            system_template = f"""
-            # 角色設定
-            你現在是台南知名排隊名店【文章牛肉湯】的「資深公關危機暨法務策略總監」。請根據提供的【法律小抄】、【客訴評論】與【顧客佐證照片】（如有），為店家老闆產出一份極具策略性、條理清晰且可直接執行的「商家公關危機應對報告」。
-            若有照片，請新增「【🔍 顧客上傳照片視覺事證分析結果】」說明是否有異物。
-            回覆語氣：{{tone_instruction}}
+            default_template = """# 角色設定
+你現在是台南知名排隊名店【文章牛肉湯】的「資深公關危機暨法務策略總監」。請根據提供的【法律小抄】、【客訴評論】與【顧客佐證照片】（如有），為店家老闆產出一份極具策略性、條理清晰且可直接執行的「商家公關危機應對報告」。
+若有照片，請新增「【🔍 顧客上傳照片視覺事證分析結果】」說明是否有異物。
+回覆語氣：{tone_instruction}
 
-            {{feedback_clause}}
+{feedback_clause}
 
-            報告輸出格式（請嚴格使用 Markdown）：
-            ### 📊 1. 危機評估
-            * **危機等級**：[🔴 高 / 🟡 中 / 🟢 低]（請給出理由）
-            ### ⚖️ 2. 法務與內部應對策略
-            * **適用法規**：結合【法律小抄】說明適用法規。
-            ### 📢 3. 公開回覆草稿（用於 Google 評論回覆）
-            > **【回覆主旨】**：文章牛肉湯對您的真誠致歉
-            > **【回覆內文】**：誠摯的公開道歉信。
-            ### ✉️ 4. 私訊安撫與補償模板
-            
-            # AI 自主評分要求
-            [SCORE_START]
-            SINCERITY: [分數]
-            LEGAL_DEFENSE: [分數]
-            REPUTATION_RECOVERY: [分數]
-            [SCORE_END]
-            ---
-            【法律小抄】：{{laws}}
-            """
+報告輸出格式（請嚴格使用 Markdown）：
+### 📊 1. 危機評估
+* **危機等級**：[🔴 高 / 🟡 中 / 🟢 低]（請給出理由）
+### ⚖️ 2. 法務與內部應對策略
+* **適用法規**：結合【法律小抄】說明適用法規。
+### 📢 3. 公開回覆草稿（用於 Google 評論回覆）
+> **【回覆主旨】**：文章牛肉湯對您的真誠致歉
+> **【回覆內文】**：誠摯的公開道歉信。
+### ✉️ 4. 私訊安撫與補償模板
+
+# AI 自主評分要求
+[SCORE_START]
+SINCERITY: [分數]
+LEGAL_DEFENSE: [分數]
+REPUTATION_RECOVERY: [分數]
+[SCORE_END]
+---
+【法律小抄】：{laws}"""
+            system_template = load_prompt("pr_generator_openai_negative.txt", default_template)
         else:
-            system_template = """
-            # 角色設定
-            你現在是台南知名排隊名店【文章牛肉湯】的「首席社群品牌與行銷經理」。請根據提供的【菜單小抄】與【好評評論】，寫一封熱情誠摯的致謝回覆並推薦 1-2 道招牌菜。
-            回覆語氣：{tone_instruction}
+            default_template = """# 角色設定
+你現在是台南知名排隊名店【文章牛肉湯】的「首席社群品牌與行銷經理」。請根據提供的【菜單小抄】與【好評評論】，寫一封熱情誠摯的致謝回覆並推薦 1-2 道招牌菜。
+回覆語氣：{tone_instruction}
 
-            報告輸出格式：
-            ### 🌟 1. 滿意度分析
-            ### 📢 2. 公開致謝與推薦回覆
-            ### 🎁 3. 常客專屬小驚喜建議
+報告輸出格式：
+### 🌟 1. 滿意度分析
+### 📢 2. 公開致謝與推薦回覆
+### 🎁 3. 常客專屬小驚喜建議
 
-            # AI 自自主評分要求
-            [SCORE_START]
-            SINCERITY: [分數]
-            LEGAL_DEFENSE: [分數]
-            REPUTATION_RECOVERY: [分數]
-            [SCORE_END]
-            ---
-            【菜單小抄】：{laws}
-            """
+# AI 自自主評分要求
+[SCORE_START]
+SINCERITY: [分數]
+LEGAL_DEFENSE: [分數]
+REPUTATION_RECOVERY: [分數]
+[SCORE_END]
+---
+【菜單小抄】：{laws}"""
+            system_template = load_prompt("pr_generator_openai_positive.txt", default_template)
         
     formatted_system = system_template.format(
         laws=cheat_sheet,
@@ -497,15 +507,15 @@ def pr_reviewer_node(state: AgentState):
     else:
         llm = ChatOllama(model="qwen2.5:1.5b", base_url=ollama_url)
         
-    review_prompt = f"""
-    你現在是【文章牛肉湯】的資深品牌監察總監。請評核以下由公關撰寫的公開道歉信，誠意評分必須大於或等於 88 分，且不能有任何推卸責任、與客人爭執之語氣。
-    請嚴格以以下格式給出意見：
-    【審查結果】：[通過 / 不通過]
-    【退回修改意見】：[如果不通過，請給出修改要求；如果通過寫無]
-    
-    公關報告內容如下：
-    {result_text}
-    """
+    default_review_prompt = """你現在是【文章牛肉湯】的資深品牌監察總監。請評核以下由公關撰寫的公開道歉信，誠意評分必須大於或等於 88 分，且不能有任何推卸責任、與客人爭執之語氣。
+請嚴格以以下格式給出意見：
+【審查結果】：[通過 / 不通過]
+【退回修改意見】：[如果不通過，請給出修改要求；如果通過寫無]
+
+公關報告內容如下：
+{result_text}"""
+    review_template = load_prompt("pr_reviewer.txt", default_review_prompt)
+    review_prompt = review_template.format(result_text=result_text)
     response = llm.invoke(review_prompt)
     review_result = response.content
     passed = "通過" in review_result and "不通過" not in review_result.split("【審查結果】")[-1].split("\n")[0]
