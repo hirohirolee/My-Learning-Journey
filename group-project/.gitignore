@@ -11,6 +11,7 @@ __pycache__/
 chroma_db/
 chroma_db_laws/
 chroma_db_menu/
+chroma_db_*/
 
 # Streamlit config / cache
 .streamlit/

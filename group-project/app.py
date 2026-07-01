@@ -152,18 +152,8 @@ else:
             with open(txt_file, "r", encoding="utf-8") as f:
                 text_content = f.read()
             
-            # 1. RAG 文件清洗
-            lines = [line.strip() for line in text_content.split("\n")]
-            cleaned_text = "\n".join([l for l in lines if l])
-            
-            # 2. RAG Chunking 切片策略
-            from langchain_text_splitters import RecursiveCharacterTextSplitter
-            text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=200,
-                chunk_overlap=30,
-                separators=["\n\n", "\n", "。", "！", "？", "；", "，", " "]
-            )
-            chunks = text_splitter.split_text(cleaned_text)
+            # 1. RAG 文件切片：針對結構化與條列式文件 (法規/菜單)，採用以行 (Line-based) 為基礎的切片方式，確保每一項內容語意完整
+            chunks = [line.strip() for line in text_content.split("\n") if line.strip()]
             
             db_drawer = Chroma.from_texts(texts=chunks, embedding=embeddings, persist_directory=db_dir)
             with open(marker_file, "w") as mf:
@@ -172,8 +162,34 @@ else:
             print(f"📚 直接從磁碟載入已編譯的 {db_name} (省時且不消耗 API)...")
             db_drawer = Chroma(persist_directory=db_dir, embedding_function=embeddings)
             
-        print("🔍 正在進行語意相似度檢索...")
-        docs = db_drawer.similarity_search(customer_review, k=2)
+        print("🔍 正在進行語意相似度檢索（含查詢重寫與歷史案例檢索）...")
+        few_shot_examples = ""
+        query_embedding = None
+        try:
+            llm_rewriter = ChatOpenAI(model="gpt-4o-mini", temperature=0, openai_api_key=api_key)
+            rewrite_prompt = f"請根據以下顧客評論，提煉出最核心的 2-3 個檢索關鍵字或法律/菜單主旨（如：法規名稱、特定菜色、衛生問題），只輸出關鍵字，以空格分隔。不要輸出任何其他文字。\n\n評論：{customer_review}"
+            rewritten_query = llm_rewriter.invoke(rewrite_prompt).content.strip()
+            print(f"💡 提煉關鍵字為：{rewritten_query}")
+            docs = db_drawer.similarity_search(rewritten_query, k=2)
+            
+            # 建立 OpenAIEmbeddings 產生查詢向量與 Supabase 檢索
+            try:
+                embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=api_key)
+                query_embedding = embeddings.embed_query(rewritten_query)
+                from supabase_db import supabase, search_similar_reviews
+                if supabase:
+                    similar_cases = search_similar_reviews(query_embedding, rating=rating, limit=2)
+                    if similar_cases:
+                        print(f"✅ 成功自 Supabase 檢索到 {len(similar_cases)} 筆相似歷史案例。")
+                        for i, case in enumerate(similar_cases):
+                            few_shot_examples += f"【歷史案例 {i+1}】\n"
+                            few_shot_examples += f"顧客評論：{case.get('review', '')}\n"
+                            few_shot_examples += f"回覆報告：\n{case.get('report_content', '')}\n"
+                            few_shot_examples += "----------------\n"
+            except Exception as e_emb:
+                print(f"[Warning] Failed to generate embedding or query Supabase: {e_emb}")
+        except Exception:
+            docs = db_drawer.similarity_search(customer_review, k=2)
         cheat_sheet = "\n".join([doc.page_content for doc in docs])
         print(f"✅ 已檢索到最相符的小抄條目。")
 
@@ -214,8 +230,14 @@ if mock_mode:
 """
 else:
     # 真實 API 呼叫
+    if not few_shot_examples:
+        few_shot_examples = "（尚無歷史相似範本，請依公關專業直接撰寫）\n"
+
     if sentiment == "負面":
         system_template = """
+        # 歷史優良回覆範例 (Few-shot Examples)
+        {few_shot_examples}
+        
         # 角色設定
         你現在是台南知名排隊名店【文章牛肉湯】的「資深公關危機暨法務策略總監」。
         請根據提供的【法律小抄】、【客訴評論】與【顧客佐證照片】（如有），寫出一份公關危機報告。
@@ -239,6 +261,9 @@ else:
         """
     else:
         system_template = """
+        # 歷史優良回覆範例 (Few-shot Examples)
+        {few_shot_examples}
+        
         # 角色設定
         你現在是【文章牛肉湯】的「首席社群品牌與行銷經理」。
         請根據提供的【菜單小抄】與【好評評論】，寫一封熱情誠摯的感謝信，並結合小抄推薦 1-2 道招牌菜。
@@ -265,7 +290,8 @@ else:
     ai_chain = prompt_template | llm
     response = ai_chain.invoke({
         "customer_review": customer_review,
-        "laws": cheat_sheet
+        "laws": cheat_sheet,
+        "few_shot_examples": few_shot_examples
     })
     report_content = response.content
     

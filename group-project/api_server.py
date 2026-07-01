@@ -68,16 +68,8 @@ def get_vector_db(engine, api_key, ollama_url, filename, mtime):
             with open(filename, "r", encoding="utf-8") as f:
                 text_content = f.read()
                 
-            lines = [line.strip() for line in text_content.split("\n")]
-            cleaned_text = "\n".join([l for l in lines if l])
-            
-            from langchain_text_splitters import RecursiveCharacterTextSplitter
-            text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=200,
-                chunk_overlap=30,
-                separators=["\n\n", "\n", "。", "！", "？", "；", "，", " "]
-            )
-            chunks = text_splitter.split_text(cleaned_text)
+            # 1. RAG 文件切片：針對結構化與條列式文件 (法規/菜單)，採用以行 (Line-based) 為基礎的切片方式，確保每一項內容語意完整
+            chunks = [line.strip() for line in text_content.split("\n") if line.strip()]
             
             db = Chroma.from_texts(
                 texts=chunks, 
@@ -136,6 +128,8 @@ class AgentState(TypedDict):
     review_history: list
     workflow_logs: List[dict]
     mock_mode: bool
+    few_shot_examples: Optional[str]
+    query_embedding: Optional[list]
 
 # Node 1: 分類部門
 def sentiment_analyzer_node(state: AgentState):
@@ -191,14 +185,44 @@ def rag_retriever_node(state: AgentState):
         # 真實 OpenAI 模式：使用 ChromaDB 進行語意相似度檢索
         db_drawer = get_vector_db(engine, api_key, ollama_url, filename, mtime)
         cheat_sheet = ""
+        few_shot_examples = ""
+        query_embedding = None
         if db_drawer:
-            docs = db_drawer.similarity_search(customer_review, k=2)
+            try:
+                llm_rewriter = ChatOpenAI(model="gpt-4o-mini", temperature=0, openai_api_key=api_key)
+                rewrite_prompt = f"請根據以下顧客評論，提煉出最核心的 2-3 個檢索關鍵字或法律/菜單主旨（如：法規名稱、特定菜色、衛生問題），只輸出關鍵字，以空格分隔。不要輸出任何其他文字。\n\n評論：{customer_review}"
+                rewritten_query = llm_rewriter.invoke(rewrite_prompt).content.strip()
+                
+                # 建立 OpenAIEmbeddings 產生查詢向量與 Supabase 檢索
+                try:
+                    embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=api_key)
+                    query_embedding = embeddings.embed_query(rewritten_query)
+                    from supabase_db import supabase, search_similar_reviews
+                    if supabase:
+                        similar_cases = search_similar_reviews(query_embedding, rating=rating, limit=2)
+                        if similar_cases:
+                            for i, case in enumerate(similar_cases):
+                                few_shot_examples += f"【歷史案例 {i+1}】\n"
+                                few_shot_examples += f"顧客評論：{case.get('review', '')}\n"
+                                few_shot_examples += f"回覆報告：\n{case.get('report_content', '')}\n"
+                                few_shot_examples += "----------------\n"
+                except Exception as e_emb:
+                    print(f"[Warning] Failed to generate embedding or query Supabase: {e_emb}")
+                    
+                docs = db_drawer.similarity_search(rewritten_query, k=2)
+            except Exception:
+                docs = db_drawer.similarity_search(customer_review, k=2)
             cheat_sheet = "\n".join([doc.page_content for doc in docs])
+        
+    if not few_shot_examples:
+        few_shot_examples = "（尚無歷史相似範本，請依公關專業直接撰寫）\n"
         
     risk_percent = predict_diffusion_risk(sentiment, rating, has_image, customer_review)
     return {
         "cheat_sheet": cheat_sheet,
-        "risk_percent": risk_percent
+        "risk_percent": risk_percent,
+        "few_shot_examples": few_shot_examples,
+        "query_embedding": query_embedding
     }
 
 # Node 3: 公關生成部門
@@ -282,13 +306,16 @@ def pr_generator_node(state: AgentState):
             """
     else:
         if sentiment == "負面":
-            system_template = f"""
+            system_template = """
+            # 歷史優良回覆範例 (Few-shot Examples)
+            {few_shot_examples}
+            
             # 角色設定
             你現在是台南知名排隊名店【文章牛肉湯】的「資深公關危機暨法務策略總監」。請根據提供的【法律小抄】、【客訴評論】與【顧客佐證照片】（如有），為店家老闆產出一份極具策略性、條理清晰且可直接執行的「商家公關危機應對報告」。
             若有照片，請新增「【🔍 顧客上傳照片視覺事證分析結果】」說明是否有異物。
-            回覆語氣：{{tone_instruction}}
+            回覆語氣：{tone_instruction}
 
-            {{feedback_clause}}
+            {feedback_clause}
 
             報告輸出格式（請以 Markdown 美化排版）：
             ### 📊 1. 危機評估
@@ -306,10 +333,13 @@ def pr_generator_node(state: AgentState):
             REPUTATION_RECOVERY: [分數]
             [SCORE_END]
             ---
-            【法律小抄】：{{laws}}
+            【法律小抄】：{laws}
             """
         else:
             system_template = """
+            # 歷史優良回覆範例 (Few-shot Examples)
+            {few_shot_examples}
+            
             # 角色設定
             你現在是台南知名排隊名店【文章牛肉湯】的「首席社群品牌與行銷經理」。請根據提供的【菜單小抄】與【好評評論】，寫一封熱情誠摯的致謝回覆並推薦 1-2 道招牌菜。
             回覆語氣：{tone_instruction}
@@ -329,10 +359,12 @@ def pr_generator_node(state: AgentState):
             【菜單小抄】：{laws}
             """
         
+    few_shot_examples = state.get("few_shot_examples", "（尚無歷史相似範本，請依公關專業直接撰寫）\n")
     formatted_system = system_template.format(
         laws=cheat_sheet,
         tone_instruction=selected_tone_instruction,
-        feedback_clause=feedback_clause if sentiment == "負面" else ""
+        feedback_clause=feedback_clause if sentiment == "負面" else "",
+        few_shot_examples=few_shot_examples
     )
     
     if has_image and engine == "openai":
@@ -499,7 +531,9 @@ def analyze_review_api(req: AnalyzeRequest):
             "review_passed": False,
             "review_history": [],
             "workflow_logs": [],
-            "mock_mode": is_mock
+            "mock_mode": is_mock,
+            "few_shot_examples": None,
+            "query_embedding": None
         }
         
         final_state = app_workflow.invoke(initial_state)
@@ -511,7 +545,8 @@ def analyze_review_api(req: AnalyzeRequest):
             sentiment=final_state.get("sentiment"),
             risk_percent=final_state.get("risk_percent"),
             report_content=final_state.get("result_text"),
-            engine=initial_state["engine"]
+            engine=initial_state["engine"],
+            embedding=final_state.get("query_embedding")
         )
 
         

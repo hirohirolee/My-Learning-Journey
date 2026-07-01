@@ -35,7 +35,7 @@ def init_dynamic_client(url: str, key: str, table_name: str = "reviews"):
     return False
 
 
-def save_pr_report(review: str, rating: int, sentiment: str, risk_percent: float, report_content: str, engine: str):
+def save_pr_report(review: str, rating: int, sentiment: str, risk_percent: float, report_content: str, engine: str, embedding=None):
     """
     Saves the review and analysis results into the Supabase database.
     """
@@ -51,7 +51,8 @@ def save_pr_report(review: str, rating: int, sentiment: str, risk_percent: float
             "sentiment_label": sentiment,  # 對應使用者的 review 表欄位
             "risk_percent": float(risk_percent) if risk_percent is not None else None,
             "report_content": report_content,
-            "engine": engine
+            "engine": engine,
+            "embedding": embedding
         }
         
         # 嘗試動態偵測資料表包含哪些欄位，防止因多餘欄位導致寫入失敗
@@ -63,7 +64,7 @@ def save_pr_report(review: str, rating: int, sentiment: str, risk_percent: float
             else:
                 # 若為空表且表名為 review，使用剛才在 Schema 看到的實體欄位過濾
                 if SUPABASE_TABLE_NAME == "review":
-                    cols = {"id", "business_id", "rating", "review_type", "sentiment_label", "published_at", "crawled_at"}
+                    cols = {"id", "business_id", "rating", "review_type", "sentiment_label", "published_at", "crawled_at", "embedding", "report_content"}
                     data = {k: v for k, v in raw_data.items() if k in cols}
                 else:
                     data = raw_data
@@ -75,6 +76,28 @@ def save_pr_report(review: str, rating: int, sentiment: str, risk_percent: float
         return {"status": "success", "data": response.data}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
+def search_similar_reviews(query_vector, rating, match_threshold=0.6, limit=2):
+    """
+    呼叫 Supabase SQL RPC (match_reviews) 進行向量相似度檢索，限制相同評分以保證情境一致
+    """
+    if not supabase:
+        return []
+    try:
+        response = supabase.rpc(
+            "match_reviews",
+            {
+                "query_embedding": query_vector,
+                "match_threshold": match_threshold,
+                "match_count": limit,
+                "filter_rating": int(rating)
+            }
+        ).execute()
+        return response.data if response.data else []
+    except Exception as e:
+        print(f"[Warning] Supabase match_reviews RPC failed: {e}")
+        return []
 
 
 def fetch_all_reports():

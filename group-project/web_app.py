@@ -158,18 +158,8 @@ def get_vector_db(engine, api_key, ollama_url, filename, mtime):
             with open(filename, "r", encoding="utf-8") as f:
                 text_content = f.read()
                 
-            # 1. RAG 文件清洗
-            lines = [line.strip() for line in text_content.split("\n")]
-            cleaned_text = "\n".join([l for l in lines if l])
-            
-            # 2. RAG Chunking 切片
-            from langchain_text_splitters import RecursiveCharacterTextSplitter
-            text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=200,
-                chunk_overlap=30,
-                separators=["\n\n", "\n", "。", "！", "？", "；", "，", " "]
-            )
-            chunks = text_splitter.split_text(cleaned_text)
+            # 1. RAG 文件切片：針對結構化與條列式文件 (法規/菜單)，採用以行 (Line-based) 為基礎的切片方式，確保每一項內容語意完整
+            chunks = [line.strip() for line in text_content.split("\n") if line.strip()]
             
             # 建立並持久化
             db = Chroma.from_texts(
@@ -228,6 +218,8 @@ class AgentState(TypedDict):
     review_passed: bool
     review_history: list
     workflow_logs: List[dict]
+    few_shot_examples: Optional[str]
+    query_embedding: Optional[list]
 
 # Node 1: 分類部門
 def sentiment_analyzer_node(state: AgentState):
@@ -298,15 +290,55 @@ def rag_retriever_node(state: AgentState):
     # 真實 OpenAI 模式：使用 ChromaDB 進行語意相似度檢索
     db_drawer = get_vector_db(engine, api_key, ollama_url, filename, mtime)
     cheat_sheet = ""
+    query_log = ""
+    few_shot_examples = ""
+    query_embedding = None
+    
     if db_drawer:
-        docs = db_drawer.similarity_search(customer_review, k=2)
+        # 使用 LLM 進行查詢重寫，淬煉出最適合檢索的關鍵字/核心客訴/餐點名稱，提升 RAG 檢索精準度
+        try:
+            llm_rewriter = ChatOpenAI(model="gpt-4o-mini", temperature=0, openai_api_key=api_key)
+            rewrite_prompt = f"請根據以下顧客評論，提煉出最核心的 2-3 個檢索關鍵字或法律/菜單主旨（如：法規名稱、特定菜色、衛生問題），只輸出關鍵字，以空格分隔。不要輸出任何其他文字。\n\n評論：{customer_review}"
+            rewritten_query = llm_rewriter.invoke(rewrite_prompt).content.strip()
+            
+            # 建立 OpenAIEmbeddings 產生查詢向量
+            try:
+                embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=api_key)
+                query_embedding = embeddings.embed_query(rewritten_query)
+                
+                # 從 Supabase 檢索歷史相似案例 (元數據過濾)
+                from supabase_db import supabase, search_similar_reviews
+                if supabase:
+                    similar_cases = search_similar_reviews(query_embedding, rating=rating, limit=2)
+                    if similar_cases:
+                        for i, case in enumerate(similar_cases):
+                            few_shot_examples += f"【歷史案例 {i+1}】\n"
+                            few_shot_examples += f"顧客評論：{case.get('review', '')}\n"
+                            few_shot_examples += f"回覆報告：\n{case.get('report_content', '')}\n"
+                            few_shot_examples += "----------------\n"
+            except Exception as e_emb:
+                print(f"[Warning] Failed to generate embedding or query Supabase: {e_emb}")
+                
+            docs = db_drawer.similarity_search(rewritten_query, k=2)
+            query_log = f"（關鍵字檢索：{rewritten_query}）"
+        except Exception:
+            docs = db_drawer.similarity_search(customer_review, k=2)
         cheat_sheet = "\n".join([doc.page_content for doc in docs])
+        
+    if not few_shot_examples:
+        few_shot_examples = "（尚無歷史相似範本，請依公關專業直接撰寫）\n"
         
     risk_percent = predict_diffusion_risk(sentiment, rating, has_image, customer_review)
     logs = state.get("workflow_logs", []) + [
-        {"avatar": "📚", "name": "情報檢索部門", "content": f"已從 {filename} 檢索相關知識！\n* 預估**網絡擴散風險為：{risk_percent:.1f}%**。"}
+        {"avatar": "📚", "name": "情報檢索部門", "content": f"已從 {filename} 檢索相關知識並查詢歷史案例！{query_log}\n* 預估**網絡擴散風險為：{risk_percent:.1f}%**。"}
     ]
-    return {"cheat_sheet": cheat_sheet, "risk_percent": risk_percent, "workflow_logs": logs}
+    return {
+        "cheat_sheet": cheat_sheet, 
+        "risk_percent": risk_percent, 
+        "workflow_logs": logs,
+        "few_shot_examples": few_shot_examples,
+        "query_embedding": query_embedding
+    }
 
 # Node 3: 公關生成部門
 def pr_generator_node(state: AgentState):
@@ -389,7 +421,11 @@ def pr_generator_node(state: AgentState):
             system_template = load_prompt("pr_generator_ollama_positive.txt", default_template)
     else:
         if sentiment == "負面":
-            default_template = """# 角色設定
+            default_template = """# 歷史優良回覆範例 (Few-shot Examples)
+以下是歷史上針對相似星等客訴，經品牌總監審核通過的優質回覆範本，請參考其回覆邏輯、語氣與補償額度：
+{few_shot_examples}
+
+# 角色設定
 你現在是台南知名排隊名店【文章牛肉湯】的「資深公關危機暨法務策略總監」。請根據提供的【法律小抄】、【客訴評論】與【顧客佐證照片】（如有），為店家老闆產出一份極具策略性、條理清晰且可直接執行的「商家公關危機應對報告」。
 若有照片，請新增「【🔍 顧客上傳照片視覺事證分析結果】」說明是否有異物。
 回覆語氣：{tone_instruction}
@@ -416,7 +452,11 @@ REPUTATION_RECOVERY: [分數]
 【法律小抄】：{laws}"""
             system_template = load_prompt("pr_generator_openai_negative.txt", default_template)
         else:
-            default_template = """# 角色設定
+            default_template = """# 歷史優良回覆範例 (Few-shot Examples)
+以下是歷史上針對好評，經品牌總監審核通過的致謝回覆範本，請參考其回覆邏輯、推薦招牌菜的方式：
+{few_shot_examples}
+
+# 角色設定
 你現在是台南知名排隊名店【文章牛肉湯】的「首席社群品牌與行銷經理」。請根據提供的【菜單小抄】與【好評評論】，寫一封熱情誠摯的致謝回覆並推薦 1-2 道招牌菜。
 回覆語氣：{tone_instruction}
 
@@ -435,10 +475,12 @@ REPUTATION_RECOVERY: [分數]
 【菜單小抄】：{laws}"""
             system_template = load_prompt("pr_generator_openai_positive.txt", default_template)
         
+    few_shot_examples = state.get("few_shot_examples", "（尚無歷史相似範本，請依公關專業直接撰寫）\n")
     formatted_system = system_template.format(
         laws=cheat_sheet,
         tone_instruction=selected_tone_instruction,
-        feedback_clause=feedback_clause if sentiment == "負面" else ""
+        feedback_clause=feedback_clause if sentiment == "負面" else "",
+        few_shot_examples=few_shot_examples
     )
     
     # 如果是 Ollama 引擎，因為本地模型多為純文字版，傳送 base64 圖片會造成記憶體崩潰卡死。
@@ -622,7 +664,9 @@ if st.button("🚀 開始分析評論與生成報告", type="primary"):
                     "revision_count": 0,
                     "review_passed": False,
                     "review_history": [],
-                    "workflow_logs": []
+                    "workflow_logs": [],
+                    "few_shot_examples": None,
+                    "query_embedding": None
                 }
                 
                 # 執行 LangGraph
@@ -637,7 +681,8 @@ if st.button("🚀 開始分析評論與生成報告", type="primary"):
                     sentiment=final_state.get("sentiment"),
                     risk_percent=final_state.get("risk_percent"),
                     report_content=final_state.get("result_text"),
-                    engine=engine_choice
+                    engine=engine_choice,
+                    embedding=final_state.get("query_embedding")
                 )
                 if db_res.get("status") == "success":
                     st.info("💾 報告已成功同步備份至 Supabase 資料庫！")
