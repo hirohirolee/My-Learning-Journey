@@ -264,7 +264,9 @@ with col_side2:
 # 5. Database loading
 @st.cache_data
 def load_movies_db():
-    csv_path = "movies.csv"
+    # Resolve path relative to this script file so it works on Streamlit Cloud
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(script_dir, "movies.csv")
     if not os.path.exists(csv_path):
         return []
     movies = []
