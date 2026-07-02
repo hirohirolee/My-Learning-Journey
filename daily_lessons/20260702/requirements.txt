@@ -1,10 +1,19 @@
 # ============================================================
-# 台灣中央氣象署 (CWA) 天氣 API 串接程式 - 套件需求
+# 台灣天氣即時監測儀表板 - Streamlit App 套件需求
 # ============================================================
-# 安裝指令：pip install -r requirements.txt
 
-# HTTP 請求：用於呼叫 CWA REST API
-requests==2.32.3
+# Streamlit Web Framework
+streamlit>=1.30.0
 
-# 環境變數管理：用於安全讀取 .env 檔案中的 API 授權碼
-python-dotenv==1.0.1
+# HTTP requests (for auto-fetching CWA API on Cloud)
+requests>=2.31.0
+
+# Data processing
+pandas>=2.0.0
+
+# Interactive charts
+plotly>=5.18.0
+
+# Interactive map
+folium>=0.15.0
+streamlit-folium>=0.18.0

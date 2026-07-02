@@ -22,7 +22,11 @@
 
 import sqlite3
 import os
+import ssl
+import json
+from datetime import datetime
 
+import requests
 import pandas as pd
 import plotly.graph_objects as go
 import folium
@@ -34,8 +38,18 @@ from streamlit_folium import st_folium
 # Section 0：全域常數
 # ============================================================
 
-# 資料庫路徑（與 app.py 同目錄）
-DB_PATH: str = os.path.join(os.path.dirname(os.path.abspath(__file__)), "weather_data.db")
+# 資料庫路徑
+# On Streamlit Cloud, /tmp is writable and persists within a session.
+# Locally we use the script directory.
+_IS_CLOUD = "STREAMLIT_SHARING_MODE" in os.environ or os.environ.get("HOME", "") == "/home/appuser"
+DB_PATH: str = (
+    "/tmp/weather_data.db"
+    if _IS_CLOUD
+    else os.path.join(os.path.dirname(os.path.abspath(__file__)), "weather_data.db")
+)
+
+CWA_API_BASE: str = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/"
+ENDPOINT_36H: str = "F-C0032-001"
 
 # 台灣各縣市中心座標 (lat, lon)
 LOCATION_COORDS: dict[str, tuple[float, float]] = {
@@ -87,26 +101,142 @@ POP_MARKER_COLOR: list[tuple[int, str]] = [
 # Section 1：資料層 (Data Layer)
 # ============================================================
 
+# ============================================================
+# Section 1b：自動抓取 (Auto-Fetch for Streamlit Cloud)
+# ============================================================
+
+def _cwa_fetch_and_seed_db() -> bool:
+    """
+    When running on Streamlit Cloud (no local DB), automatically fetch
+    live 36-hour forecast data from CWA API and seed the SQLite DB.
+    Requires CWA_API_KEY to be set in st.secrets or environment.
+    Returns True on success, False on failure.
+    """
+    # ── Resolve API Key ──────────────────────────────────────
+    api_key = os.environ.get("CWA_API_KEY", "")
+    if not api_key:
+        try:
+            api_key = st.secrets.get("CWA_API_KEY", "")
+        except Exception:
+            pass
+    if not api_key:
+        return False
+
+    # ── Fetch from CWA API ───────────────────────────────────
+    url = f"{CWA_API_BASE}{ENDPOINT_36H}"
+    params = {"Authorization": api_key, "format": "JSON"}
+    try:
+        resp = requests.get(url, params=params, timeout=30, verify=False)
+        resp.raise_for_status()
+        data = resp.json()
+        if data.get("success") != "true":
+            return False
+    except Exception:
+        return False
+
+    # ── Parse Records ────────────────────────────────────────
+    records = []
+    fetched_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        locations = data["records"]["location"]
+    except (KeyError, TypeError):
+        return False
+
+    for location in locations:
+        location_name = location.get("locationName", "未知")
+        element_index = {
+            elem["elementName"]: elem
+            for elem in location.get("weatherElement", [])
+        }
+        wx_element = element_index.get("Wx", {})
+        time_slots = wx_element.get("time", [])
+
+        for i, time_slot in enumerate(time_slots):
+            def get_param(elem_name, key="parameterName", _i=i):
+                elem = element_index.get(elem_name, {})
+                slot = elem.get("time", [])[_i] if _i < len(elem.get("time", [])) else {}
+                return slot.get("parameter", {}).get(key)
+
+            def safe_int(v):
+                try:
+                    return int(v) if v is not None else None
+                except (ValueError, TypeError):
+                    return None
+
+            records.append({
+                "location_name"  : location_name,
+                "start_time"     : time_slot.get("startTime", ""),
+                "end_time"       : time_slot.get("endTime", ""),
+                "weather_desc"   : get_param("Wx", "parameterName"),
+                "weather_code"   : get_param("Wx", "parameterValue"),
+                "pop"            : safe_int(get_param("PoP")),
+                "min_temperature": safe_int(get_param("MinT")),
+                "max_temperature": safe_int(get_param("MaxT")),
+                "fetched_at"     : fetched_at,
+            })
+
+    if not records:
+        return False
+
+    # ── Seed SQLite ──────────────────────────────────────────
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS weather_36h (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                location_name TEXT NOT NULL,
+                start_time TEXT NOT NULL,
+                end_time TEXT NOT NULL,
+                weather_desc TEXT,
+                weather_code TEXT,
+                pop INTEGER,
+                min_temperature INTEGER,
+                max_temperature INTEGER,
+                fetched_at TEXT NOT NULL
+            )
+        """)
+        conn.executemany("""
+            INSERT INTO weather_36h
+            (location_name, start_time, end_time, weather_desc, weather_code,
+             pop, min_temperature, max_temperature, fetched_at)
+            VALUES
+            (:location_name, :start_time, :end_time, :weather_desc, :weather_code,
+             :pop, :min_temperature, :max_temperature, :fetched_at)
+        """, records)
+        conn.commit()
+        conn.close()
+        return True
+    except Exception:
+        return False
+
+
 @st.cache_data(ttl=300)  # 快取 5 分鐘，避免重複 I/O
 def load_data() -> pd.DataFrame | None:
     """
     從 SQLite 讀取 weather_36h 資料表並完成清理。
+    若資料庫不存在且有 CWA_API_KEY，自動抓取即時資料。
 
     Error Handling：
-      - 資料庫不存在 → st.error 顯示友善提示
+      - 資料庫不存在 + 無 API Key → st.error 顯示友善提示
+      - 資料庫不存在 + 有 API Key → 自動抓取並建立 DB
       - 讀取例外    → st.error 顯示例外訊息
       - 資料表空白  → st.warning 提示
 
     Returns:
         清理後的 DataFrame，或在失敗時回傳 None。
     """
-    # ── 防呆：確認資料庫檔案存在 ──────────────────────────────
+    # ── 防呆：確認資料庫檔案存在，若無則嘗試自動抓取 ──────────
     if not os.path.exists(DB_PATH):
-        st.error(
-            f"❌ 找不到資料庫：`{DB_PATH}`\n\n"
-            "請先執行 `python cwa_weather_fetcher.py` 抓取天氣資料。"
-        )
-        return None
+        with st.spinner("⏳ 資料庫不存在，正在即時抓取 CWA 天氣資料..."):
+            success = _cwa_fetch_and_seed_db()
+        if not success:
+            st.error(
+                "❌ 找不到資料庫，且自動抓取失敗。\n\n"
+                "**本地端**：請先執行 `python cwa_weather_fetcher.py` 抓取天氣資料。\n\n"
+                "**Streamlit Cloud**：請在 App Settings → Secrets 中加入：\n"
+                "```toml\nCWA_API_KEY = \"您的中央氣象署 API 授權碼\"\n```"
+            )
+            return None
 
     # ── 讀取資料 ──────────────────────────────────────────────
     try:
