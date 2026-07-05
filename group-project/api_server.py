@@ -12,6 +12,99 @@ from langchain_community.vectorstores import Chroma
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, START, END
 from supabase_db import save_pr_report
+import logging as _logging
+import joblib
+from pathlib import Path as _Path
+
+_log = _logging.getLogger(__name__)
+
+# ─── ML Gatekeeper（第三段新增）────────────────────────────────────────────────
+# 門檻從環境變數讀取，預設 0.7；不寫死，方便線上熱調整後重啟生效
+ML_GATEKEEPER_THRESHOLD: float = float(os.environ.get("ML_GATEKEEPER_THRESHOLD", "0.7"))
+_MODELS_DIR = _Path(__file__).parent / "models"
+
+
+def _load_ml_gatekeeper() -> tuple:
+    """
+    [新增] 主程式啟動時嘗試載入 ML 守門員（classifier.pkl / vectorizer.pkl）。
+    若檔案不存在或載入失敗，log 錯誤並回傳 (None, None)，
+    讓後續邏輯預設放行，不中斷服務。
+    """
+    clf_path = _MODELS_DIR / "classifier.pkl"
+    vec_path = _MODELS_DIR / "vectorizer.pkl"
+    try:
+        clf = joblib.load(clf_path)
+        vec = joblib.load(vec_path)
+        _log.info("[ML Gatekeeper] ✅ 模型載入成功 | classifier: %s | vectorizer: %s",
+                  clf_path, vec_path)
+        return clf, vec
+    except FileNotFoundError as exc:
+        _log.warning(
+            "[ML Gatekeeper] ⚠️ 模型檔案不存在（%s），預設放行所有請求。"
+            "請先執行 build_ml_pipeline.py 訓練並匯出模型。", exc
+        )
+    except Exception as exc:
+        _log.error(
+            "[ML Gatekeeper] ❌ 模型載入失敗：%s，預設放行所有請求。", exc
+        )
+    return None, None
+
+
+# 模組啟動時執行一次，避免每次請求重複 I/O
+_ml_clf, _ml_vec = _load_ml_gatekeeper()
+
+
+def _ml_predict_crisis_prob(text: str) -> float | None:
+    """
+    [新增] 以已載入的 ML 模型預測輸入文字為「實質危機客訴」（class=1）的機率。
+    - 模型未就緒（None）→ 回傳 None，守門員透明旁路
+    - 任何推論異常 → log 並回傳 None，不中斷主流程
+    """
+    if _ml_clf is None or _ml_vec is None:
+        return None
+    try:
+        X = _ml_vec.transform([text])
+        proba = _ml_clf.predict_proba(X)[0]
+        classes = list(_ml_clf.classes_)
+        return float(proba[classes.index(1)])
+    except Exception as exc:
+        _log.warning("[ML Gatekeeper] 推論失敗：%s，略過守門員直接放行。", exc)
+        return None
+
+
+def _save_gatekeeper_intercept(review: str, rating: int, crisis_prob: float) -> None:
+    """
+    [新增] 攔截記錄寫回 Supabase（risk_level / sentiment_score 欄位）。
+    採用動態欄位偵測，僅寫入資料表實際存在的欄位，
+    避免因欄位不存在（如舊 schema）導致寫入失敗。
+    任何例外僅 log，絕對不影響主流程。
+    """
+    try:
+        from supabase_db import supabase as _sb, SUPABASE_TABLE_NAME as _tbl
+        if not _sb:
+            return
+        data: dict = {
+            "review": review,
+            "rating": rating,
+            "risk_level": "Low",
+            "sentiment_score": round(crisis_prob, 4),
+            "report_content": "[ML Gatekeeper] 低風險，自動攔截，未觸發 RAG。",
+        }
+        # 動態欄位過濾：只寫入資料表真正擁有的欄位
+        try:
+            sample = _sb.table(_tbl).select("*").limit(1).execute()
+            if sample.data:
+                cols = set(sample.data[0].keys())
+                data = {k: v for k, v in data.items() if k in cols}
+        except Exception:
+            pass  # schema 偵測失敗時沿用完整 data，讓後端自行報錯
+        _sb.table(_tbl).insert(data).execute()
+    except Exception as exc:
+        _log.warning(
+            "[ML Gatekeeper] 攔截記錄寫入 Supabase 失敗（不影響主流程）：%s", exc
+        )
+# ────────────────────────────────────────────────────────────────────────────────
+
 
 
 # 初始化 FastAPI 應用程式
@@ -535,6 +628,39 @@ def analyze_review_api(req: AnalyzeRequest):
             "few_shot_examples": None,
             "query_embedding": None
         }
+        
+        # ── ML Gatekeeper 插入點（第三段新增）──────────────────────────────────
+        # 嚴禁修改此區塊以下的 RAG / LLM 核心邏輯
+        _crisis_prob = _ml_predict_crisis_prob(req.review)
+        if _crisis_prob is not None:
+            if _crisis_prob < ML_GATEKEEPER_THRESHOLD:
+                _log.info(
+                    "[ML Gatekeeper] 攔截 | prob=%.4f < threshold=%.2f | review=%.60s...",
+                    _crisis_prob, ML_GATEKEEPER_THRESHOLD, req.review,
+                )
+                _save_gatekeeper_intercept(req.review, req.rating, _crisis_prob)
+                return {
+                    "sentiment": "無關",
+                    "risk_percent": round(_crisis_prob * 100, 2),
+                    "scores": {"SINCERITY": 0, "LEGAL_DEFENSE": 0, "REPUTATION_RECOVERY": 0},
+                    "report_content": (
+                        f"[ML Gatekeeper] 此輿情評估為低風險"
+                        f"（危機機率 {_crisis_prob:.2%}），"
+                        f"系統自動攔截，未觸發 RAG 流程。"
+                    ),
+                    "is_mock_run": False,
+                    "engine_used": "ml_gatekeeper",
+                    "review_history": [
+                        f"[ML Gatekeeper] 危機機率 {_crisis_prob:.2%} "
+                        f"< 門檻 {ML_GATEKEEPER_THRESHOLD:.2f}，攔截。"
+                    ],
+                }
+            else:
+                _log.info(
+                    "[ML Gatekeeper] 放行 | prob=%.4f >= threshold=%.2f | review=%.60s...",
+                    _crisis_prob, ML_GATEKEEPER_THRESHOLD, req.review,
+                )
+        # ────────────────────────────────────────────────────────────────────────
         
         final_state = app_workflow.invoke(initial_state)
         
