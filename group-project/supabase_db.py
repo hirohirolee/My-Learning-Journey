@@ -8,7 +8,9 @@ load_dotenv()
 # Initialize Supabase client
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-SUPABASE_TABLE_NAME = os.environ.get("SUPABASE_TABLE_NAME", "reviews_enriched")
+
+# 🎯【核心修改一】：最上面的環境變數預設值，直接改成阿嬤剛建好的實體大總表 master_reviews_enriched！
+SUPABASE_TABLE_NAME = os.environ.get("SUPABASE_TABLE_NAME", "master_reviews_enriched")
 
 if SUPABASE_URL and SUPABASE_KEY:
     try:
@@ -20,7 +22,9 @@ else:
     supabase = None
     print("[Info] SUPABASE_URL or SUPABASE_KEY not set. Supabase operations will be skipped.")
 
-def init_dynamic_client(url: str, key: str, table_name: str = "reviews_enriched"):
+
+# 🎯【核心修改二】：將動態用戶端重置的預設資料表也同步改為新實體總表
+def init_dynamic_client(url: str, key: str, table_name: str = "master_reviews_enriched"):
     """
     Dynamically re-initializes the Supabase client with custom credentials.
     """
@@ -38,40 +42,43 @@ def init_dynamic_client(url: str, key: str, table_name: str = "reviews_enriched"
 def save_pr_report(review: str, rating: int, sentiment: str, risk_percent: float, report_content: str, engine: str, embedding=None):
     """
     Saves the review and analysis results into the Supabase database.
+    【最終通關版：完美相容並對齊新實體總表欄位】
     """
     if not supabase:
         return {"status": "error", "message": "Supabase client not initialized"}
     
     try:
-        # 準備資料字典，並同時寫入預設欄位與使用者自訂欄位 (如 sentiment_label)
+        # 準備資料字典，完全相容於新實體大總表的所有格子
         raw_data = {
-            "review": review,
-            "rating": rating,
+            "raw_text": review,  # 完美對齊資料庫畫面上的 raw_text 欄位
+            "rating": int(rating) if rating is not None else None,
             "sentiment": sentiment,
-            "sentiment_label": sentiment,  # 對應使用者的 review 表欄位
+            "sentiment_label": sentiment,
             "risk_percent": float(risk_percent) if risk_percent is not None else None,
             "report_content": report_content,
             "engine": engine,
             "embedding": embedding
         }
         
-        # 嘗試動態偵測資料表包含哪些欄位，防止因多餘欄位導致寫入失敗
+        # 嘗試動態偵測資料表包含哪些欄位，防止多餘欄位導致失敗
         try:
             sample = supabase.table(SUPABASE_TABLE_NAME).select("*").limit(1).execute()
             if sample.data and len(sample.data) > 0:
                 cols = set(sample.data[0].keys())
                 data = {k: v for k, v in raw_data.items() if k in cols}
             else:
-                # 若為空表且表名為 review 或 reviews_enriched，使用常見實體欄位過濾
-                # 已在此處補充 risk_percent 確保結構對齊
-                if SUPABASE_TABLE_NAME in ("review", "reviews_enriched"):
-                    cols = {"id", "business_id", "rating", "review", "review_type", "sentiment", "sentiment_label", "risk_percent", "published_at", "crawled_at", "embedding", "report_content", "engine"}
+                # 🎯【核心修改三】：空表防護白名單（不含 embedding，master_reviews_enriched 無此欄）
+                if SUPABASE_TABLE_NAME in ("review", "reviews_enriched", "master_reviews_enriched"):
+                    cols = {"review_id", "reviewer", "review_time", "raw_text", "rating", "platform", "sentiment", "sentiment_label", "risk_percent", "report_content", "engine"}
                     data = {k: v for k, v in raw_data.items() if k in cols}
                 else:
                     data = raw_data
         except Exception as e_schema:
             print(f"[Warning] Failed to fetch table schema, using default insert: {e_schema}")
             data = raw_data
+
+        # 🔧 安全防護：移除值為 None 的欄位，避免 Supabase 拒絕不存在的 null 欄位
+        data = {k: v for k, v in data.items() if v is not None}
             
         response = supabase.table(SUPABASE_TABLE_NAME).insert(data).execute()
         return {"status": "success", "data": response.data}
@@ -118,7 +125,12 @@ def fetch_all_reports():
                     data = sorted(data, key=lambda x: x.get("created_at", ""), reverse=True)
                 except:
                     pass
-            # 如果沒有 created_at 但有 id，則以 id 排序
+            # 如果沒有 created_at 但有 review_id 或 id，則進行排序
+            elif "review_id" in data[0]:
+                try:
+                    data = sorted(data, key=lambda x: x.get("review_id", 0), reverse=True)
+                except:
+                    pass
             elif "id" in data[0]:
                 try:
                     data = sorted(data, key=lambda x: x.get("id", 0), reverse=True)
