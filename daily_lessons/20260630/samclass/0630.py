@@ -2,6 +2,21 @@ import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
+class AutoBar(tk.Scrollbar):
+    default_width = None
+
+    def set(self, first, last):
+        if self.default_width == None:
+            self.default_width = self["width"]
+        # ---
+        if float(first) <= 0.0 and float(last) >= 1.0:
+            self.configure(width = 0)
+        else:
+            self.configure(width = self.default_width)
+        # ---
+        return super().set(first, last)    
+
+
 # --- 開取檔案選擇器
 def on_select_click():
     dbna = filedialog.askopenfile()
@@ -50,26 +65,62 @@ def update_bottom_Panel(columns, results):
         errLabel = tk.Label(bottomPanel, text="查無相關資料內容!", font=("Arial", 14))
         errLabel.pack(side="top", fill="both", expand=True)
         return
+    # --- 設定字型大小
+    tableStyle = ttk.Style()
+    tableStyle.configure(
+        "Treeview",
+        font=("Arial", 14),
+        rowheight=30,
+    )
+
+    tableStyle.configure(
+        "Treeview.Heading",
+        font=("Arial", 14),
+        padding=(5, 5), 
+    )
     # --- 有資料內容時
     table = ttk.Treeview(bottomPanel, columns=columns, show="headings")
     table.tag_configure("odd"   , background="#FFFFFF")
     table.tag_configure("even"  , background="#EFEFEF")
     # --- 編排欄位表頭
     for col in columns:
-        table.heading(col, text=col)
+        table.heading(col, text=col, command=lambda na=col: on_head_click(na, columns, results))
     # --- 編排明細資料
     for ndx, row in enumerate(results):
         table.insert("", "end", values=row, tags="odd" if ndx % 2 == 0 else "even")
     # --- 處理垂直卷軸
-    yBar = tk.Scrollbar(bottomPanel, orient="vertical", command=table.yview)
+    yBar = AutoBar(bottomPanel, orient="vertical", command=table.yview)
     table.configure(yscrollcommand=yBar.set)
     yBar.pack(side="right", fill="y")
     # --- 處理水平卷軸
-    xBar = tk.Scrollbar(bottomPanel, orient="horizontal", command=table.xview)
+    xBar = AutoBar(bottomPanel, orient="horizontal", command=table.xview)
     table.configure(xscrollcommand=xBar.set)
     xBar.pack(side="bottom", fill="x")
     # ---
     table.pack(side="top", fill="both", expand=True)
+
+def on_head_click(colna:str, columns, results):
+    sortndx = 0
+    sortrev = False
+    # ---
+    for ndx, col in enumerate(columns):
+        if colna != col:
+            if col[-1] in "▲▼":
+                columns[ndx] = col[:-1]
+        else:
+            if   col[-1] not in "▲▼":
+                columns[ndx] = col + "▲"
+                sortndx = ndx
+            elif col[-1] == "▲":
+                columns[ndx] = col[:-1] + "▼"
+                sortndx = ndx
+                sortrev = True
+            else:
+                columns[ndx] = col[:-1]
+    # ---
+    results.sort(key=lambda row: row[sortndx] if row[sortndx] != None else False, reverse = sortrev)
+    # ---
+    update_bottom_Panel(columns, results)
 
 # ---
 rootWin = tk.Tk()
