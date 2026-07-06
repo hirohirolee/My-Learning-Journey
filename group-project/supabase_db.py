@@ -63,8 +63,9 @@ def save_pr_report(review: str, rating: int, sentiment: str, risk_percent: float
                 data = {k: v for k, v in raw_data.items() if k in cols}
             else:
                 # 若為空表且表名為 review 或 reviews_enriched，使用常見實體欄位過濾
+                # 已在此處補充 risk_percent 確保結構對齊
                 if SUPABASE_TABLE_NAME in ("review", "reviews_enriched"):
-                    cols = {"id", "business_id", "rating", "review_type", "sentiment_label", "published_at", "crawled_at", "embedding", "report_content"}
+                    cols = {"id", "business_id", "rating", "review", "review_type", "sentiment", "sentiment_label", "risk_percent", "published_at", "crawled_at", "embedding", "report_content", "engine"}
                     data = {k: v for k, v in raw_data.items() if k in cols}
                 else:
                     data = raw_data
@@ -78,9 +79,10 @@ def save_pr_report(review: str, rating: int, sentiment: str, risk_percent: float
         return {"status": "error", "message": str(e)}
 
 
-def search_similar_reviews(query_vector, rating, match_threshold=0.6, limit=2):
+def search_similar_reviews(query_vector, rating, match_threshold=0.75, limit=3):
     """
-    呼叫 Supabase SQL RPC (match_reviews) 進行向量相似度檢索，限制相同評分以保證情境一致
+    呼叫 Supabase SQL RPC (match_reviews) 進行向量相似度檢索，限制相同評分以保證情境一致。
+    現階段優化：將 match_threshold 預設值調高至 0.75，並將 limit 擴大至 3。
     """
     if not supabase:
         return []
