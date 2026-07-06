@@ -86,7 +86,7 @@ with st.sidebar:
     # 預設載入 .env 內的值（若有）
     default_url = os.environ.get("SUPABASE_URL", "https://mzonkpfagqdhaqwybtuo.supabase.co")
     default_key = os.environ.get("SUPABASE_KEY", "")
-    default_table = os.environ.get("SUPABASE_TABLE_NAME", "reviews")
+    default_table = os.environ.get("SUPABASE_TABLE_NAME", "reviews_enriched")
     
     # 網頁側邊欄提供輸入框
     input_url = st.text_input("Supabase 網址", value=default_url, help="Supabase 專案 URL")

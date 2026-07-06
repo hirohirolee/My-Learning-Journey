@@ -8,7 +8,7 @@ load_dotenv()
 # Initialize Supabase client
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-SUPABASE_TABLE_NAME = os.environ.get("SUPABASE_TABLE_NAME", "reviews")
+SUPABASE_TABLE_NAME = os.environ.get("SUPABASE_TABLE_NAME", "reviews_enriched")
 
 if SUPABASE_URL and SUPABASE_KEY:
     try:
@@ -20,7 +20,7 @@ else:
     supabase = None
     print("[Info] SUPABASE_URL or SUPABASE_KEY not set. Supabase operations will be skipped.")
 
-def init_dynamic_client(url: str, key: str, table_name: str = "reviews"):
+def init_dynamic_client(url: str, key: str, table_name: str = "reviews_enriched"):
     """
     Dynamically re-initializes the Supabase client with custom credentials.
     """
@@ -62,8 +62,8 @@ def save_pr_report(review: str, rating: int, sentiment: str, risk_percent: float
                 cols = set(sample.data[0].keys())
                 data = {k: v for k, v in raw_data.items() if k in cols}
             else:
-                # 若為空表且表名為 review，使用剛才在 Schema 看到的實體欄位過濾
-                if SUPABASE_TABLE_NAME == "review":
+                # 若為空表且表名為 review 或 reviews_enriched，使用常見實體欄位過濾
+                if SUPABASE_TABLE_NAME in ("review", "reviews_enriched"):
                     cols = {"id", "business_id", "rating", "review_type", "sentiment_label", "published_at", "crawled_at", "embedding", "report_content"}
                     data = {k: v for k, v in raw_data.items() if k in cols}
                 else:
