@@ -11,7 +11,6 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
-    <script src="https://js.puter.com/v2/"></script>
 
     <style>
         :root {
@@ -86,30 +85,14 @@
         .card h3 { font-size: 20px; margin-bottom: 15px; color: var(--primary-color); }
         .card p { font-size: 15px; color: #475569; line-height: 1.6; }
 
-        /* AI 繪圖區塊 */
-        .ai-studio-bg { background-color: var(--secondary-color); max-width: 100%; }
-        .ai-input-container {
-            max-width: 650px; margin: 0 auto; background: white; padding: 40px;
-            border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-        }
-        .ai-input {
-            width: 100%; padding: 15px; font-size: 16px; border: 2px solid #e2e8f0;
-            border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; font-family: inherit;
-        }
+
         .btn {
             background-color: var(--accent-color); color: white; border: none; padding: 14px 35px;
             font-size: 15px; border-radius: 50px; cursor: pointer; transition: 0.3s;
             font-weight: 600; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; display: inline-block;
         }
         .btn:hover { background-color: #b45309; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(217, 119, 6, 0.2); }
-        .ai-btn { width: 100%; border-radius: 8px; }
-        
-        .loader {
-            border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-color);
-            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #ai-result-img { max-width: 100%; border-radius: 8px; margin-top: 25px; display: none; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
 
         /* 關於我 (雙欄設計) */
         .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
@@ -198,25 +181,11 @@
                 <div class="about-text">
                     <h3>Carbon Footprint & Sustainability</h3>
                     <p>面對全球淨零趨勢，具備 <strong>ISO 14064-1 溫室氣體盤查主導稽核員</strong>資格，協助企業落實碳盤查與減碳策略，兼顧法規遵循與營運發展。</p>
-                    <h3>2026 Future Milestones</h3>
-                    <p>持續深耕永續領域，已排定參與 <strong>TAISE/TCSA 永續培訓計畫</strong>，確保企業策略走在 ESG 浪潮最前端。</p>
                 </div>
             </div>
         </section>
 
-        <section id="ai-studio" class="ai-studio-bg gsap-fade">
-            <h2 class="section-title">AI Innovation Studio</h2>
-            <p class="section-subtitle">Serverless Architecture & Edge Rendering Demo</p>
-            <div class="ai-input-container">
-                <input type="text" v-model="aiPrompt" class="ai-input" placeholder="Enter prompt: e.g., a futuristic smart factory...">
-                <button class="btn ai-btn" @click="generateImage" :disabled="isGenerating">
-                    {{ isGenerating ? 'Processing...' : 'Generate Image' }}
-                </button>
-                <div class="loader" :style="{ display: isGenerating ? 'block' : 'none' }"></div>
-                <p v-if="errorMessage" style="color: #e74c3c; margin-top: 15px;">{{ errorMessage }}</p>
-                <img id="ai-result-img" :src="generatedImageUrl" :style="{ display: generatedImageUrl ? 'block' : 'none' }">
-            </div>
-        </section>
+
 
         <section id="about" class="gsap-fade">
             <h2 class="section-title">Discipline & Balance</h2>
@@ -245,12 +214,7 @@
 
         createApp({
             data() {
-                return {
-                    aiPrompt: 'A highly detailed futuristic smart factory, 8k, cinematic lighting',
-                    isGenerating: false,
-                    generatedImageUrl: '',
-                    errorMessage: ''
-                }
+                return {}
             },
             methods: {
                 initAnimations() {
@@ -277,22 +241,7 @@
                         );
                     });
                 },
-                async generateImage() {
-                    if (!this.aiPrompt.trim()) return;
-                    this.isGenerating = true; this.generatedImageUrl = ''; this.errorMessage = '';
-                    try {
-                        const result = await puter.ai.txt2img(this.aiPrompt, {
-                            model: "stabilityai/stable-diffusion-xl-base-1.0"
-                        });
-                        if (result && result.src) {
-                            this.generatedImageUrl = result.src;
-                        } else throw new Error("伺服器未回傳圖片");
-                    } catch (error) {
-                        this.errorMessage = '生成失敗：' + (error.message || '連線逾時');
-                    } finally {
-                        this.isGenerating = false;
-                    }
-                }
+
             },
             mounted() {
                 this.$nextTick(() => { this.initAnimations(); });

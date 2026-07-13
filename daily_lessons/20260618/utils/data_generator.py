@@ -7,7 +7,7 @@ def generate_data(
 ):
     if dataset_type in ["Concentric Circles", "同心圓"]:
         X, y = make_circles(
-            n_samples=n_samples, noise=noise, factor=0.5, random_state=seed
+            n_samples=n_samples, noise=noise, factor=0.7, random_state=seed
         )
     elif dataset_type in ["Moons", "月牙形"]:
         X, y = make_moons(n_samples=n_samples, noise=noise, random_state=seed)

@@ -50,6 +50,13 @@ __st.sidebar.markdown(
 """
 )
 
+axis_min = __st.sidebar.selectbox(
+    "🔍 圖表縮放起點 (軸線最小值)",
+    options=[0, 3, 4, 5],
+    index=2,
+    help="調整 X/Y 軸的起點以分散高分區的資料點，使其更容易閱讀。"
+)
+
 # =====================================================================
 # 3. 原始數據統整
 # =====================================================================
@@ -211,9 +218,9 @@ with col1:
     low_diag = np.sqrt(low_limit)
     high_diag = np.sqrt(high_limit)
 
-    x_low = y_low = max(0.8, low_diag / 2.0)
-    x_med = y_med = (low_diag + high_diag) / 2.0
-    x_high = y_high = min(9.2, (high_diag + 10.0) / 2.0)
+    x_low = y_low = (axis_min + low_diag) / 2.0 if low_diag > axis_min else (axis_min + 0.2)
+    x_med = y_med = (max(axis_min, low_diag) + high_diag) / 2.0
+    x_high = y_high = (max(axis_min, high_diag) + 10.0) / 2.0
 
     fig.add_annotation(x=x_low, y=y_low, text="<b>低度重大</b>", showarrow=False, font=dict(size=14, color="#4b5563"))
     fig.add_annotation(x=x_med, y=y_med, text="<b>中度重大</b>", showarrow=False, font=dict(size=14, color="#b45309"))
@@ -252,8 +259,8 @@ with col1:
 
     # 8. 圖表外觀與軸線設定
     fig.update_layout(
-        xaxis=dict(title="營運影響程度（衝擊程度）", range=[0, 10], tickmode='linear', tick0=0, dtick=1, gridcolor='rgba(0,0,0,0.1)'),
-        yaxis=dict(title="對經濟、環境和人（人權）的衝擊影響（利害關係人關心度）", range=[0, 10], tickmode='linear', tick0=0, dtick=1, gridcolor='rgba(0,0,0,0.1)'),
+        xaxis=dict(title="營運影響程度（衝擊程度）", range=[axis_min, 10], tickmode='linear', tick0=axis_min, dtick=1, gridcolor='rgba(0,0,0,0.1)'),
+        yaxis=dict(title="對經濟、環境和人（人權）的衝擊影響（利害關係人關心度）", range=[axis_min, 10], tickmode='linear', tick0=axis_min, dtick=1, gridcolor='rgba(0,0,0,0.1)'),
         margin=dict(l=40, r=40, t=20, b=40),
         height=600,
         plot_bgcolor='white',
