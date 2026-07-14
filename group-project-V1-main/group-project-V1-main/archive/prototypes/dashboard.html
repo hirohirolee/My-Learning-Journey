@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>小吃店輿情後台</title>
+  <meta name="description" content="餐廳評論輿情分析儀表板，即時顯示評論情感、風險與關鍵字分析" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Noto Sans TC', Arial, sans-serif;
+      background: linear-gradient(145deg, #dbeafe 0%, #f1f5f9 45%, #d1fae5 100%);
+      color: #1e293b;
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 16px 32px;
+    }
+
+    /* ═══ HEADER ══════════════════════════════════════════ */
+    .header {
+      background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #3b82f6 100%);
+      color: white;
+      padding: 22px 20px 18px;
+      border-radius: 22px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 32px rgba(37, 99, 235, .40);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -30px;
+      width: 180px;
+      height: 180px;
+      background: rgba(255, 255, 255, .07);
+      border-radius: 50%;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -70px;
+      left: -30px;
+      width: 220px;
+      height: 220px;
+      background: rgba(255, 255, 255, .04);
+      border-radius: 50%;
+    }
+
+    .header h1 {
+      font-size: 21px;
+      font-weight: 900;
+      margin-bottom: 6px;
+      letter-spacing: -.3px;
+      position: relative;
+    }
+
+    .header-meta {
+      font-size: 12px;
+      opacity: .85;
+      line-height: 1.7;
+      position: relative;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: .95;
+      position: relative;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4ade80;
+      flex-shrink: 0;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    .status-dot.error {
+      background: #f87171;
+      animation: none;
+    }
+
+    .status-dot.loading {
+      background: #fbbf24;
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
+
+      50% {
+        opacity: .45;
+        transform: scale(.75)
+      }
+    }
+
+    /* ═══ CARD ════════════════════════════════════════════ */
+    .card {
+      background: white;
+      padding: 18px 18px 16px;
+      border-radius: 20px;
+      margin-bottom: 13px;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .07);
+      animation: fadeUp .4s ease both;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .total-badge {
+      margin-left: auto;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    /* ═══ CLICKABLE BAR ROWS ══════════════════════════════ */
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all .2s ease;
+      position: relative;
+      user-select: none;
+    }
+
+    .bar-row:hover {
+      background: #f8fafc;
+      transform: translateY(-1px);
+    }
+
+    .bar-row:active {
+      transform: translateY(0);
+    }
+
+    .bar-row.active-positive {
+      background: #f0fdf4;
+      border-color: #22c55e;
+    }
+
+    .bar-row.active-neutral {
+      background: #fefce8;
+      border-color: #f59e0b;
+    }
+
+    .bar-row.active-negative {
+      background: #fff1f2;
+      border-color: #ef4444;
+    }
+
+    .bar-row.active-joy {
+      background: #faf5ff;
+      border-color: #8b5cf6;
+    }
+
+    .bar-row.active-anger {
+      background: #fff1f2;
+      border-color: #ef4444;
+    }
+
+    .bar-row.active-disappointment {
+      background: #f1f5f9;
+      border-color: #6b7280;
+    }
+
+    .bar-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .bar-label {
+      font-size: 12px;
+      font-weight: 500;
+      width: 72px;
+      flex-shrink: 0;
+      color: #475569;
+    }
+
+    .bar-bg {
+      flex: 1;
+      background: #f1f5f9;
+      border-radius: 999px;
+      height: 10px;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      width: 0%;
+      transition: width 1.3s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .bar.positive {
+      background: linear-gradient(90deg, #16a34a, #4ade80);
+    }
+
+    .bar.neutral {
+      background: linear-gradient(90deg, #d97706, #fbbf24);
+    }
+
+    .bar.negative {
+      background: linear-gradient(90deg, #dc2626, #f87171);
+    }
+
+    .bar.joy {
+      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+    }
+
+    .bar.anger {
+      background: linear-gradient(90deg, #dc2626, #f87171);
+    }
+
+    .bar.disappoint {
+      background: linear-gradient(90deg, #4b5563, #9ca3af);
+    }
+
+    .bar-pct {
+      font-size: 12px;
+      font-weight: 800;
+      width: 34px;
+      text-align: right;
+      color: #1e293b;
+      flex-shrink: 0;
+    }
+
+    .bar-check {
+      font-size: 12px;
+      width: 16px;
+      flex-shrink: 0;
+      color: #22c55e;
+      font-weight: 900;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all .2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bar-row[class*="active-"] .bar-check {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .bar-hint {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 6px;
+    }
+
+    /* ═══ RISK BOXES ══════════════════════════════════════ */
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .risk-box {
+      background: #f8fafc;
+      border-radius: 13px;
+      padding: 12px 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform .18s, box-shadow .18s, border-color .15s;
+      border: 2px solid transparent;
+      user-select: none;
+    }
+
+    .risk-box:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+    }
+
+    .risk-box:active {
+      transform: scale(.96);
+    }
+
+    .risk-box.active-critical {
+      background: #fff1f2;
+      border-color: #dc2626;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, .15);
+    }
+
+    .risk-box.active-high {
+      background: #fff7ed;
+      border-color: #ea580c;
+      box-shadow: 0 0 0 3px rgba(234, 88, 12, .15);
+    }
+
+    .risk-box.active-medium {
+      background: #fefce8;
+      border-color: #ca8a04;
+      box-shadow: 0 0 0 3px rgba(202, 138, 4, .15);
+    }
+
+    .risk-box.active-low {
+      background: #f0fdf4;
+      border-color: #16a34a;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, .15);
+    }
+
+    .risk-num {
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .risk-num.critical {
+      color: #dc2626
+    }
+
+    .risk-num.high {
+      color: #ea580c
+    }
+
+    .risk-num.medium {
+      color: #ca8a04
+    }
+
+    .risk-num.low {
+      color: #16a34a
+    }
+
+    .risk-lbl {
+      font-size: 10px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .risk-hint {
+      font-size: 10px;
+      color: #94a3b8;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    /* ═══ TAGS & KEYWORDS ═════════════════════════════════ */
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      border: 2px solid transparent;
+      user-select: none;
+    }
+
+    .tag-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+    }
+
+    .tag-item:active {
+      transform: scale(.96);
+    }
+
+    /* 主題分類樣式 */
+    .tag-item.food {
+      background: #fef9c3;
+      color: #713f12;
+    }
+
+    .tag-item.service {
+      background: #dbeafe;
+      color: #1e3a8a;
+    }
+
+    .tag-item.environment {
+      background: #dcfce7;
+      color: #14532d;
+    }
+
+    .tag-item.price {
+      background: #fce7f3;
+      color: #831843;
+    }
+
+    .tag-item.other {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .tag-item.selected.food {
+      border-color: #713f12;
+      box-shadow: 0 0 0 3px rgba(113, 63, 18, .18);
+    }
+
+    .tag-item.selected.service {
+      border-color: #1e3a8a;
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, .18);
+    }
+
+    .tag-item.selected.environment {
+      border-color: #14532d;
+      box-shadow: 0 0 0 3px rgba(20, 83, 45, .18);
+    }
+
+    .tag-item.selected.price {
+      border-color: #831843;
+      box-shadow: 0 0 0 3px rgba(131, 24, 67, .18);
+    }
+
+    .tag-item.selected.other {
+      border-color: #334155;
+      box-shadow: 0 0 0 3px rgba(51, 65, 85, .18);
+    }
+
+    /* 關鍵詞標籤專用樣式 (黃橘溫暖色系) */
+    .tag-item.kw-item {
+      background: #fff3c7;
+      color: #b45309;
+    }
+
+    .tag-item.selected.kw-item {
+      border-color: #b45309;
+      box-shadow: 0 0 0 3px rgba(180, 83, 9, .18);
+    }
+
+    .tag-count {
+      font-size: 11px;
+      font-weight: 800;
+      background: rgba(0, 0, 0, .08);
+      border-radius: 999px;
+      padding: 1px 7px;
+    }
+
+    .tag-hint {
+      font-size: 10px;
+      color: #94a3b8;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    /* ═══ FILTER BAR ══════════════════════════════════════ */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #eff6ff;
+      border-radius: 12px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      border: 1px solid #bfdbfe;
+      animation: fadeUp .2s ease both;
+    }
+
+    .filter-bar-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1d4ed8;
+      flex: 1;
+    }
+
+    .filter-clear {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6b7280;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      padding: 3px 10px;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      white-space: nowrap;
+    }
+
+    .filter-clear:hover {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fca5a5;
+    }
+
+    /* ═══ REVIEWS ═════════════════════════════════════════ */
+    .reviews-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .reviews-title-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .sort-select {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1e293b;
+      background: white;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 6px 28px 6px 12px;
+      cursor: pointer;
+      font-family: inherit;
+      outline: none;
+      transition: all .15s ease;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 12px;
+    }
+
+    .sort-select:hover {
+      border-color: #2563eb;
+      color: #2563eb;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+    }
+
+    .sort-select:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .review {
+      border-left: 4px solid #e2e8f0;
+      padding: 11px 12px;
+      margin-bottom: 9px;
+      background: #f8fafc;
+      border-radius: 10px;
+      transition: background .18s;
+    }
+
+    .review:last-child {
+      margin-bottom: 0;
+    }
+
+    .review:hover {
+      background: #f0f4f8;
+    }
+
+    .review.positive {
+      border-left-color: #22c55e;
+    }
+
+    .review.negative {
+      border-left-color: #ef4444;
+    }
+
+    .review.neutral {
+      border-left-color: #f59e0b;
+    }
+
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 5px;
+      gap: 8px;
+    }
+
+    .review-platform {
+      font-weight: 700;
+      font-size: 13px;
+      color: #1e293b;
+    }
+
+    .review-reviewer {
+      font-weight: 400;
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 3px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .badge.positive {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .badge.negative {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .badge.neutral {
+      background: #fef9c3;
+      color: #92400e;
+    }
+
+    .badge.critical {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+
+    .badge.high {
+      background: #ffedd5;
+      color: #9a3412;
+    }
+
+    .badge.medium {
+      background: #fef9c3;
+      color: #92400e;
+    }
+
+    .badge.low {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge.food {
+      background: #fef9c3;
+      color: #713f12;
+    }
+
+    .badge.service {
+      background: #dbeafe;
+      color: #1e3a8a;
+    }
+
+    .badge.environment {
+      background: #dcfce7;
+      color: #14532d;
+    }
+
+    .badge.price {
+      background: #fce7f3;
+      color: #831843;
+    }
+
+    .badge.emo-joy {
+      background: #f3e8ff;
+      color: #6d28d9;
+    }
+
+    .badge.emo-anger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .badge.emo-dis {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .review-text {
+      font-size: 13px;
+      color: #374151;
+      line-height: 1.65;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .review-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .review-time {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .review-stars {
+      font-size: 11px;
+      color: #f59e0b;
+      letter-spacing: 1px;
+    }
+
+    /* ═══ PAGINATION ══════════════════════════════════════ */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding-top: 14px;
+      margin-top: 10px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .page-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1.5px solid #e2e8f0;
+      background: white;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .18s;
+      color: #475569;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      background: #eff6ff;
+      border-color: #2563eb;
+      color: #2563eb;
+    }
+
+    .page-btn:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
+    .page-nums {
+      display: flex;
+      gap: 5px;
+    }
+
+    .page-num {
+      min-width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      border: 1.5px solid #e2e8f0;
+      background: white;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .18s;
+      color: #475569;
+      padding: 0 6px;
+    }
+
+    .page-num:hover {
+      background: #eff6ff;
+      border-color: #93c5fd;
+      color: #2563eb;
+    }
+
+    .page-num.active {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: white;
+    }
+
+    /* ═══ SKELETON ════════════════════════════════════════ */
+    .skeleton-card {
+      background: white;
+      padding: 18px;
+      border-radius: 20px;
+      margin-bottom: 13px;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .05);
+    }
+
+    .skel {
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0
+      }
+
+      100% {
+        background-position: -200% 0
+      }
+    }
+
+    .skel-title {
+      height: 16px;
+      width: 45%;
+      margin-bottom: 16px;
+    }
+
+    .skel-line {
+      height: 11px;
+      margin-bottom: 11px;
+    }
+
+    .skel-line.w-60 {
+      width: 60%
+    }
+
+    .skel-line.w-80 {
+      width: 80%
+    }
+
+    .skel-line.w-90 {
+      width: 90%
+    }
+
+    /* ═══ ERROR ═══════════════════════════════════════════ */
+    .error-card {
+      background: #fff1f2;
+      border: 1.5px solid #fecaca;
+      border-radius: 16px;
+      padding: 22px;
+      text-align: center;
+      margin-bottom: 13px;
+    }
+
+    .error-card h3 {
+      color: #dc2626;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .error-card p {
+      color: #6b7280;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .error-hint {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #9ca3af;
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    /* ═══ FOOTER ══════════════════════════════════════════ */
+    .footer {
+      text-align: center;
+      padding: 10px 0 0;
+    }
+
+    .refresh-time {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+
+    .refresh-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 22px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .2s, transform .2s, box-shadow .2s;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, .30);
+    }
+
+    .refresh-btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(37, 99, 235, .38);
+    }
+
+    .refresh-btn:active {
+      transform: translateY(0);
+    }
+
+    .refresh-btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .spin-icon {
+      display: inline-block;
+    }
+
+    .refresh-btn.spinning .spin-icon {
+      animation: spin360 .9s linear infinite;
+    }
+
+    @keyframes spin360 {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .no-data {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 13px;
+      padding: 24px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- Header -->
+    <div class="header">
+      <h1>🍜 文章牛肉湯</h1>
+      <div class="header-meta">
+        <div>數據來源：Supabase master_reviews_enriched（ML 即時計算補欄位）</div>
+        <div id="update-time">更新時間：載入中...</div>
+      </div>
+      <div class="header-status">
+        <div class="status-dot loading" id="status-dot"></div>
+        <span id="conn-status">連線中，請稍候...</span>
+      </div>
+    </div>
+
+    <!-- Loading Skeleton -->
+    <div id="loading-state">
+      <div class="skeleton-card">
+        <div class="skel skel-title"></div>
+        <div class="skel skel-line w-90"></div>
+        <div class="skel skel-line w-80"></div>
+        <div class="skel skel-line w-60"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skel skel-title"></div>
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line w-80"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skel skel-title"></div>
+        <div class="skel skel-line w-90"></div>
+        <div class="skel skel-line"></div>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" style="display:none"></div>
+
+    <!-- Main Content -->
+    <div id="main-content" style="display:none">
+
+      <!-- 輿情健康度（可點擊篩選） -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-icon" style="background:#f0fdf4">📊</div>
+          全網輿情健康度
+          <span class="total-badge" id="total-count">0 則</span>
+        </div>
+        <div class="bar-row" id="row-positive" onclick="toggleSentimentFilter('positive')">
+          <div class="bar-label">正面評價</div>
+          <div class="bar-bg">
+            <div class="bar positive" id="bar-positive"></div>
+          </div>
+          <div class="bar-pct" id="pct-positive">0%</div>
+          <div class="bar-check" id="chk-positive">✓</div>
+        </div>
+        <div class="bar-row" id="row-neutral" onclick="toggleSentimentFilter('neutral')">
+          <div class="bar-label">中立討論</div>
+          <div class="bar-bg">
+            <div class="bar neutral" id="bar-neutral"></div>
+          </div>
+          <div class="bar-pct" id="pct-neutral">0%</div>
+          <div class="bar-check" id="chk-neutral">✓</div>
+        </div>
+        <div class="bar-row" id="row-negative" onclick="toggleSentimentFilter('negative')">
+          <div class="bar-label">負面投訴</div>
+          <div class="bar-bg">
+            <div class="bar negative" id="bar-negative"></div>
+          </div>
+          <div class="bar-pct" id="pct-negative">0%</div>
+          <div class="bar-check" id="chk-negative">✓</div>
+        </div>
+        <div class="bar-hint">👆 點擊列可篩選評論</div>
+      </div>
+
+      <!-- 情緒分析（可點擊篩選） -->
+      <div class="card" id="emotion-card" style="display:none">
+        <div class="card-title">
+          <div class="card-icon" style="background:#faf5ff">🎭</div>
+          情緒分析（平均值）
+        </div>
+        <div class="bar-row" id="row-joy" onclick="toggleEmotionFilter('joy')">
+          <div class="bar-label">😊 喜悅</div>
+          <div class="bar-bg">
+            <div class="bar joy" id="bar-joy"></div>
+          </div>
+          <div class="bar-pct" id="pct-joy">0%</div>
+          <div class="bar-check" id="chk-joy">✓</div>
+        </div>
+        <div class="bar-row" id="row-anger" onclick="toggleEmotionFilter('anger')">
+          <div class="bar-label">😠 憤怒</div>
+          <div class="bar-bg">
+            <div class="bar anger" id="bar-anger"></div>
+          </div>
+          <div class="bar-pct" id="pct-anger">0%</div>
+          <div class="bar-check" id="chk-anger">✓</div>
+        </div>
+        <div class="bar-row" id="row-disappointment" onclick="toggleEmotionFilter('disappointment')">
+          <div class="bar-label">😔 失望</div>
+          <div class="bar-bg">
+            <div class="bar disappoint" id="bar-disappoint"></div>
+          </div>
+          <div class="bar-pct" id="pct-disappoint">0%</div>
+          <div class="bar-check" id="chk-disappointment">✓</div>
+        </div>
+        <div class="bar-hint">👆 點擊列可篩選主導情緒的評論</div>
+      </div>
+
+      <!-- 風險分佈（可點擊篩選） -->
+      <div class="card" id="risk-card" style="display:none">
+        <div class="card-title">
+          <div class="card-icon" style="background:#fff1f2">🚨</div>
+          風險分佈
+        </div>
+        <div class="risk-grid">
+          <div class="risk-box" id="risk-box-critical" onclick="toggleRiskFilter('critical')">
+            <div class="risk-num critical" id="count-critical">0</div>
+            <div class="risk-lbl">🔴 緊急</div>
+          </div>
+          <div class="risk-box" id="risk-box-high" onclick="toggleRiskFilter('high')">
+            <div class="risk-num high" id="count-high">0</div>
+            <div class="risk-lbl">🟠 高風險</div>
+          </div>
+          <div class="risk-box" id="risk-box-medium" onclick="toggleRiskFilter('medium')">
+            <div class="risk-num medium" id="count-medium">0</div>
+            <div class="risk-lbl">🟡 中風險</div>
+          </div>
+          <div class="risk-box" id="risk-box-low" onclick="toggleRiskFilter('low')">
+            <div class="risk-num low" id="count-low">0</div>
+            <div class="risk-lbl">🟢 低風險</div>
+          </div>
+        </div>
+        <div class="risk-hint">👆 點擊等級可篩選下方評論</div>
+      </div>
+
+      <!-- 討論關鍵詞分佈 (Top 10，可點擊篩選) -->
+      <div class="card" id="keywords-card" style="display:none">
+        <div class="card-title">
+          <div class="card-icon" style="background:#fef3c7">🔑</div>
+          討論關鍵詞分佈 (Top 10)
+        </div>
+        <div class="tag-cloud" id="keyword-cloud"></div>
+        <div class="tag-hint">👆 點擊詞彙可篩選下方評論</div>
+      </div>
+
+      <!-- 評論主題（可點擊篩選） -->
+      <div class="card" id="tags-card" style="display:none">
+        <div class="card-title">
+          <div class="card-icon" style="background:#eff6ff">🏷️</div>
+          評論主題分佈
+        </div>
+        <div class="tag-cloud" id="tag-cloud"></div>
+        <div class="tag-hint">👆 點擊主題可篩選下方評論</div>
+      </div>
+
+      <!-- 篩選條件提示列 -->
+      <div class="filter-bar" id="filter-bar" style="display:none">
+        <span class="filter-bar-text" id="filter-bar-text">篩選中</span>
+        <button class="filter-clear" onclick="clearAllFilters()">✕ 清除篩選</button>
+      </div>
+
+      <!-- 評論列表（分頁 + 排序） -->
+      <div class="card">
+        <div class="reviews-title-row">
+          <div class="reviews-title-left">
+            <div class="card-icon" style="background:#f0f9ff">💬</div>
+            <span id="reviews-card-title" style="font-size:14px;font-weight:700;color:#0f172a">最新評論紀錄</span>
+            <span class="total-badge" id="filtered-count" style="display:none">0 則</span>
+          </div>
+          <select class="sort-select" id="sort-select" onchange="changeSort(this.value)">
+            <option value="newest">最新優先</option>
+            <option value="oldest">最舊優先</option>
+            <option value="risk_desc">風險高→低</option>
+            <option value="rating_desc">評分高→低</option>
+            <option value="rating_asc">評分低→高</option>
+          </select>
+        </div>
+        <div id="reviews-list">
+          <div class="no-data">暫無評論資料</div>
+        </div>
+        <div class="pagination" id="pagination" style="display:none">
+          <button class="page-btn" id="btn-prev" onclick="changePage(-1)">◀</button>
+          <div class="page-nums" id="page-nums"></div>
+          <button class="page-btn" id="btn-next" onclick="changePage(1)">▶</button>
+        </div>
+      </div>
+
+    </div><!-- /main-content -->
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="refresh-time" id="last-refresh">—</div>
+      <button class="refresh-btn" id="refresh-btn" onclick="loadData()">
+        <span class="spin-icon">🔄</span> 重新整理
+      </button>
+    </div>
+
+  </div><!-- /page -->
+
+  <script>
+    window.PRE_INJECTED_DATA = null;
+
+    /* ═══════════════════════════════════════════════════════
+       設定
+    ═══════════════════════════════════════════════════════ */
+    const API_BASE = window.API_BASE || window.location.origin;
+    const PER_PAGE = 8;
+
+    /* ═══════════════════════════════════════════════════════
+       狀態
+    ═══════════════════════════════════════════════════════ */
+    let allReviews = [];
+    let filteredReviews = [];
+    let currentPage = 1;
+    let activeRisk = null;
+    let activeTag = null;
+    let activeKeyword = null;
+    let activeSentiment = null;
+    let activeEmotion = null;
+    let sortMode = 'newest';
+    let autoRefreshTimer = null;
+
+    /* ═══════════════════════════════════════════════════════
+       Label Maps
+    ═══════════════════════════════════════════════════════ */
+    const SENT_LABEL = { positive: '正面', negative: '負面', neutral: '中立' };
+    const RISK_LABEL = { critical: '🔴 緊急', high: '🟠 高風險', medium: '🟡 中風險', low: '🟢 低風險' };
+    const TAG_LABEL = { food: '🍜 餐點', service: '🙋 服務', environment: '🏠 環境', price: '💰 價格' };
+    const EMO_LABEL = { joy: '😊 喜悅', anger: '😠 憤怒', disappointment: '😔 失望' };
+    const PLAT_ICON = { 'Google Maps': '🗺️', 'Google Map': '🗺️', 'Threads': '🧵', 'Dcard': '💚', 'Instagram': '📷', 'Facebook': '📘' };
+
+    // 輿情分析常見詞彙定義，用於計算熱門關鍵詞
+    const KEYWORDS_LIST = [
+      "烤雞", "鬆餅", "義大利麵", "燉飯", "牛肉湯", "排隊", "拉肚子", "不新鮮", "態度差",
+      "廁所", "千層蛋糕", "CP值", "乾淨", "便宜", "太貴", "好吃", "美味", "服務", "環境",
+      "價格", "衛生", "蛤蜊", "牛排", "蟑螂", "蒼蠅", "頭髮", "速度慢", "線上訂位", "寵物友善",
+      "沙拉", "牛肉漢堡", "免單", "服務態度", "上菜速度", "新鮮", "親切", "客氣", "髒", "貴"
+    ];
+
+    /* ═══════════════════════════════════════════════════════
+       工具函式
+    ═══════════════════════════════════════════════════════ */
+    function formatTime(iso) {
+      if (!iso) return '—';
+      try {
+        const d = new Date(iso);
+        const diff = Date.now() - d;
+        const m = Math.floor(diff / 60000);
+        const h = Math.floor(diff / 3600000);
+        const day = Math.floor(diff / 86400000);
+        if (m < 1) return '剛剛';
+        if (m < 60) return `${m} 分鐘前`;
+        if (h < 24) return `${h} 小時前`;
+        if (day < 7) return `${day} 天前`;
+        return d.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric' });
+      } catch { return iso; }
+    }
+
+    function starsHtml(rating) {
+      if (rating == null) return '';
+      const n = Math.min(5, Math.max(0, Math.round(Number(rating))));
+      return '★'.repeat(n) + '☆'.repeat(5 - n);
+    }
+
+    /* 取得主導情緒（最大值且 >= 0.25） */
+    function dominantEmotion(r) {
+      const vals = {
+        joy: parseFloat(r.emotion_joy || 0),
+        anger: parseFloat(r.emotion_anger || 0),
+        disappointment: parseFloat(r.emotion_disappointment || 0),
+      };
+      const key = Object.keys(vals).reduce((a, b) => vals[a] >= vals[b] ? a : b);
+      return vals[key] >= 0.25 ? { key, val: vals[key] } : null;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       排序
+    ═══════════════════════════════════════════════════════ */
+    const RISK_ORDER = { critical: 0, high: 1, medium: 2, low: 3 };
+
+    function sortRows(rows) {
+      const copy = [...rows];
+      switch (sortMode) {
+        case 'oldest':
+          return copy.sort((a, b) => new Date(a.review_time || 0) - new Date(b.review_time || 0));
+        case 'risk_desc':
+          return copy.sort((a, b) => (RISK_ORDER[a.risk_level] ?? 4) - (RISK_ORDER[b.risk_level] ?? 4));
+        case 'rating_desc':
+          return copy.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+        case 'rating_asc':
+          return copy.sort((a, b) => (Number(a.rating) || 0) - (Number(b.rating) || 0));
+        default: // newest
+          return copy.sort((a, b) => new Date(b.review_time || 0) - new Date(a.review_time || 0));
+      }
+    }
+
+    function changeSort(val) {
+      sortMode = val;
+      currentPage = 1;
+      applyFilters();
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       篩選邏輯
+    ═══════════════════════════════════════════════════════ */
+    function applyFilters() {
+      let rows = allReviews;
+
+      // 1. 情感篩選
+      if (activeSentiment) {
+        rows = rows.filter(r => r.sentiment_label === activeSentiment);
+      }
+
+      // 2. 情緒篩選 (以主導情緒為準)
+      if (activeEmotion) {
+        rows = rows.filter(r => {
+          const emo = dominantEmotion(r);
+          return emo && emo.key === activeEmotion;
+        });
+      }
+
+      // 3. 風險等級篩選
+      if (activeRisk) {
+        rows = rows.filter(r => r.risk_level === activeRisk);
+      }
+
+      // 4. 關鍵詞篩選
+      if (activeKeyword) {
+        rows = rows.filter(r => (r.raw_text || '').includes(activeKeyword));
+      }
+
+      // 5. 主題篩選
+      if (activeTag) {
+        rows = rows.filter(r => r.reviews_tag === activeTag);
+      }
+
+      filteredReviews = sortRows(rows);
+      currentPage = 1;
+      updateFilterBar();
+      renderReviewsPage();
+    }
+
+    /* ── Sentiment toggle ─────────────────────────────── */
+    function toggleSentimentFilter(val) {
+      activeSentiment = (activeSentiment === val) ? null : val;
+      ['positive', 'neutral', 'negative'].forEach(s => {
+        const row = document.getElementById(`row-${s}`);
+        if (!row) return;
+        row.className = 'bar-row' + (activeSentiment === s ? ` active-${s}` : '');
+      });
+      applyFilters();
+    }
+
+    /* ── Emotion toggle ────────────────────────────────── */
+    function toggleEmotionFilter(val) {
+      activeEmotion = (activeEmotion === val) ? null : val;
+      ['joy', 'anger', 'disappointment'].forEach(e => {
+        const row = document.getElementById(`row-${e}`);
+        if (!row) return;
+        row.className = 'bar-row' + (activeEmotion === e ? ` active-${e}` : '');
+      });
+      applyFilters();
+    }
+
+    /* ── Risk toggle ───────────────────────────────────── */
+    function toggleRiskFilter(level) {
+      activeRisk = (activeRisk === level) ? null : level;
+      ['critical', 'high', 'medium', 'low'].forEach(l => {
+        const box = document.getElementById(`risk-box-${l}`);
+        if (box) box.className = 'risk-box' + (activeRisk === l ? ` active-${l}` : '');
+      });
+      applyFilters();
+    }
+
+    /* ── Keyword toggle ────────────────────────────────── */
+    function toggleKeywordFilter(kw) {
+      activeKeyword = (activeKeyword === kw) ? null : kw;
+      document.querySelectorAll('.kw-item').forEach(el => {
+        el.classList.toggle('selected', el.dataset.kw === activeKeyword);
+      });
+      applyFilters();
+    }
+
+    /* ── Tag toggle ────────────────────────────────────── */
+    function toggleTagFilter(tag) {
+      activeTag = (activeTag === tag) ? null : tag;
+      document.querySelectorAll('.tag-cloud:not(#keyword-cloud) .tag-item').forEach(el => {
+        el.classList.toggle('selected', el.dataset.tag === activeTag);
+      });
+      applyFilters();
+    }
+
+    /* ── Clear all ─────────────────────────────────────── */
+    function clearAllFilters() {
+      activeSentiment = activeEmotion = activeRisk = activeKeyword = activeTag = null;
+      ['positive', 'neutral', 'negative'].forEach(s => {
+        const r = document.getElementById(`row-${s}`); if (r) r.className = 'bar-row';
+      });
+      ['joy', 'anger', 'disappointment'].forEach(e => {
+        const r = document.getElementById(`row-${e}`); if (r) r.className = 'bar-row';
+      });
+      ['critical', 'high', 'medium', 'low'].forEach(l => {
+        const b = document.getElementById(`risk-box-${l}`); if (b) b.className = 'risk-box';
+      });
+      document.querySelectorAll('.tag-item').forEach(el => el.classList.remove('selected'));
+      applyFilters();
+    }
+
+    /* ── Filter bar update ─────────────────────────────── */
+    function updateFilterBar() {
+      const bar = document.getElementById('filter-bar');
+      const text = document.getElementById('filter-bar-text');
+      const fcnt = document.getElementById('filtered-count');
+      const title = document.getElementById('reviews-card-title');
+      const parts = [];
+
+      if (activeSentiment) parts.push(SENT_LABEL[activeSentiment] || activeSentiment);
+      if (activeEmotion) parts.push(EMO_LABEL[activeEmotion] || activeEmotion);
+      if (activeRisk) parts.push(RISK_LABEL[activeRisk] || activeRisk);
+      if (activeKeyword) parts.push(`🔑 ${activeKeyword}`);
+      if (activeTag) parts.push(TAG_LABEL[activeTag] || activeTag);
+
+      const hasFilter = parts.length > 0;
+      bar.style.display = hasFilter ? 'flex' : 'none';
+      fcnt.style.display = hasFilter ? 'inline-block' : 'none';
+      title.textContent = hasFilter ? '篩選結果' : '最新評論紀錄';
+      if (hasFilter) {
+        text.textContent = `篩選：${parts.join(' + ')}・共 ${filteredReviews.length} 則`;
+        fcnt.textContent = `${filteredReviews.length} 則`;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       渲染：情感健康度
+    ═══════════════════════════════════════════════════════ */
+    function renderSentiment(rows) {
+      const total = rows.length;
+      if (total === 0) return;
+      const pos = rows.filter(r => r.sentiment_label === 'positive').length;
+      const neu = rows.filter(r => r.sentiment_label === 'neutral').length;
+      const neg = rows.filter(r => r.sentiment_label === 'negative').length;
+      const p = v => Math.round(v / total * 100);
+
+      document.getElementById('total-count').textContent = `${total} 則`;
+      document.getElementById('pct-positive').textContent = `${p(pos)}%`;
+      document.getElementById('pct-neutral').textContent = `${p(neu)}%`;
+      document.getElementById('pct-negative').textContent = `${p(neg)}%`;
+      setTimeout(() => {
+        document.getElementById('bar-positive').style.width = `${p(pos)}%`;
+        document.getElementById('bar-neutral').style.width = `${p(neu)}%`;
+        document.getElementById('bar-negative').style.width = `${p(neg)}%`;
+      }, 100);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       渲染：情緒分析
+    ═══════════════════════════════════════════════════════ */
+    function renderEmotion(rows) {
+      const valid = rows.filter(r => r.emotion_joy != null);
+      if (valid.length === 0) return;
+      document.getElementById('emotion-card').style.display = 'block';
+      const avg = key => valid.reduce((s, r) => s + (Number(r[key]) || 0), 0) / valid.length;
+      const pJ = Math.round(avg('emotion_joy') * 100);
+      const pA = Math.round(avg('emotion_anger') * 100);
+      const pD = Math.round(avg('emotion_disappointment') * 100);
+      document.getElementById('pct-joy').textContent = `${pJ}%`;
+      document.getElementById('pct-anger').textContent = `${pA}%`;
+      document.getElementById('pct-disappoint').textContent = `${pD}%`;
+      setTimeout(() => {
+        document.getElementById('bar-joy').style.width = `${pJ}%`;
+        document.getElementById('bar-anger').style.width = `${pA}%`;
+        document.getElementById('bar-disappoint').style.width = `${pD}%`;
+      }, 200);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       渲染：風險分佈
+    ═══════════════════════════════════════════════════════ */
+    function renderRisk(rows) {
+      const valid = rows.filter(r => r.risk_level);
+      if (valid.length === 0) return;
+      document.getElementById('risk-card').style.display = 'block';
+      const c = { critical: 0, high: 0, medium: 0, low: 0 };
+      valid.forEach(r => { if (c[r.risk_level] !== undefined) c[r.risk_level]++; });
+      ['critical', 'high', 'medium', 'low'].forEach(l => {
+        document.getElementById(`count-${l}`).textContent = c[l];
+      });
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       渲染：熱門關鍵詞 (Top 10)
+    ═══════════════════════════════════════════════════════ */
+    function renderKeywords(rows) {
+      if (rows.length === 0) return;
+      const counts = {};
+      KEYWORDS_LIST.forEach(kw => {
+        const cnt = rows.filter(r => (r.raw_text || '').includes(kw)).length;
+        if (cnt > 0) counts[kw] = cnt;
+      });
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      if (sorted.length === 0) return;
+
+      document.getElementById('keywords-card').style.display = 'block';
+      document.getElementById('keyword-cloud').innerHTML = sorted.map(([kw, cnt]) => {
+        const sel = activeKeyword === kw ? 'selected' : '';
+        return `<span class="tag-item kw-item ${sel}" data-kw="${kw}" onclick="toggleKeywordFilter('${kw}')">🔑 ${kw}<span class="tag-count">${cnt}</span></span>`;
+      }).join('');
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       渲染：主題標籤
+    ═══════════════════════════════════════════════════════ */
+    function renderTags(rows) {
+      const tagMap = {};
+      rows.forEach(r => { if (r.reviews_tag) tagMap[r.reviews_tag] = (tagMap[r.reviews_tag] || 0) + 1; });
+      if (Object.keys(tagMap).length === 0) return;
+      document.getElementById('tags-card').style.display = 'block';
+      const validCls = ['food', 'service', 'environment', 'price'];
+      const sorted = Object.entries(tagMap).sort((a, b) => b[1] - a[1]);
+      document.getElementById('tag-cloud').innerHTML = sorted.map(([tag, cnt]) => {
+        const cls = validCls.includes(tag) ? tag : 'other';
+        return `<span class="tag-item ${cls}" data-tag="${tag}" onclick="toggleTagFilter('${tag}')">${TAG_LABEL[tag] || tag}<span class="tag-count">${cnt}</span></span>`;
+      }).join('');
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       渲染：評論列表（分頁 + 排序 + 全標籤）
+    ═══════════════════════════════════════════════════════ */
+    function renderReviewsPage() {
+      const el = document.getElementById('reviews-list');
+      const pagination = document.getElementById('pagination');
+      const rows = filteredReviews;
+
+      if (rows.length === 0) {
+        el.innerHTML = `<div class="no-data">${activeSentiment || activeEmotion || activeRisk || activeKeyword || activeTag ? '此篩選條件下暫無評論' : '暫無評論資料'}</div>`;
+        pagination.style.display = 'none';
+        return;
+      }
+
+      const totalPages = Math.ceil(rows.length / PER_PAGE);
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * PER_PAGE;
+      const pageRows = rows.slice(start, start + PER_PAGE);
+
+      el.innerHTML = pageRows.map(r => {
+        const sentiment = r.sentiment_label || 'neutral';
+        const platform = r.platform || '未知平台';
+        const reviewer = r.reviewer ? `・${r.reviewer}` : '';
+        const text = r.raw_text || '（無評論內容）';
+        const time = formatTime(r.review_time || r.analyzed_at);
+        const star = starsHtml(r.rating);
+        const icon = PLAT_ICON[platform] || '💬';
+        const rl = r.risk_level || '';
+        const tag = r.reviews_tag || '';
+        const emo = dominantEmotion(r);
+
+        // Badge 1: sentiment
+        const sb = `<span class="badge ${sentiment}">${SENT_LABEL[sentiment] || sentiment}</span>`;
+        // Badge 2: topic tag
+        const tb = tag ? `<span class="badge ${tag}">${TAG_LABEL[tag] || tag}</span>` : '';
+        // Badge 3: risk level
+        const rb = rl ? `<span class="badge ${rl}">${RISK_LABEL[rl] || rl}</span>` : '';
+        // Badge 4: dominant emotion
+        const eb = emo
+          ? `<span class="badge emo-${emo.key === 'joy' ? 'joy' : emo.key === 'anger' ? 'anger' : 'dis'}">${EMO_LABEL[emo.key]} ${Math.round(emo.val * 100)}%</span>`
+          : '';
+
+        return `
+        <div class="review ${sentiment}">
+          <div class="review-header">
+            <div class="review-platform">${icon} ${platform}<span class="review-reviewer">${reviewer}</span></div>
+            <div class="badge-row">${sb}${tb}${rb}${eb}</div>
+          </div>
+          <div class="review-text">${text}</div>
+          <div class="review-footer">
+            <div class="review-time">${time}</div>
+            ${star ? `<div class="review-stars">${star}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+
+      // ── Pagination ───────────────────────────────────────
+      if (totalPages <= 1) { pagination.style.display = 'none'; return; }
+      pagination.style.display = 'flex';
+      document.getElementById('btn-prev').disabled = (currentPage === 1);
+      document.getElementById('btn-next').disabled = (currentPage === totalPages);
+
+      const maxShow = 5;
+      let s = Math.max(1, currentPage - Math.floor(maxShow / 2));
+      let e = Math.min(totalPages, s + maxShow - 1);
+      if (e - s < maxShow - 1) s = Math.max(1, e - maxShow + 1);
+
+      let html = '';
+      if (s > 1) html += `<button class="page-num" onclick="goPage(1)">1</button>${s > 2 ? '<span style="font-size:12px;color:#94a3b8;align-self:center">…</span>' : ''}`;
+      for (let i = s; i <= e; i++) html += `<button class="page-num${i === currentPage ? ' active' : ''}" onclick="goPage(${i})">${i}</button>`;
+      if (e < totalPages) html += `${e < totalPages - 1 ? '<span style="font-size:12px;color:#94a3b8;align-self:center">…</span>' : ''}<button class="page-num" onclick="goPage(${totalPages})">${totalPages}</button>`;
+      document.getElementById('page-nums').innerHTML = html;
+    }
+
+    function changePage(delta) {
+      const total = Math.ceil(filteredReviews.length / PER_PAGE);
+      currentPage = Math.min(total, Math.max(1, currentPage + delta));
+      renderReviewsPage();
+      document.getElementById('reviews-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function goPage(n) {
+      currentPage = n;
+      renderReviewsPage();
+      document.getElementById('reviews-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       資料載入
+    ═══════════════════════════════════════════════════════ */
+    async function loadData() {
+      const btn = document.getElementById('refresh-btn');
+      const dot = document.getElementById('status-dot');
+      const status = document.getElementById('conn-status');
+
+      btn.disabled = true; btn.classList.add('spinning');
+      dot.className = 'status-dot loading';
+      status.textContent = '資料載入中...';
+
+      ['bar-positive', 'bar-neutral', 'bar-negative', 'bar-joy', 'bar-anger', 'bar-disappoint']
+        .forEach(id => { const el = document.getElementById(id); if (el) el.style.width = '0%'; });
+
+      try {
+        let data;
+        if (window.PRE_INJECTED_DATA && Array.isArray(window.PRE_INJECTED_DATA)) {
+          data = window.PRE_INJECTED_DATA;
+        } else {
+          const url = `${API_BASE}/api/supabase-query?table=master_reviews_enriched&select=*&limit=500&order=review_time.desc.nullslast`;
+          const res = await fetch(url);
+          data = await res.json();
+          if (!res.ok || (data && data.error)) throw new Error(data?.error || `HTTP ${res.status}`);
+        }
+
+        allReviews = Array.isArray(data) ? data : [];
+        filteredReviews = sortRows(allReviews);
+        currentPage = 1;
+
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('error-state').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+
+        renderSentiment(allReviews);
+        renderEmotion(allReviews);
+        renderRisk(allReviews);
+        renderKeywords(allReviews);
+        renderTags(allReviews);
+        updateFilterBar();
+        renderReviewsPage();
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+        const dateStr = now.toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' });
+        document.getElementById('update-time').textContent = `更新時間：${dateStr} ${timeStr}`;
+        document.getElementById('last-refresh').textContent = `最後更新：${timeStr}・共 ${allReviews.length} 筆`;
+        dot.className = 'status-dot';
+        status.textContent = `已連線・${allReviews.length} 則評論`;
+
+      } catch (err) {
+        console.error('[loadData]', err);
+        const debugInfo = `Injected Data Status: ${typeof window.PRE_INJECTED_DATA} (${JSON.stringify(window.PRE_INJECTED_DATA)})`;
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('error-state').style.display = 'block';
+        document.getElementById('error-state').innerHTML = `
+        <div class="error-card">
+          <h3>⚠️ 資料載入失敗</h3>
+          <p>${err.message}</p>
+          <div style="font-size:10px; color:#e11d48; margin: 8px 0; word-break:break-all; font-family:monospace; background:#fff1f2; padding:6px; border-radius:6px; border:1px dashed #fca5a5;">
+            ${debugInfo}
+          </div>
+          <div class="error-hint">
+            1️⃣ 確認 <code>node D:/data/group_first/server.js</code> 正在執行<br>
+            2️⃣ 確認 <code>Group_project_all/.env</code> 中的 SUPABASE_URL/KEY 已填入<br>
+            3️⃣ 確認 Supabase 的 <code>master_reviews_enriched</code> 資料表已建立
+          </div>
+        </div>`;
+        dot.className = 'status-dot error';
+        status.textContent = '連線失敗';
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('spinning');
+      }
+
+      if (autoRefreshTimer) clearTimeout(autoRefreshTimer);
+      autoRefreshTimer = setTimeout(loadData, 60000);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadData);
+  </script>
+
+</body>
+
+</html>
