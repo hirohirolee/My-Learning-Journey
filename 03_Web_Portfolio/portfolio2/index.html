@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hiro Lee | Executive Manager & AI Integration</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Devicon for Tech Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <header class="navbar" id="navbar">
+        <div class="logo">
+            <span class="logo-bracket"><</span><span class="logo-text">Hiro.Lee</span><span class="logo-bracket">/></span>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#home">01. Home</a></li>
+                <li><a href="#management">02. Management</a></li>
+                <li><a href="#certifications">03. Certifications</a></li>
+                <li><a href="#esg">04. ESG & AI</a></li>
+                <li><a href="#about">05. About</a></li>
+            </ul>
+        </nav>
+        <div class="menu-btn"><i class="fas fa-bars"></i></div>
+    </header>
+
+    <!-- Social Sidebar (Floating) -->
+    <div class="social-sidebar">
+        <a href="#" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#" target="_blank"><i class="fas fa-envelope"></i></a>
+        <div class="line"></div>
+    </div>
+
+    <!-- Email Sidebar (Floating) -->
+    <div class="email-sidebar">
+        <a href="mailto:hiro@example.com">hiro@example.com</a>
+        <div class="line"></div>
+    </div>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero-section">
+            <div class="hero-content" data-aos="fade-up" data-aos-duration="1000">
+                <p class="greeting">Strategic Leadership & Innovation</p>
+                <h1 class="name">Hiro Lee.</h1>
+                <h2 class="role">I specialize in <span class="typed-text"></span><span class="cursor">&nbsp;</span></h2>
+                <p class="summary">
+                    Executive Manager & Special Assistant，同時具備資訊管理碩士背景 (Master's in Information Management)。我專注於策略規劃、營運管理與資訊科技的完美結合，推動企業數位轉型與永續發展。
+                </p>
+                <div class="hero-btns">
+                    <a href="#management" class="btn btn-primary">Explore My Journey</a>
+                    <a href="../portfolio/assets/avatar.jpg" class="btn btn-outline" target="_blank"><i class="fas fa-file-pdf"></i> Resume</a>
+                </div>
+            </div>
+            <div class="hero-image" data-aos="zoom-in" data-aos-duration="1200" data-aos-delay="200">
+                <div class="img-wrapper">
+                    <!-- 使用先前的頭像路徑 -->
+                    <img src="../portfolio/assets/avatar.jpg" alt="Hiro Lee" onerror="this.src='https://via.placeholder.com/300x300/0a192f/64ffda?text=Hiro'">
+                    <div class="img-backdrop"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Management Section (Grid) -->
+        <section id="management" class="about-section">
+            <h2 class="section-title" data-aos="fade-right"><span>02.</span> Executive Management</h2>
+            <p style="color: var(--text-main); margin-bottom: 30px;" data-aos="fade-up">Bridging Strategy, Operations, and Information Technology</p>
+            
+            <div class="tech-grid" data-aos="fade-up" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <div class="tech-card" style="padding: 40px 30px; align-items: flex-start; text-align: left;">
+                    <i class="fas fa-chess-knight" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 20px;"></i>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: var(--text-main);">Strategic Planning</h3>
+                    <p style="font-size: 1rem;">在高階幕僚與行政主管的歷練中，協助企業擬定發展策略，優化跨部門溝通，確保高層決策精準落地執行。</p>
+                </div>
+                <div class="tech-card" style="padding: 40px 30px; align-items: flex-start; text-align: left;">
+                    <i class="fas fa-project-diagram" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 20px;"></i>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: var(--text-main);">Project Management</h3>
+                    <p style="font-size: 1rem;">具備扎實的 PMP 專案管理實務經驗。主導跨域專案，從需求分析、資源調度到時程控管，有效提升營運效率。</p>
+                </div>
+                <div class="tech-card" style="padding: 40px 30px; align-items: flex-start; text-align: left;">
+                    <i class="fas fa-chart-line" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 20px;"></i>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: var(--text-main);">Data-Driven Auditing</h3>
+                    <p style="font-size: 1rem;">結合中央密西根大學資管碩士背景，導入AI應用技術與進階數據分析技術，推動企業稽核與營運管理的數位轉型。</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Certifications Section -->
+        <section id="certifications" class="about-section" style="min-height: auto; padding-top: 50px;">
+            <h2 class="section-title" data-aos="fade-right"><span>03.</span> Certifications & Auditing</h2>
+            <p style="color: var(--text-main); margin-bottom: 30px;" data-aos="fade-up">Rigorous Standards in Quality, Security, and Data</p>
+            
+            <div class="tech-grid" data-aos="fade-up" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <div class="tech-card" style="padding: 40px 30px; align-items: flex-start; text-align: left; border-top: 3px solid #3b82f6;">
+                    <i class="fas fa-check-double" style="font-size: 2.5rem; color: #3b82f6; margin-bottom: 20px;"></i>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: var(--text-main);">Lead Auditor</h3>
+                    <p style="font-size: 1rem; color: var(--text-main);"><strong>ISO 9001 LA</strong> 品質管理系統<br><br><strong>ISO 27001 LA</strong> 資訊安全管理系統</p>
+                </div>
+                <div class="tech-card" style="padding: 40px 30px; align-items: flex-start; text-align: left; border-top: 3px solid #10b981;">
+                    <i class="fab fa-google" style="font-size: 2.5rem; color: #10b981; margin-bottom: 20px;"></i>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: var(--text-main);">Google Professional</h3>
+                    <p style="font-size: 1rem;">Google Cybersecurity<br><br>Google Data Analytics<br><br>Google Project Management</p>
+                </div>
+                <div class="tech-card" style="padding: 40px 30px; align-items: flex-start; text-align: left; border-top: 3px solid #8b5cf6;">
+                    <i class="fas fa-brain" style="font-size: 2.5rem; color: #8b5cf6; margin-bottom: 20px;"></i>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: var(--text-main);">AI & Technology</h3>
+                    <p style="font-size: 1rem;"><br>中興大學 AI 創新應用專班</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ESG Section -->
+        <section id="esg" class="projects-section">
+            <h2 class="section-title" data-aos="fade-right"><span>04.</span> ESG & Sustainability</h2>
+            
+            <div class="project-grid">
+                <!-- ESG Project -->
+                <div class="project-card" data-aos="fade-up">
+                    <div class="project-img">
+                        <div class="overlay"></div>
+                        <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80" alt="ESG Sustainability">
+                    </div>
+                    <div class="project-info">
+                        <p class="project-overline">Driving Corporate Transformation</p>
+                        <h3 class="project-title">Net Zero Roadmap</h3>
+                        <div class="project-desc">
+                            <p>面對全球淨零趨勢，具備 <strong>ISO 14064-1 溫室氣體盤查主導稽核員</strong>資格，協助企業落實碳盤查與減碳策略，兼顧法規遵循與營運發展。</p>
+                        </div>
+                        <ul class="project-tech">
+                            <li>ISO 14064-1</li>
+                            <li>Carbon Footprint</li>
+                            <li>ESG Strategy</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section (Discipline & Balance) -->
+        <section id="about" class="about-section" style="min-height: auto; padding-top: 50px;">
+            <h2 class="section-title" data-aos="fade-right"><span>05.</span> Discipline & Balance</h2>
+            <p style="color: var(--text-main); margin-bottom: 30px;" data-aos="fade-up">The Philosophy Behind the Management</p>
+            
+            <div class="tech-grid" data-aos="fade-up" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <div class="tech-card" style="padding: 40px 30px; align-items: flex-start; text-align: left; border-top: 3px solid #ef4444;">
+                    <i class="fas fa-swimmer" style="font-size: 2.5rem; color: #ef4444; margin-bottom: 20px;"></i>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: var(--text-main);">113km Triathlon Endurance</h3>
+                    <p style="font-size: 1rem;">作為 Challenge Taiwan 113km 超級鐵人三項完賽者，我對目標的極致專注。這種配速與堅持的哲學，完美體現在面對長期且複雜的企業專案管理中。</p>
+                </div>
+                <div class="tech-card" style="padding: 40px 30px; align-items: flex-start; text-align: left; border-top: 3px solid #64748b;">
+                    <i class="fas fa-yin-yang" style="font-size: 2.5rem; color: #64748b; margin-bottom: 20px;"></i>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: var(--text-main);">Systema Martial Arts</h3>
+                    <p style="font-size: 1rem;">研習 Systema，將其對呼吸控制、放鬆與順應力學的深刻體悟，轉化為高階主管面對商業危機與高壓決策時，保持身心平衡與靈活應變的基石。</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Contact Section -->
+        <section id="contact" class="contact-section" data-aos="zoom-in">
+            <h2 class="title">Get In Touch</h2>
+            <p>無論您有專案需求、企業轉型諮詢，或是單純想交流，我的信箱隨時為您敞開，我會盡快回覆您！</p>
+            <a href="mailto:hiro@example.com" class="btn btn-primary lg">Say Hello</a>
+        </section>
+    </main>
+
+    <footer>
+        <p>Designed & Built by Hiro Lee</p>
+        <p class="mono-text"><i class="fas fa-code-branch"></i> Version 2.0 - Executive Edition</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
