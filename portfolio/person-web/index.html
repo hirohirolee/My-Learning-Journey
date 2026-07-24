@@ -11,6 +11,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
 
     <style>
         :root {
@@ -50,6 +51,27 @@
             font-size: 13px; text-transform: uppercase; transition: color 0.3s ease;
         }
         .nav-links a:hover { color: var(--accent-color); }
+
+        /* Sidebars (方案C: 左側浮動社群列) */
+        .social-sidebar, .email-sidebar {
+            width: 40px; position: fixed; bottom: 0; z-index: 10;
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+        }
+        .social-sidebar { left: 40px; }
+        .email-sidebar { right: 40px; }
+        .social-sidebar a { font-size: 1.2rem; color: #64748b; transition: all 0.3s; }
+        .social-sidebar a:hover { color: var(--accent-color); transform: translateY(-3px); }
+        .email-sidebar a {
+            writing-mode: vertical-rl; font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem; letter-spacing: 0.1em; color: #64748b;
+            text-decoration: none; transition: all 0.3s;
+        }
+        .email-sidebar a:hover { color: var(--accent-color); transform: translateY(-3px); }
+        .sidebar-line { width: 1px; height: 90px; background-color: #cbd5e1; }
+        
+        @media (max-width: 900px) {
+            .social-sidebar, .email-sidebar { display: none; }
+        }
         
         /* 區塊共用設定 */
         section { padding: 100px 20px; max-width: 1200px; margin: 0 auto; }
@@ -73,7 +95,10 @@
         .hero h1 { font-family: 'Cormorant Garamond', serif; font-size: 56px; font-weight: 700; margin-bottom: 20px; letter-spacing: 2px; }
         .hero h2 { font-weight: 300; font-size: 20px; color: #cbd5e1; margin-bottom: 40px; line-height: 1.6; }
         
-        /* 網格卡片設計 (適用於管理、證照、ESG) */
+        /* 打字機游標動畫 */
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* 網格卡片設計 (適用於管理、證照) */
         .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
         .card {
             background: white; padding: 40px 30px; border-radius: 12px;
@@ -93,6 +118,41 @@
         }
         .btn:hover { background-color: #b45309; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(217, 119, 6, 0.2); }
 
+        /* 專案卡片設計 (方案C: 左圖右文交錯卡片 - 應用於 ESG) */
+        .project-card-container {
+            display: flex; align-items: center; position: relative; margin-top: 40px;
+        }
+        .project-card-img {
+            flex: 6; position: relative; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1); z-index: 1;
+        }
+        .project-card-img img {
+            width: 100%; display: block; transition: all 0.5s ease;
+        }
+        .project-card-img:hover img { transform: scale(1.05); }
+        
+        .project-card-info {
+            flex: 5; text-align: right; z-index: 2; position: relative;
+        }
+        .project-card-info h3 {
+            font-size: 24px; color: var(--primary-color); margin-bottom: 20px; font-family: 'Cormorant Garamond', serif; font-weight: 700;
+        }
+        .project-card-desc {
+            background-color: white; padding: 30px; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-left: -80px;
+            color: #475569; line-height: 1.8; text-align: left;
+        }
+        .project-tech-list {
+            display: flex; justify-content: flex-end; gap: 15px; list-style: none; padding: 0;
+            margin-top: 20px; font-size: 13px; color: #64748b; font-weight: 600;
+        }
+        
+        @media (max-width: 900px) {
+            .project-card-container { flex-direction: column; }
+            .project-card-info { text-align: left; margin-top: 20px; width: 100%; }
+            .project-card-desc { margin-left: 0; padding: 20px; box-shadow: none; border: 1px solid #e2e8f0; }
+            .project-tech-list { justify-content: flex-start; }
+        }
 
         /* 關於我 (雙欄設計) */
         .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
@@ -117,10 +177,26 @@
             </nav>
         </header>
 
+        <!-- Social Sidebar (方案C) -->
+        <div class="social-sidebar">
+            <a href="#" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" target="_blank"><i class="fas fa-envelope"></i></a>
+            <div class="sidebar-line"></div>
+        </div>
+
+        <!-- Email Sidebar (方案C) -->
+        <div class="email-sidebar">
+            <a href="mailto:hiro@example.com">hiro@example.com</a>
+            <div class="sidebar-line"></div>
+        </div>
+
         <section class="hero">
             <div class="hero-content">
                 <h1 class="gsap-hero">Strategic Leadership & Innovation</h1>
-                <h2 class="gsap-hero">Executive Manager & Special Assistant<br>Master's in Information Management</h2>
+                <h2 class="gsap-hero">
+                    I specialize in <span class="typed-text" style="color: var(--accent-color); font-weight: 600;"></span><span class="cursor" style="display:inline-block; width:2px; background-color:var(--accent-color); animation:blink 1s infinite;">&nbsp;</span><br><br>
+                    Executive Manager & Master's in Information Management
+                </h2>
                 <a href="#management" class="btn gsap-hero">Explore My Journey</a>
             </div>
         </section>
@@ -147,26 +223,92 @@
             </div>
         </section>
 
+        <section id="competencies" class="gsap-fade">
+            <h2 class="section-title">Global Competence & Expertise</h2>
+            <p class="section-subtitle">Core capabilities driving international operations and technological audits</p>
+            <div class="grid-container" style="grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));">
+                <div class="card" style="border-top-color: #0f172a; text-align: left; padding: 30px;">
+                    <h3 style="font-size: 18px; margin-bottom: 10px;"><i class="fas fa-server" style="font-size: 20px; color: #0f172a; margin-right: 10px; display: inline;"></i>科技審計與系統風險評估</h3>
+                    <p style="text-align: left;">結合豐富的資訊基礎（MCSE/MCP），能針對企業 IT 架構、Windows 嵌入式系統及數位資產進行深度的邏輯審查與合規性風險評估。</p>
+                </div>
+                <div class="card" style="border-top-color: #0f172a; text-align: left; padding: 30px;">
+                    <h3 style="font-size: 18px; margin-bottom: 10px;"><i class="fas fa-network-wired" style="font-size: 20px; color: #0f172a; margin-right: 10px; display: inline;"></i>關鍵基礎設施安全與硬體審查</h3>
+                    <p style="text-align: left;">曾任 Motorola 無線電系統工程師，熟悉硬體通訊協議，具備通訊基礎建設安全防護與資產風險控制經驗。</p>
+                </div>
+                <div class="card" style="border-top-color: #0f172a; text-align: left; padding: 30px;">
+                    <h3 style="font-size: 18px; margin-bottom: 10px;"><i class="fas fa-globe-americas" style="font-size: 20px; color: #0f172a; margin-right: 10px; display: inline;"></i>跨國審計報告與多語商務溝通</h3>
+                    <p style="text-align: left;">具備高效的英文商務書信與報告產出能力（75-100 WPM），精通中、英、台、日四語，能獨立執行跨國稽核與跨文化利害關係人溝通。</p>
+                </div>
+                <div class="card" style="border-top-color: #0f172a; text-align: left; padding: 30px;">
+                    <h3 style="font-size: 18px; margin-bottom: 10px;"><i class="fas fa-handshake" style="font-size: 20px; color: #0f172a; margin-right: 10px; display: inline;"></i>國際化經營治理與高階溝通</h3>
+                    <p style="text-align: left;">具備 7 年北美求學與工作實務背景，具備優秀的利害關係人協調、跨文化社交與突發危機應變能力。</p>
+                </div>
+            </div>
+            <div style="margin-top: 40px; text-align: center; padding: 0 20px;">
+                <p style="color: #64748b; font-size: 13px; line-height: 2;">
+                    <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#MCP</span>
+                    <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#英文打字75~100</span>
+                    <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#英文翻譯</span>
+                    <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#熟悉進出口業務</span>
+                    <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#進出口作業流程控管</span>
+                    <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#關務相關法規</span>
+                    <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#內稽內控制度設計、執行、考核</span>
+                    <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#企業內部控制</span>
+                    <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#專案管理架構及專案說明</span>
+                    <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#資料通訊與網路應用</span>
+                </p>
+            </div>
+        </section>
+
         <section id="certifications" style="background-color: #f8fafc; max-width: 100%;" class="gsap-fade">
             <div style="max-width: 1200px; margin: 0 auto;">
                 <h2 class="section-title">Certifications & Auditing</h2>
                 <p class="section-subtitle">Rigorous Standards in Quality, Security, and Data</p>
-                <div class="grid-container">
-                    <div class="card" style="border-top-color: #3b82f6;">
-                        <i class="fas fa-check-double" style="color: #3b82f6;"></i>
-                        <h3>Lead Auditor</h3>
-                        <p><strong>ISO 9001 LA</strong> 品質管理系統<br><strong>ISO 27001 LA</strong> 資訊安全管理系統</p>
+                <div class="grid-container" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
+                    <div class="card" style="border-top-color: #3b82f6; text-align: left;">
+                        <i class="fas fa-check-double" style="color: #3b82f6; text-align: center; display: block;"></i>
+                        <h3 style="text-align: center;">國際管理系統與主導稽核</h3>
+                        <ul style="color: #475569; line-height: 1.8; font-size: 14px; padding-left: 20px; text-align: left; margin-top: 15px;">
+                            <li><strong>PMP 國際專案管理師</strong> (Project Management Professional)</li>
+                            <li><strong>ISO 27001</strong> 資訊安全管理系統 (ISMS) 主導稽核員</li>
+                            <li><strong>ISO 14064-1</strong> 溫室氣體盤查主導稽核員</li>
+                            <li><strong>ISO 9001</strong> 品質管理系統主導稽核員</li>
+                            <li>永續報告書編撰與實務操作專班結業 (掌握 GRI 準則應用)</li>
+                        </ul>
                     </div>
-                    <div class="card" style="border-top-color: #10b981;">
-                        <i class="fab fa-google" style="color: #10b981;"></i>
-                        <h3>Google Professional</h3>
-                        <p>Google Cybersecurity<br>Google Data Analytics<br>Google Project Management</p>
+                    <div class="card" style="border-top-color: #10b981; text-align: left;">
+                        <i class="fas fa-brain" style="color: #10b981; text-align: center; display: block;"></i>
+                        <h3 style="text-align: center;">數據分析與人工智慧</h3>
+                        <ul style="color: #475569; line-height: 1.8; font-size: 14px; padding-left: 20px; text-align: left; margin-top: 15px;">
+                            <li><strong>中興大學</strong> AI 人工智慧與數據分析應用 360小時結業認證</li>
+                            <li><strong>Microsoft Power BI</strong> 數據分析專業證書</li>
+                            <li><strong>Google Data Analytics</strong> 數據分析證書</li>
+                            <li><strong>Google AI Essentials</strong> / PwC 數據分析與簡報技巧</li>
+                        </ul>
                     </div>
-                    <div class="card" style="border-top-color: #8b5cf6;">
-                        <i class="fas fa-brain" style="color: #8b5cf6;"></i>
-                        <h3>AI & Technology</h3>
-                        <p><br>中興大學 AI 創新應用專班</p>
+                    <div class="card" style="border-top-color: #8b5cf6; text-align: left;">
+                        <i class="fas fa-shield-alt" style="color: #8b5cf6; text-align: center; display: block;"></i>
+                        <h3 style="text-align: center;">資訊與資安合規</h3>
+                        <ul style="color: #475569; line-height: 1.8; font-size: 14px; padding-left: 20px; text-align: left; margin-top: 15px;">
+                            <li><strong>Google Cybersecurity</strong> 網路安全證書</li>
+                            <li><strong>賓州大學</strong> ESG 關鍵要素與法規遵循合規管理證書</li>
+                            <li><strong>MCSE</strong> 微軟認證系統工程師 / <strong>MCP</strong> 微軟認證專業人員</li>
+                        </ul>
                     </div>
+                </div>
+                <div style="margin-top: 40px; text-align: center; padding: 0 20px;">
+                    <p style="color: #64748b; font-size: 13px; line-height: 2;">
+                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#ISO 14000</span>
+                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#ISO 9000</span>
+                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#專案管理</span>
+                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#溫室氣體盤查</span>
+                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#Security</span>
+                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#產品驗證作業</span>
+                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#制訂新產品檢驗標準</span>
+                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#規劃並執行品質管理系統</span>
+                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#可靠度分析報告撰寫與彙整</span>
+                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px; display: inline-block;">#客戶服務品保程序規劃</span>
+                    </p>
                 </div>
             </div>
         </section>
@@ -174,18 +316,26 @@
         <section id="esg" class="gsap-fade">
             <h2 class="section-title">ESG & Net Zero Roadmap</h2>
             <p class="section-subtitle">Driving Sustainable Corporate Transformation</p>
-            <div class="about-grid">
-                <div>
-                    <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?q=80&w=2070&auto=format&fit=crop" alt="ESG Sustainability" style="width: 100%; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
+            
+            <!-- 方案C: 左圖右文精美卡片 -->
+            <div class="project-card-container">
+                <div class="project-card-img">
+                    <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?q=80&w=2070&auto=format&fit=crop" alt="ESG Sustainability">
                 </div>
-                <div class="about-text">
+                <div class="project-card-info">
+                    <p style="color: var(--accent-color); font-weight: 600; font-size: 14px; margin-bottom: 5px; text-transform: uppercase;">Featured Expertise</p>
                     <h3>Carbon Footprint & Sustainability</h3>
-                    <p>面對全球淨零趨勢，具備 <strong>ISO 14064-1 溫室氣體盤查主導稽核員</strong>資格，協助企業落實碳盤查與減碳策略，兼顧法規遵循與營運發展。</p>
+                    <div class="project-card-desc">
+                        <p>面對全球淨零趨勢，具備 <strong>ISO 14064-1 溫室氣體盤查主導稽核員</strong>資格，協助企業落實碳盤查與減碳策略，兼顧法規遵循與營運發展。我致力於將永續指標與企業營運 KPI 結合，打造具備韌性的 ESG 藍圖。</p>
+                    </div>
+                    <ul class="project-tech-list">
+                        <li>ISO 14064-1</li>
+                        <li>Carbon Auditing</li>
+                        <li>Net Zero Strategy</li>
+                    </ul>
                 </div>
             </div>
         </section>
-
-
 
         <section id="about" class="gsap-fade">
             <h2 class="section-title">Discipline & Balance</h2>
@@ -241,10 +391,50 @@
                         );
                     });
                 },
+                initTypedJs() {
+                    // 方案C: 打字機特效
+                    const textArray = ["Executive Management", "Project Management (PMP)", "Data-Driven Auditing", "ESG Sustainability", "AI Integration"];
+                    const typingDelay = 80;
+                    const erasingDelay = 40;
+                    const newTextDelay = 2000;
+                    let textArrayIndex = 0;
+                    let charIndex = 0;
+                    
+                    const typedTextSpan = document.querySelector(".typed-text");
+                    const cursorSpan = document.querySelector(".cursor");
+                    
+                    if(!typedTextSpan) return;
 
+                    function type() {
+                        if (charIndex < textArray[textArrayIndex].length) {
+                            typedTextSpan.textContent += textArray[textArrayIndex].charAt(charIndex);
+                            charIndex++;
+                            setTimeout(type, typingDelay);
+                        } else {
+                            setTimeout(erase, newTextDelay);
+                        }
+                    }
+                    function erase() {
+                        if (charIndex > 0) {
+                            typedTextSpan.textContent = textArray[textArrayIndex].substring(0, charIndex-1);
+                            charIndex--;
+                            setTimeout(erase, erasingDelay);
+                        } else {
+                            textArrayIndex++;
+                            if(textArrayIndex >= textArray.length) textArrayIndex = 0;
+                            setTimeout(type, typingDelay + 500);
+                        }
+                    }
+                    
+                    // 延遲啟動，等 GSAP 淡入動畫結束
+                    setTimeout(type, 1500);
+                }
             },
             mounted() {
-                this.$nextTick(() => { this.initAnimations(); });
+                this.$nextTick(() => { 
+                    this.initAnimations(); 
+                    this.initTypedJs();
+                });
             }
         }).mount('#app')
     </script>
