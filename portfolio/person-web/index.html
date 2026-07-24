@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hiro Lee | Executive Manager & AI Integration Expert</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -16,15 +16,17 @@
     <style>
         :root {
             --primary-color: #1e293b;
-            --secondary-color: #f1f5f9;
+            --secondary-color: #f8fafc;
             --accent-color: #d97706;
             --text-color: #334155;
             --background-color: #ffffff;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            --card-hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }
         
         body, html {
             margin: 0; padding: 0;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Montserrat', 'Noto Sans TC', sans-serif;
             color: var(--text-color);
             background-color: var(--background-color);
             scroll-behavior: smooth;
@@ -101,22 +103,25 @@
         /* 網格卡片設計 (適用於管理、證照) */
         .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
         .card {
-            background: white; padding: 40px 30px; border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: transform 0.3s ease; text-align: center;
+            background: var(--background-color); padding: 40px 30px; border-radius: 12px;
+            box-shadow: var(--card-shadow); transition: all 0.3s ease; text-align: center;
             border-top: 4px solid var(--primary-color);
         }
-        .card:hover { transform: translateY(-10px); border-top-color: var(--accent-color); }
+        .card:hover { transform: translateY(-10px); box-shadow: var(--card-hover-shadow); border-top-color: var(--accent-color); }
         .card i { font-size: 40px; color: var(--accent-color); margin-bottom: 20px; }
         .card h3 { font-size: 20px; margin-bottom: 15px; color: var(--primary-color); }
         .card p { font-size: 15px; color: #475569; line-height: 1.6; }
 
 
         .btn {
-            background-color: var(--accent-color); color: white; border: none; padding: 14px 35px;
-            font-size: 15px; border-radius: 50px; cursor: pointer; transition: 0.3s;
-            font-weight: 600; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; display: inline-block;
+            background-color: var(--primary-color); color: white; border: none; padding: 12px 25px;
+            font-size: 13px; border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; display: inline-flex;
+            align-items: center; justify-content: center; gap: 8px;
         }
-        .btn:hover { background-color: #b45309; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(217, 119, 6, 0.2); }
+        .btn:hover { background-color: var(--accent-color); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(217, 119, 6, 0.2); }
+        .btn-accent { background-color: var(--accent-color); padding: 14px 35px; font-size: 15px; }
+        .btn-accent:hover { background-color: #b45309; }
 
         /* 專案卡片設計 (方案C: 左圖右文交錯卡片 - 應用於 ESG) */
         .project-card-container {
@@ -197,7 +202,7 @@
                     I specialize in <span class="typed-text" style="color: var(--accent-color); font-weight: 600;"></span><span class="cursor" style="display:inline-block; width:2px; background-color:var(--accent-color); animation:blink 1s infinite;">&nbsp;</span><br><br>
                     Executive Manager & Master's in Information Management
                 </h2>
-                <a href="#management" class="btn gsap-hero">Explore My Journey</a>
+                <a href="#management" class="btn btn-accent gsap-hero">Explore My Journey</a>
             </div>
         </section>
 
