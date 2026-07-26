@@ -1,0 +1,45 @@
+name: Deploy to GCP VM
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-gcp-vm
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VM_HOST: ${{ secrets.GCP_VM_HOST }}
+      VM_USER: ${{ secrets.GCP_VM_USER }}
+      VM_PORT: ${{ secrets.GCP_VM_PORT || '22' }}
+      VM_APP_DIR: ${{ secrets.GCP_VM_APP_DIR || '/opt/group-project' }}
+      VM_SSH_KEY: ${{ secrets.GCP_VM_SSH_KEY }}
+
+    steps:
+      - name: Validate secrets
+        run: |
+          test -n "$VM_HOST"
+          test -n "$VM_USER"
+          test -n "$VM_PORT"
+          test -n "$VM_APP_DIR"
+          test -n "$VM_SSH_KEY"
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VM_SSH_KEY" > ~/.ssh/gcp_vm_key
+          chmod 600 ~/.ssh/gcp_vm_key
+          ssh-keyscan -p "$VM_PORT" "$VM_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy on VM
+        run: |
+          ssh -i ~/.ssh/gcp_vm_key -p "$VM_PORT" "$VM_USER@$VM_HOST" \
+            "cd '$VM_APP_DIR' && \
+             git fetch origin main && \
+             git reset --hard origin/main && \
+             bash ops/vm-deploy.sh"
