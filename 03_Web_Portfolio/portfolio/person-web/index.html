@@ -123,9 +123,9 @@
         .btn-accent { background-color: var(--accent-color); padding: 14px 35px; font-size: 15px; }
         .btn-accent:hover { background-color: #b45309; }
 
-        /* 專案卡片設計 (方案C: 左圖右文交錯卡片 - 應用於 ESG) */
+        /* 專案卡片設計 (方案C: 左圖右文並列卡片 - 應用於 ESG) */
         .project-card-container {
-            display: flex; align-items: center; position: relative; margin-top: 40px;
+            display: flex; align-items: center; position: relative; margin-top: 40px; gap: 40px;
         }
         .project-card-img {
             flex: 6; position: relative; border-radius: 12px; overflow: hidden;
@@ -144,7 +144,7 @@
         }
         .project-card-desc {
             background-color: white; padding: 30px; border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-left: -80px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #f1f5f9;
             color: #475569; line-height: 1.8; text-align: left;
         }
         .project-tech-list {
@@ -153,9 +153,9 @@
         }
         
         @media (max-width: 900px) {
-            .project-card-container { flex-direction: column; }
+            .project-card-container { flex-direction: column; gap: 20px; }
             .project-card-info { text-align: left; margin-top: 20px; width: 100%; }
-            .project-card-desc { margin-left: 0; padding: 20px; box-shadow: none; border: 1px solid #e2e8f0; }
+            .project-card-desc { padding: 20px; box-shadow: none; border: 1px solid #e2e8f0; }
             .project-tech-list { justify-content: flex-start; }
         }
 
@@ -331,7 +331,7 @@
                     <p style="color: var(--accent-color); font-weight: 600; font-size: 14px; margin-bottom: 5px; text-transform: uppercase;">Featured Expertise</p>
                     <h3>Carbon Footprint & Sustainability</h3>
                     <div class="project-card-desc">
-                        <p>面對全球淨零趨勢，具備 <strong>ISO 14064-1 溫室氣體盤查主導稽核員</strong>資格，協助企業落實碳盤查與減碳策略，兼顧法規遵循與營運發展。我致力於將永續指標與企業營運 KPI 結合，打造具備韌性的 ESG 藍圖。</p>
+                        <p>面對全球淨零趨勢，具備 <strong>ISO 14064-1 溫室氣體盤查主導稽核員</strong>資格，並精通<strong>永續報告書之編撰與架構規劃</strong>。我致力於協助企業落實碳盤查、推動減碳策略，並將永續指標與企業營運 KPI 深度結合，兼顧法規遵循與營運發展，打造具備韌性的 ESG 藍圖。</p>
                     </div>
                     <ul class="project-tech-list">
                         <li>ISO 14064-1</li>
