@@ -3,7 +3,7 @@ import base64
 import shutil
 import time
 from typing import TypedDict, Optional, List
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse
@@ -15,7 +15,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, START, END
 from supabase_db import clear_ml_analysis_results, save_pr_report, supabase, SUPABASE_TABLE_NAME, SUPABASE_RESULT_TABLE_NAME, fetch_existing_result_ids, upsert_ml_analysis_result
-from ml_analyzer import get_semantic_cache_telemetry, cache_monitor
+from ml_analyzer import get_semantic_cache_telemetry, cache_monitor, MidEndAnalyzer
 import logging as _logging
 import joblib
 import random
@@ -1022,6 +1022,11 @@ def build_workflow():
 
 app_workflow = build_workflow()
 
+# ----------------- 全域實例化 AI 分析管線引擎 -----------------
+# 實例化 MidEndAnalyzer 供非同步背景任務使用
+# （註：若需傳入特定的 llm_client 或 embedding_client，可在此處調整）
+analyzer = MidEndAnalyzer()
+
 # ----------------- FastAPI Pydantic 模型定義 -----------------
 
 class AnalyzeRequest(BaseModel):
@@ -1062,6 +1067,20 @@ class AiReplyProxyRequest(BaseModel):
     temperature: float = 0.65
 
 # ----------------- REST API 接口實作 -----------------
+
+@app.post("/api/crawler/webhook", summary="接收爬蟲評論寫入完成的 Webhook", status_code=200)
+def crawler_webhook_api(source_record: dict, background_tasks: BackgroundTasks):
+    """
+    爬蟲資料接收端點（非同步觸發 AI 分析）。
+    此 API 會在接收到資料後立刻回傳 HTTP 200，保護爬蟲不會因為 LLM 分析過久而 Timeout。
+    AI Pipeline 的分析任務會交由 FastAPI 的 BackgroundTasks 於背景安全執行。
+    """
+    # 觸發 AI 分析管線 (非阻塞呼叫)
+    background_tasks.add_task(analyzer.analyze_review_pipeline, source_record)
+    
+    # 立刻回傳成功狀態，讓爬蟲端結案
+    return {"status": "success", "message": "Crawler data received, AI pipeline started in background."}
+
 
 @app.post("/api/analyze", summary="分析 Google 評論並生成公關與行銷報告")
 def analyze_review_api(req: AnalyzeRequest):
