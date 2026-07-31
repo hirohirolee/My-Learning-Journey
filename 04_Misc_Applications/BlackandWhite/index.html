@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>善與惡：神蹟島嶼 (Black & White: Divine Island) - 上帝模擬策略網頁遊戲</title>
+    <meta name="description" content="在《善與惡：神蹟島嶼》中扮演上帝的角色，管治島上各個部落。施展26種善惡神力、教導19種神獸、管理祭壇獻祭與手勢施法，統治島上所有村莊！">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-neutral">
+    <!-- 遊戲頂級背景容器與 2D/3D 渲染畫布 -->
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        <canvas id="gesture-canvas"></canvas>
+        <div id="screen-flash" class="flash-effect"></div>
+    </div>
+
+    <!-- 頂部上帝狀態條 (God Status Bar) -->
+    <header id="top-hud" class="glass-panel">
+        <div class="hud-left">
+            <div class="god-identity">
+                <span id="god-icon" class="god-icon">⚖️</span>
+                <div class="god-info">
+                    <h1 id="god-title" class="god-title">中立之神</h1>
+                    <span id="stage-name" class="stage-name">第一關：甦醒的神島</span>
+                </div>
+            </div>
+            <!-- 善惡度儀表板 (Alignment Meter) -->
+            <div class="alignment-container" title="上帝道德度：做出善行或惡行將改變您的外觀與村民態度">
+                <span class="align-label evil-label">👿 邪惡</span>
+                <div class="alignment-bar">
+                    <div id="alignment-fill" class="alignment-fill" style="width: 50%;"></div>
+                    <div id="alignment-marker" class="alignment-marker" style="left: 50%;"></div>
+                </div>
+                <span class="align-label good-label">😇 善良</span>
+                <span id="alignment-value" class="alignment-val">0</span>
+            </div>
+        </div>
+
+        <div class="hud-center">
+            <div class="objective-box">
+                <span class="obj-label">🏆 關卡目標</span>
+                <span id="stage-objective" class="obj-text">統治島上所有村莊 (1 / 3)</span>
+                <div class="obj-progress-bar">
+                    <div id="obj-progress-fill" class="obj-progress-fill" style="width: 33%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hud-right">
+            <div class="crystal-display" title="信仰水晶，可用於升級天賦與購買神獸飾品">
+                <span class="crystal-icon">💎</span>
+                <div class="crystal-text">
+                    <span class="crystal-label">信仰水晶</span>
+                    <span id="crystal-value" class="crystal-val">100</span>
+                </div>
+            </div>
+            <div class="energy-display" title="能量值用於施展神力法術">
+                <span class="energy-icon">⚡</span>
+                <div class="energy-text">
+                    <span class="energy-label">祭壇能量</span>
+                    <span id="energy-value" class="energy-val">500</span>
+                    <span id="energy-max" class="energy-max">/ 1000</span>
+                </div>
+            </div>
+            <button id="btn-build" class="hud-btn glass-btn" title="建設奇觀與軍事基地 (SimCity/AoE)">🏗️</button>
+            <button id="btn-talents" class="hud-btn glass-btn" title="上帝天賦聖殿">🏛️</button>
+            <button id="btn-skins" class="hud-btn glass-btn" title="神獸裝扮">👑</button>
+            <button id="btn-shop" class="hud-btn glass-btn" title="水晶商城">💎</button>
+            <button id="btn-quests" class="hud-btn glass-btn" title="每日任務">📋</button>
+            <button id="btn-lang" class="hud-btn glass-btn" title="切換語言">🌐</button>
+            <button id="btn-audio" class="hud-btn glass-btn" title="切換音效">🔊</button>
+            <button id="btn-tutorial" class="hud-btn glass-btn" title="新手教學與手勢表">❓</button>
+            <button id="btn-menu" class="hud-btn glass-btn" title="遊戲選單">⚙️</button>
+        </div>
+    </header>
+
+    <!-- 左側祭壇與村莊面板 (Altar & Tribe Panel) -->
+    <aside id="left-hud" class="glass-panel side-panel">
+        <div class="panel-header">
+            <h2>🏛️ 祭壇與部落</h2>
+        </div>
+        <div class="panel-content">
+            <div class="tribe-status">
+                <div class="stat-row">
+                    <span>👥 信徒總人口:</span>
+                    <strong id="stat-pop">45 / 50</strong>
+                </div>
+                <div class="stat-row">
+                    <span>🍞 部落食物:</span>
+                    <strong id="stat-food">320</strong>
+                </div>
+                <div class="stat-row">
+                    <span>🪵 部落木材:</span>
+                    <strong id="stat-wood">180</strong>
+                </div>
+                <div class="stat-row">
+                    <span>🙏 祈禱中村民:</span>
+                    <strong id="stat-prayers">5 人</strong>
+                </div>
+                <div class="stat-row" title="模擬城市文化吸引力，較高時可吸引敵對居民自願移民">
+                    <span>✨ 城市繁榮度:</span>
+                    <strong id="stat-prosperity">60</strong>
+                </div>
+                <div class="stat-row" title="世紀帝國軍事武力，較高時可自動訓練部隊攻佔敵方村莊">
+                    <span>⚔️ 武備軍事實力:</span>
+                    <strong id="stat-military">20</strong>
+                </div>
+            </div>
+
+            <!-- 宣召祈禱控制 -->
+            <div class="prayer-control">
+                <button id="btn-toggle-pray" class="action-btn pray-btn">
+                    <span class="btn-icon">🙏</span>
+                    <span class="btn-text">召喚村民前往祭壇祈禱 (+持續產能)</span>
+                </button>
+            </div>
+
+            <!-- 獻祭丟棄區域 (Sacrifice Drop Zone) -->
+            <div id="sacrifice-zone" class="sacrifice-zone">
+                <div class="sacrifice-flame">🔥</div>
+                <h3>祭壇火焰獻祭處</h3>
+                <p>用「神之手」抓取樹木、動物、甚至村民，拖拽丟入此處換取能量！</p>
+                <div id="sacrifice-feedback" class="sacrifice-feedback"></div>
+            </div>
+
+            <!-- 關卡村莊統治一覽 -->
+            <div class="village-list-section">
+                <h3>🗺️ 島上村莊控制度</h3>
+                <ul id="village-list" class="village-list">
+                    <!-- 動態生成村莊條目 -->
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 右側神獸養成與監控面板 (Creature Training & Mind) -->
+    <aside id="right-hud" class="glass-panel side-panel">
+        <div class="panel-header">
+            <h2>🦁 神獸調教與心智</h2>
+            <button id="btn-change-creature" class="small-btn glass-btn" title="更換神獸物種">🔄 換將</button>
+        </div>
+        <div class="panel-content">
+            <div class="creature-profile">
+                <div class="creature-avatar-box">
+                    <span id="creature-emoji" class="creature-emoji">🦍</span>
+                    <div id="creature-aura" class="creature-aura"></div>
+                </div>
+                <div class="creature-basic">
+                    <h3 id="creature-name" class="creature-name">凱撒 (Ape 猿)</h3>
+                    <div class="creature-tags">
+                        <span id="creature-size-tag" class="tag">體格: 成長期 (1.2x)</span>
+                        <span id="creature-align-tag" class="tag neutral-tag">傾向: 中立</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 神獸心智對話框 (Mind Reading Bubble) -->
+            <div class="mind-reading-box">
+                <div class="bubble-tail"></div>
+                <div class="mind-icon">💭</div>
+                <p id="creature-thought" class="creature-thought">「我想去村莊附近看看那些人類在做什麼...」</p>
+            </div>
+
+            <!-- 神獸數值條 -->
+            <div class="creature-stats">
+                <div class="stat-bar-group">
+                    <label>❤️ 體力與健康:</label>
+                    <div class="progress-bar"><div id="c-stat-health" class="progress-fill health-fill" style="width: 90%;"></div></div>
+                </div>
+                <div class="stat-bar-group">
+                    <label>🍖 飽食度:</label>
+                    <div class="progress-bar"><div id="c-stat-hunger" class="progress-fill hunger-fill" style="width: 75%;"></div></div>
+                </div>
+                <div class="stat-bar-group">
+                    <label>⚡ 神力能量:</label>
+                    <div class="progress-bar"><div id="c-stat-mana" class="progress-fill mana-fill" style="width: 60%;"></div></div>
+                </div>
+            </div>
+
+            <!-- 神獸互動與管教按鈕 (The Leash / Reward / Punish) -->
+            <div class="training-controls">
+                <div class="leash-control">
+                    <button id="btn-leash-village" class="leash-btn active" title="把神獸拴在您的村莊中心協助村民">
+                        🔗 拴在村莊 (守護)
+                    </button>
+                    <button id="btn-leash-roam" class="leash-btn" title="解除牽繩讓神獸在島上自由探索與學習">
+                        🏝️ 解除牽繩 (自由)
+                    </button>
+                    <button id="btn-leash-enemy" class="leash-btn" title="把神獸拴在敵對或中立村莊進行威嚇或幫助">
+                        ⚔️ 派遣至敵村
+                    </button>
+                </div>
+                <div class="punish-reward-box">
+                    <button id="btn-pet" class="train-btn pet-btn" title="當神獸做出行為時給予撫摸，鼓勵並教導牠善良">
+                        💖 撫摸獎勵 (教導善良)
+                    </button>
+                    <button id="btn-slap" class="train-btn slap-btn" title="當神獸犯錯或破壞時給予掌摑，阻止並威嚇牠">
+                        💥 掌摑懲罰 (威嚇/止錯)
+                    </button>
+                </div>
+            </div>
+
+            <!-- 神獸已學習神力表 -->
+            <div class="learned-miracles">
+                <h4>📜 神獸已領悟法術</h4>
+                <div id="creature-spell-list" class="c-spell-grid">
+                    <!-- 動態生成神獸掌握的神力 -->
+                    <span class="c-spell-badge" title="造食神力">🍞 造食</span>
+                    <span class="c-spell-badge" title="造水神力">🌧️ 灑水</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 底部神力法術書 (Spellbook HUD) -->
+    <footer id="bottom-hud" class="glass-panel">
+        <div class="spellbook-header">
+            <div class="spellbook-tabs">
+                <button class="tab-btn active" data-category="good">😇 善性神力 (Good)</button>
+                <button class="tab-btn" data-category="evil">😈 惡性神力 (Evil)</button>
+                <button class="tab-btn" data-category="aux">✨ 輔助神力 (Creature Buffs)</button>
+                <button class="tab-btn" data-category="other">🔮 其他神力 (Utility & Shield)</button>
+            </div>
+            <div class="gesture-tip">
+                <span>💡 施法方式：點擊下方法術卡施放，或在畫面**按住右鍵**畫出手勢符號！</span>
+            </div>
+        </div>
+        <div id="spell-cards-container" class="spell-cards-grid">
+            <!-- 動態加載法術卡片 -->
+        </div>
+    </footer>
+
+    <!-- 游標「神之手」特效提示卡 -->
+    <div id="hand-tooltip" class="hand-tooltip hidden">
+        <span id="tooltip-title" class="tooltip-title">樹木</span>
+        <span id="tooltip-desc" class="tooltip-desc">左鍵拖拽抓取 / 投入祭壇獻祭+40能量</span>
+    </div>
+
+    <!-- 彈窗模組 (Modals) -->
+    <!-- 1. 關卡與初始設定 Modal -->
+    <div id="modal-start" class="modal-overlay active">
+        <div class="modal-card glass-panel large-modal">
+            <div class="modal-header">
+                <h2>👑 歡迎來到《善與惡：神蹟島嶼》</h2>
+                <p>扮演上帝，藉由施展奇蹟與教導您的神獸，贏得島上所有村民的信仰！</p>
+            </div>
+            <div class="modal-body">
+                <div class="selection-section">
+                    <h3>1. 選擇您的挑戰關卡</h3>
+                    <div id="stage-select-grid" class="stage-grid">
+                        <div class="stage-card selected" data-stage="1">
+                            <div class="stage-badge">第一關</div>
+                            <h4>🌅 甦醒的神島 (教學)</h4>
+                            <p>學習如何使用神之手抓取物件獻祭、引導村民祈禱，並帶領神獸展現第一個奇蹟。</p>
+                            <span class="stage-win">目標：統治 2 個村莊</span>
+                        </div>
+                        <div class="stage-card" data-stage="2">
+                            <div class="stage-badge">第二關</div>
+                            <h4>⚔️ 異教徒的抵抗</h4>
+                            <p>島嶼中央聳立著不信奉您的頑強部落，使用雷電、火球威嚇或以豐富糧食感化他們！</p>
+                            <span class="stage-win">目標：統治 3 個村莊</span>
+                        </div>
+                        <div class="stage-card" data-stage="3">
+                            <div class="stage-badge">第三關</div>
+                            <h4>⚡ 諸神黃昏與護盾</h4>
+                            <p>面對強大的魔法護盾與大肆進攻的狼群，與神獸並肩作戰，施展終極毀滅或神聖奇蹟！</p>
+                            <span class="stage-win">目標：統治 4 個村莊</span>
+                        </div>
+                        <div class="stage-card sandbox-card" data-stage="0">
+                            <div class="stage-badge">自由模式</div>
+                            <h4>🏝️ 創世沙盒模式 (Sandbox)</h4>
+                            <p>無限能量、全法術解鎖！自由生成村莊、測試 19 種神獸演化與極限神力破壞。</p>
+                            <span class="stage-win">目標：自由創造與破壞</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="selection-section">
+                    <h3>2. 選擇您的守護神獸 (共 19 種物種)</h3>
+                    <p class="section-subtext">神獸將是您在島上的代言人，您可以教導牠行善或是破壞。</p>
+                    <div id="creature-select-grid" class="creature-grid">
+                        <!-- 動態從 JS 生成 19 種神獸卡片 -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-start-game" class="cta-btn primary-btn">🌟 降臨神島，開始統治！</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 手勢與新手教學 Modal -->
+    <div id="modal-tutorial" class="modal-overlay">
+        <div class="modal-card glass-panel">
+            <div class="modal-header">
+                <h2>📜 上帝施法與手勢秘笈</h2>
+                <button class="close-modal-btn" data-target="modal-tutorial">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="tutorial-tabs">
+                    <h3>🪄 如何施展手勢神力？</h3>
+                    <p>在遊戲畫面中，**按住滑鼠右鍵**（或在觸控螢幕單指滑動）並畫出以下對應形狀，放開後即可迅速在游標位置降下神蹟！</p>
+                    <div class="gesture-table-grid">
+                        <div class="g-item">
+                            <div class="g-symbol">〇</div>
+                            <div class="g-info">
+                                <strong>圓形 (Circle)</strong>
+                                <span>造水神力 / 灑水</span>
+                            </div>
+                        </div>
+                        <div class="g-item">
+                            <div class="g-symbol">Z</div>
+                            <div class="g-info">
+                                <strong>閃電 (Z-Shape)</strong>
+                                <span>雷電神力 / 劈擊</span>
+                            </div>
+                        </div>
+                        <div class="g-item">
+                            <div class="g-symbol">△</div>
+                            <div class="g-info">
+                                <strong>三角形 (Triangle)</strong>
+                                <span>火球神力 / 轟炸</span>
+                            </div>
+                        </div>
+                        <div class="g-item">
+                            <div class="g-symbol">♡</div>
+                            <div class="g-info">
+                                <strong>愛心/十字 (Heart)</strong>
+                                <span>治療神力 / 復原</span>
+                            </div>
+                        </div>
+                        <div class="g-item">
+                            <div class="g-symbol">S</div>
+                            <div class="g-info">
+                                <strong>S形 / 螺旋 (Spiral)</strong>
+                                <span>暴風雨 / 龍捲風</span>
+                            </div>
+                        </div>
+                        <div class="g-item">
+                            <div class="g-symbol">□</div>
+                            <div class="g-info">
+                                <strong>方形 (Square)</strong>
+                                <span>物理/心靈防禦穹頂</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">✋ 神之手與祭壇操作</h3>
+                    <ul class="tutorial-list">
+                        <li><strong>抓取與拋擲</strong>：在島上的樹木、動物、農作物甚至村民身上**按住左鍵**即可提起，拖動放開可以將其拋出去！</li>
+                        <li><strong>獻祭換取能量</strong>：把抓到的任何物件丟進左側 UI 的 **「祭壇火焰」** 區域中，即可獻祭並大幅補充神力能量 (Energy)！</li>
+                        <li><strong>調教神獸</strong>：當神獸在思考或行動時，點擊右側面板的 **「💖 撫摸」** 可加深善良記憶；點擊 **「💥 掌摑」** 則能制止壞行為並使牠向邪惡演化！</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cta-btn primary-btn close-modal-btn" data-target="modal-tutorial">明白了，返回島嶼</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 遊戲結算 Modal (勝利/失敗) -->
+    <div id="modal-gameover" class="modal-overlay">
+        <div class="modal-card glass-panel small-modal">
+            <div class="modal-header">
+                <h2 id="gameover-title">🏆 信仰統一！島嶼被您征服</h2>
+            </div>
+            <div class="modal-body text-center">
+                <div id="gameover-icon" class="gameover-icon">🌟</div>
+                <p id="gameover-desc" class="gameover-desc">您憑藉著神聖的奇蹟與強大的神獸，贏得了島上所有部落的虔誠信仰！</p>
+                <div class="gameover-stats">
+                    <p>您的最終上帝稱號：<strong id="final-god-title">慈悲的救世主</strong></p>
+                    <p>神獸狀態：<strong id="final-creature-status">神聖巨猿 (極善)</strong></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-next-stage" class="cta-btn primary-btn">進入下一關</button>
+                <button id="btn-restart" class="cta-btn glass-btn">重新挑戰本關</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 上帝天賦聖殿 Modal (Talents Sanctuary) -->
+    <div id="modal-talents" class="modal-overlay">
+        <div class="modal-card glass-panel wide-modal">
+            <div class="modal-header">
+                <h2>🏛️ 上帝天賦聖殿 (God Talents)</h2>
+                <div class="modal-header-right">
+                    <span class="modal-crystal-badge">💎 信仰水晶: <strong id="modal-talents-crystal">100</strong></span>
+                    <button class="close-modal-btn" data-target="modal-talents">✕</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <p class="section-subtext">消耗信仰水晶升級神格分支，獲得永久跨關卡屬性強化！</p>
+                <div id="talents-grid" class="talents-branches-container">
+                    <!-- 動態由 JS 生成三大天賦樹分支 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cta-btn primary-btn close-modal-btn" data-target="modal-talents">完成配置並儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 神獸獸舍與裝扮 Modal (Beast Customizer) -->
+    <div id="modal-skins" class="modal-overlay">
+        <div class="modal-card glass-panel">
+            <div class="modal-header">
+                <h2>👑 神獸獸舍與裝扮 (Beast Customizer)</h2>
+                <div class="modal-header-right">
+                    <span class="modal-crystal-badge">💎 信仰水晶: <strong id="modal-skins-crystal">100</strong></span>
+                    <button class="close-modal-btn" data-target="modal-skins">✕</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <p class="section-subtext">為神獸配戴神聖天使環、惡魔角或王者皇冠，獲得強大被動屬性與外觀特效！</p>
+                <div id="skins-grid" class="skins-grid-container">
+                    <!-- 動態由 JS 生成飾品清單 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cta-btn primary-btn close-modal-btn" data-target="modal-skins">確認裝扮</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. 信仰水晶商城 Modal (Crystal Shop & IAP/Ads) -->
+    <div id="modal-shop" class="modal-overlay">
+        <div class="modal-card glass-panel">
+            <div class="modal-header">
+                <h2>💎 信仰水晶商城 (Crystal Shop)</h2>
+                <div class="modal-header-right">
+                    <span class="modal-crystal-badge">💎 信仰水晶: <strong id="modal-shop-crystal">100</strong></span>
+                    <button class="close-modal-btn" data-target="modal-shop">✕</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <p class="section-subtext">觀看神聖感應或支持開發者，解鎖商用限定【神龍】與【不死鳥】傳說神獸！</p>
+                <div id="shop-grid" class="shop-grid-container">
+                    <!-- 動態由 JS 生成商城卡片 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cta-btn glass-btn close-modal-btn" data-target="modal-shop">返回遊戲</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. 每日任務與成就 Modal (Daily Quests & Achievements) -->
+    <div id="modal-quests" class="modal-overlay">
+        <div class="modal-card glass-panel">
+            <div class="modal-header">
+                <h2>📋 每日挑戰與永久成就</h2>
+                <button class="close-modal-btn" data-target="modal-quests">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="quests-tabs">
+                    <h3>🌅 每日任務 (每日 00:00 刷新)</h3>
+                    <div id="daily-quests-list" class="quests-list-container">
+                        <!-- 動態由 JS 生成每日任務 -->
+                    </div>
+                    <h3 style="margin-top: 25px;">🏆 永久生涯成就</h3>
+                    <div id="achievements-list" class="quests-list-container">
+                        <!-- 動態由 JS 生成生涯成就 -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cta-btn primary-btn close-modal-btn" data-target="modal-quests">領獎並返回</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 遊戲模組載入 -->
+    <script type="module" src="js/main.js?v=3"></script>
+</body>
+</html>

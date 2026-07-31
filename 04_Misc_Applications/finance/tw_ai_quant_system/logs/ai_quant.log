@@ -1,0 +1,14 @@
+2026-07-29 20:45:34,508 - __main__ - INFO - 初始化 NLPSentimentAnalyzer，使用模型: gpt-4o-mini
+2026-07-29 20:45:34,509 - __main__ - INFO - 開始進行 NLP 批次情緒分析 (共 2 筆)
+2026-07-29 20:45:35,571 - __main__ - ERROR - LLM 情緒分析請求失敗: Error code: 401 - {'error': {'message': 'Incorrect API key provided: your-ope*******-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2026-07-29 20:45:35,751 - __main__ - ERROR - LLM 情緒分析請求失敗: Error code: 401 - {'error': {'message': 'Incorrect API key provided: your-ope*******-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2026-07-29 20:45:35,760 - __main__ - INFO - NLP 情緒分析處理完成
+2026-07-29 20:47:25,982 - __main__ - INFO - 初始化 NLPSentimentAnalyzer，使用模型: gpt-4o-mini
+2026-07-29 20:47:25,982 - __main__ - INFO - 開始進行 NLP 批次情緒分析 (共 2 筆)
+2026-07-29 20:47:27,644 - __main__ - ERROR - LLM 情緒分析請求失敗: Error code: 401 - {'error': {'message': 'Incorrect API key provided: your-ope************here. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2026-07-29 20:47:27,847 - __main__ - ERROR - LLM 情緒分析請求失敗: Error code: 401 - {'error': {'message': 'Incorrect API key provided: your-ope************here. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2026-07-29 20:47:27,855 - __main__ - INFO - NLP 情緒分析處理完成
+2026-07-29 20:59:09,788 - __main__ - INFO - Fetching 2330.TW (period: 1mo)
+2026-07-29 20:59:12,669 - __main__ - INFO - Fetched 23 rows
+2026-07-29 21:00:50,134 - __main__ - INFO - Fetching 2330.TW (period: 1mo)
+2026-07-29 21:00:50,799 - __main__ - INFO - Fetched 23 rows

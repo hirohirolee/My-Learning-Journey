@@ -1,0 +1,13 @@
+playwright>=1.41.0
+streamlit>=1.30.0
+pytest>=8.0.0
+psutil>=5.9.8
+pandas>=2.2.0
+openpyxl>=3.1.2
+ruff>=0.1.14
+black>=24.1.1
+isort>=5.13.2
+mypy>=1.8.0
+selenium>=4.17.2
+beautifulsoup4>=4.12.3
+lxml>=5.1.0

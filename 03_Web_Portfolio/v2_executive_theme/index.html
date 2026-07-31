@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>高階商務顧問 | AI 與數位轉型</title>
+    <meta name="description" content="引領 AI 賦能與永續合規，將國際標準轉化為企業營運優勢。19年經驗企業講師與專案治理專家。">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    
+    <!-- Semantic Header / Navbar -->
+    <header class="site-header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                EXECUTIVE<span>.</span>CONSULTANT
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="active">首頁</a>
+                <a href="#services">核心服務</a>
+                <a href="ai-studio.html">AI 實戰 (AI Studio)</a>
+                <a href="#contact">聯絡我</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+        
+        <!-- Hero & Profile Section -->
+        <section class="section hero" id="profile">
+            <div class="container">
+                <div id="hero-container">
+                    <!-- Loaded via app.js -->
+                </div>
+                <div id="certifications-container">
+                    <!-- Loaded via app.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Professional Experience Section -->
+        <section class="section" id="experience" style="background-color: var(--color-bg-surface);">
+            <div class="container">
+                <header class="section-header anim-target" data-anim="fade-in">
+                    <h2 class="text-gold">專業經歷 (Experience)</h2>
+                    <p>近 20 年跨國營運與數位轉型實戰，引領企業突破瓶頸、創造指數型成長。</p>
+                </header>
+                
+                <div id="experience-container">
+                    <!-- Loaded via app.js (Vertical Timeline) -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section class="section" id="services" style="background-color: var(--color-bg-main);">
+            <div class="container">
+                <header class="section-header anim-target" data-anim="fade-in">
+                    <h2 class="text-cyan">核心服務與專業領域</h2>
+                    <p>針對現代企業面臨的 AI 轉型、資安風險與 ESG 永續挑戰，提供系統化的解決方案。</p>
+                </header>
+                
+                <div id="services-container">
+                    <!-- Loaded via app.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- STAR Case Studies Section -->
+        <section class="section" id="case-studies" style="background-color: var(--color-bg-surface);">
+            <div class="container">
+                <header class="section-header anim-target" data-anim="fade-in">
+                    <h2 class="text-cyan">專案實績 (Impact & Case Studies)</h2>
+                    <p>以 STAR 框架解構大型專案，展現可量化的商業價值與合規成果。</p>
+                </header>
+                
+                <div id="case-studies-container">
+                    <!-- Loaded via app.js (Accordion) -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Media Kit Section -->
+        <section class="section" id="media-kit" style="background-color: var(--color-bg-main);">
+            <div class="container">
+                <header class="section-header anim-target" data-anim="fade-in">
+                    <h2 class="text-gold">講者素材 (Speaker / Media Kit)</h2>
+                    <p>專為企業內訓與公開演講準備的公關素材，為您的專案節省寶貴的溝通時間。</p>
+                </header>
+                
+                <div id="media-kit-container">
+                    <!-- Loaded via app.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="section" id="contact">
+            <div class="container">
+                <header class="section-header anim-target" data-anim="fade-in">
+                    <h2 class="text-gold">聯絡我 & 線上諮詢</h2>
+                    <p>安排一場專屬的合規與 AI 導入策略對話，探索企業轉型的下一步。</p>
+                </header>
+                
+                <div class="contact-grid anim-target" data-anim="slide-up">
+                    <!-- Left: Contact Form -->
+                    <div class="contact-card">
+                        <h3>傳送訊息</h3>
+                        <p>若有任何專案合作或演講邀約，請留下您的資訊，我將盡快回覆。</p>
+                        <form onsubmit="event.preventDefault(); alert('感謝您的來信！(此為示範功能)');">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="您的姓名" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" class="form-control" placeholder="企業 Email" required>
+                            </div>
+                            <div class="form-group">
+                                <textarea class="form-control" rows="4" placeholder="訊息內容..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary">發送訊息</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Right: Booking Integration -->
+                    <div class="contact-card">
+                        <h3>安排線上諮詢 (Schedule a Consultation)</h3>
+                        <p>選擇適合您的時段，讓我們針對您的業務痛點進行 30 分鐘的初步討論。</p>
+                        <!-- Calendly Placeholder -->
+                        <div class="calendly-placeholder">
+                            <span>[ Calendly Widget / iframe 預留區塊 ]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Semantic Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Executive Consultant. All Rights Reserved. Data-Driven Architecture.</p>
+        </div>
+    </footer>
+
+    <!-- Application Logic -->
+    <script src="data/content.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/cookie-consent.js"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>AI Innovation Studio | 高階商務顧問</title>
+    <meta name="description" content="探索由先進前端技術與無伺服器架構構建的 AI 與數據科學互動式應用程式。">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/ai-studio.css"> <!-- Specific Glassmorphism styles -->
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body class="studio-page">
+    
+    <!-- Semantic Header / Navbar -->
+    <header class="site-header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                EXECUTIVE<span>.</span>CONSULTANT
+            </a>
+            <nav class="nav-links">
+                <a href="index.html">首頁</a>
+                <a href="index.html#services">核心服務</a>
+                <a href="ai-studio.html" class="active">AI 實戰 (AI Studio)</a>
+                <a href="index.html#contact">聯絡我</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main style="padding-top: 120px; padding-bottom: 80px; min-height: 100vh;">
+        <div class="container">
+            
+            <header class="studio-header anim-target" data-anim="fade-in">
+                <h1>AI Innovation Studio</h1>
+                <p>探索由無伺服器架構與先進技術構建的互動式實戰作品。</p>
+            </header>
+            
+            <!-- Data-driven AI Studio injection point -->
+            <div id="ai-studio-container">
+                <!-- Loaded via ai-studio.js -->
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Semantic Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Executive Consultant. All Rights Reserved. Data-Driven Architecture.</p>
+        </div>
+    </footer>
+
+    <!-- Application Logic -->
+    <script src="data/content.js"></script>
+    <script src="js/ai-studio.js"></script>
+    <script src="js/cookie-consent.js"></script>
+</body>
+</html>

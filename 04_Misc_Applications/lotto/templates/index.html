@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣彩券 | 智慧選號系統</title>
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">🔮</div>
+            <h1>台灣彩券 <span class="highlight">智慧選號</span></h1>
+            <p class="subtitle">大樂透 (6/49) 歷史數據統計與推薦</p>
+        </header>
+
+        <main>
+            <div class="control-panel glass-card">
+                <h2>1. 更新歷史資料庫</h2>
+                <p>在開始選號前，請先確保系統擁有最新開獎數據。</p>
+                <button id="btn-update" class="btn-primary">
+                    <span class="icon">🔄</span> 更新歷史資料
+                </button>
+                <div id="update-status" class="status-msg"></div>
+                
+                <hr class="divider">
+                
+                <h2>2. 選擇推薦模式</h2>
+                <div class="modes">
+                    <label class="mode-card">
+                        <input type="radio" name="mode" value="1" checked>
+                        <div class="mode-content">
+                            <h3>🎲 完全隨機</h3>
+                            <p>無歷史包袱，採用標準均勻分配進行無放回抽樣。</p>
+                        </div>
+                    </label>
+                    <label class="mode-card">
+                        <input type="radio" name="mode" value="2">
+                        <div class="mode-content">
+                            <h3>🔥 熱門加權</h3>
+                            <p>依據歷史開獎頻率作為權重，頻率越高的號碼越容易被抽中。</p>
+                        </div>
+                    </label>
+                    <label class="mode-card">
+                        <input type="radio" name="mode" value="3">
+                        <div class="mode-content">
+                            <h3>❄️ 排除高遺漏</h3>
+                            <p>將遺漏值最高的前 20% 號碼視為極度冷門並剔除後再抽取。</p>
+                        </div>
+                    </label>
+                </div>
+                
+                <button id="btn-generate" class="btn-accent">
+                    <span class="icon">✨</span> 產生推薦獎號
+                </button>
+            </div>
+
+            <div class="result-panel glass-card">
+                <h2>推薦結果</h2>
+                <div id="loading" class="loading-spinner hidden">
+                    <div class="spinner"></div>
+                    <p>正在透過演算法計算中...</p>
+                </div>
+                
+                <div id="balls-container" class="balls-container hidden">
+                    <!-- 號碼球會由 JS 動態產生 -->
+                </div>
+                <p id="result-error" class="error-msg hidden"></p>
+            </div>
+        </main>
+        
+        <footer>
+            <div class="disclaimer glass-card">
+                <span class="warning-icon">⚠️</span>
+                <p id="disclaimer-text">本預測結果僅供參考，歷史數據不代表未來走向，不保證中獎，請理性投注。</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
