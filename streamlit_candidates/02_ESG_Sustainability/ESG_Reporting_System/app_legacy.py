@@ -1,13 +1,13 @@
 import numpy as np
 import pandas as pd
-import streamlit as st  # 規避特定命名限制
+import streamlit as st
 import plotly.graph_objects as go
 
 # 1. 網頁基本設定
 st.set_page_config(page_title="ESG 重大性矩陣分析工具", layout="wide")
 
 st.title("🍀 00股份有限公司 永續重大議題矩陣工具")
-st.markdown("透過左側控制面板調整重大性門檻，右側圖表將會即時動態更新。")
+st.caption("透過左側控制面板調整重大性門檻，圖表與數據表將會即時動態連動更新。")
 
 # =====================================================================
 # 2. 側邊欄控制面板 (Sidebar)
@@ -120,50 +120,13 @@ color_map = {
 }
 
 # =====================================================================
-# 4. 資料與圖表渲染
+# 4. 寬版優化佈局 (Responsive Split Layout)
 # =====================================================================
-col1, col2 = st.columns([1.6, 1.4])
+col_chart, col_editor = st.columns([1.8, 1.2])
 
-with col2:
-    st.subheader("📝 議題數據編輯器")
-    st.markdown("💡 雙擊格可修改。按下方 **`+ Add row`** 或選列按 Del 可增減。")
-    edited_df = st.data_editor(
-        init_df,
-        num_rows="dynamic",
-        use_container_width=True,
-        height=300,
-        column_config={
-            "面向": st.column_config.SelectboxColumn("面向", options=["1.經濟面", "2.環境面", "3.社會面"], required=True, width="small"),
-            "重大議題": st.column_config.TextColumn("重大議題", required=True, width="medium"),
-            "營運影響度": st.column_config.NumberColumn("營運影響度", min_value=0.0, max_value=10.0, step=0.1, required=True, width="small"),
-            "關心度": st.column_config.NumberColumn("關心度", min_value=0.0, max_value=10.0, step=0.1, required=True, width="small"),
-        }
-    )
-
-    st.subheader("🏆 重大性排序一覽")
-    valid_df = edited_df.dropna(subset=["面向", "重大議題", "營運影響度", "關心度"]).copy()
+with col_chart:
+    st.subheader("📊 永續重大性矩陣視覺化圖表")
     
-    if not valid_df.empty:
-        # 動態賦予議題編號 (1 ~ N)
-        valid_df["編號"] = range(1, len(valid_df) + 1)
-        valid_df["重大主題指標"] = valid_df["營運影響度"] * valid_df["關心度"]
-        
-        def get_level(row):
-            score = row["重大主題指標"]
-            if score < low_limit:
-                return "🟢 低度重大"
-            elif score < high_limit:
-                return "🟡 中度重大"
-            else:
-                return "🟣 高度重大"
-        
-        valid_df["重大性等級"] = valid_df.apply(get_level, axis=1)
-        show_df = valid_df.sort_values(by="重大主題指標", ascending=False).reset_index(drop=True)
-        st.dataframe(show_df[["編號", "面向", "重大議題", "重大主題指標", "重大性等級"]], use_container_width=True, hide_index=True, height=250)
-    else:
-        st.info("請在上方編輯器中新增資料。")
-
-with col1:
     # 建立 Plotly 互動式圖表
     fig = go.Figure()
 
@@ -201,20 +164,20 @@ with col1:
         ),
         line=dict(
             width=1.5,
-            color='rgba(156, 163, 175, 0.35)'  # 灰色的雙曲線分界線
+            color='rgba(156, 163, 175, 0.35)'
         ),
         colorscale=[
-            [0.0, "rgba(243, 244, 246, 0.6)"],    # 🟢 低優先 / 低度重大區 (#f3f4f6)
+            [0.0, "rgba(243, 244, 246, 0.6)"],
             [0.333, "rgba(243, 244, 246, 0.6)"],
-            [0.333, "rgba(254, 243, 199, 0.6)"],   # 🟡 中優先 / 中度重大區 (#fef3c7)
-            [0.666, "rgba(254, 243, 199, 0.6)"],
-            [0.666, "rgba(235, 213, 252, 0.6)"],   # 🟣 高優先 / 高度重大區 (#ebd5fc)
+            [0.333, "rgba(254, 243, 199, 0.6)"],
+            [0.666, "rgba(244, 243, 199, 0.6)"],
+            [0.666, "rgba(235, 213, 252, 0.6)"],
             [1.0, "rgba(235, 213, 252, 0.6)"]
         ],
         hoverinfo="skip"
     ))
 
-    # 6. 新增背景區域文字標籤 (對角線動態置中定位)
+    # 背景區域文字標籤
     low_diag = np.sqrt(low_limit)
     high_diag = np.sqrt(high_limit)
 
@@ -226,19 +189,55 @@ with col1:
     fig.add_annotation(x=x_med, y=y_med, text="<b>中度重大</b>", showarrow=False, font=dict(size=14, color="#b45309"))
     fig.add_annotation(x=x_high, y=y_high, text="<b>高度重大</b>", showarrow=False, font=dict(size=14, color="#6d28d9"))
 
-    # 7. 繪製資料點與標籤
+    # 資料與圖表連動處理 (先預準備有效資料)
+    # 我們讓右側編輯器資料先讀取後再回傳繪製
+    valid_df = init_df.copy()
+
+with col_editor:
+    st.subheader("📝 議題數據編輯器")
+    st.caption("💡 雙擊儲存格可修改數據。按下方 **`+ Add row`** 或選列按 Del 可增減議題。")
+    edited_df = st.data_editor(
+        init_df,
+        num_rows="dynamic",
+        use_container_width=True,
+        height=320,
+        column_config={
+            "面向": st.column_config.SelectboxColumn("面向", options=["1.經濟面", "2.環境面", "3.社會面"], required=True, width="small"),
+            "重大議題": st.column_config.TextColumn("重大議題", required=True, width="medium"),
+            "營運影響度": st.column_config.NumberColumn("營運影響度", min_value=0.0, max_value=10.0, step=0.1, required=True, width="small"),
+            "關心度": st.column_config.NumberColumn("關心度", min_value=0.0, max_value=10.0, step=0.1, required=True, width="small"),
+        }
+    )
+
+    valid_df = edited_df.dropna(subset=["面向", "重大議題", "營運影響度", "關心度"]).copy()
+    if not valid_df.empty:
+        valid_df["編號"] = range(1, len(valid_df) + 1)
+        valid_df["重大主題指標"] = valid_df["營運影響度"] * valid_df["關心度"]
+        
+        def get_level(row):
+            score = row["重大主題指標"]
+            if score < low_limit:
+                return "🟢 低度重大"
+            elif score < high_limit:
+                return "🟡 中度重大"
+            else:
+                return "🟣 高度重大"
+        
+        valid_df["重大性等級"] = valid_df.apply(get_level, axis=1)
+
+# 回填繪製資料點至 Plotly 圖表 (確保編輯後即時連動)
+with col_chart:
     if not valid_df.empty:
         valid_df["Color"] = valid_df["面向"].map(color_map).fillna("#757575")
         
-        # 依面向分組繪製
         for name, group in valid_df.groupby("面向"):
             fig.add_trace(go.Scatter(
-                x=group["營營影響度"] if "營營影響度" in group else group["營運影響度"],  # 安全起見
+                x=group["營運影響度"],
                 y=group["關心度"],
                 mode="markers+text",
                 name=name,
-                marker=dict(size=12, color=color_map.get(name, "#757575"), line=dict(width=1.5, color='white')),
-                text=group["編號"],  # 圖表上僅顯示編號
+                marker=dict(size=13, color=color_map.get(name, "#757575"), line=dict(width=1.5, color='white')),
+                text=group["編號"],
                 customdata=list(zip(
                     group["重大主題指標"], 
                     group["重大性等級"], 
@@ -246,7 +245,7 @@ with col1:
                     group["面向"]
                 )),
                 textposition="top right",
-                textfont=dict(size=11),
+                textfont=dict(size=12, color="#1e293b"),
                 hovertemplate=(
                     "<b>No.%{text} %{customdata[2]}</b><br>"
                     "面向: %{customdata[3]}<br>"
@@ -257,15 +256,41 @@ with col1:
                 )
             ))
 
-    # 8. 圖表外觀與軸線設定
+    # 圖表外觀與軸線設定 (加大 Left Margin 防止 Y 軸標題被裁切)
     fig.update_layout(
-        xaxis=dict(title="營運影響程度（衝擊程度）", range=[axis_min, 10], tickmode='linear', tick0=axis_min, dtick=1, gridcolor='rgba(0,0,0,0.1)'),
-        yaxis=dict(title="對經濟、環境和人（人權）的衝擊影響（利害關係人關心度）", range=[axis_min, 10], tickmode='linear', tick0=axis_min, dtick=1, gridcolor='rgba(0,0,0,0.1)'),
-        margin=dict(l=40, r=40, t=20, b=40),
-        height=600,
+        xaxis=dict(
+            title=dict(text="營運影響程度 (衝擊程度 X軸)", font=dict(size=13)),
+            range=[axis_min, 10], 
+            tickmode='linear', 
+            tick0=axis_min, 
+            dtick=1, 
+            gridcolor='rgba(0,0,0,0.1)'
+        ),
+        yaxis=dict(
+            title=dict(text="利害關係人關心程度 (Y軸)", font=dict(size=13)),
+            range=[axis_min, 10], 
+            tickmode='linear', 
+            tick0=axis_min, 
+            dtick=1, 
+            gridcolor='rgba(0,0,0,0.1)'
+        ),
+        margin=dict(l=75, r=30, t=30, b=50),
+        height=580,
         plot_bgcolor='white',
-        legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5, borderwidth=1, bordercolor="#e5e7eb")
+        legend=dict(orientation="h", yanchor="bottom", y=-0.18, xanchor="center", x=0.5, borderwidth=1, bordercolor="#e5e7eb")
     )
 
-    # 顯示 Plotly 圖表
     st.plotly_chart(fig, use_container_width=True)
+
+with col_editor:
+    st.subheader("🏆 重大性議題排序總覽")
+    if not valid_df.empty:
+        show_df = valid_df.sort_values(by="重大主題指標", ascending=False).reset_index(drop=True)
+        st.dataframe(
+            show_df[["編號", "面向", "重大議題", "重大主題指標", "重大性等級"]], 
+            use_container_width=True, 
+            hide_index=True, 
+            height=240
+        )
+    else:
+        st.info("請在上方編輯器中新增資料。")
