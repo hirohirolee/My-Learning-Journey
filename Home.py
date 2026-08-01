@@ -65,6 +65,7 @@ candidate_paths = [
     os.path.join(CANDIDATE_ROOT, "04_Misc_Applications", "Royalgame"),
     os.path.join(CANDIDATE_ROOT, "04_Misc_Applications", "Mosaic"),
     os.path.join(CANDIDATE_ROOT, "04_Misc_Applications", "15games"),
+    os.path.join(CANDIDATE_ROOT, "04_Misc_Applications", "FlappyBird_DQN"),
 ]
 
 for p in candidate_paths:
@@ -84,6 +85,7 @@ def make_page(page_script, title, icon, url_path, default=False):
 home_page = make_page("home_landing.py", title="首頁總覽", icon="🏠", url_path="home", default=True)
 
 # 2. AI & Data Projects
+ai_flappy = make_page("streamlit_candidates/04_Misc_Applications/FlappyBird_DQN/app.py", title="Flappy Bird 強化學習 (DQN)", icon="🐦", url_path="flappy-bird-dqn")
 ai_t2i = make_page("streamlit_candidates/01_AI_Data_Projects/daily_lessons/20260604/app.py", title="AI 圖像生成 (Puter.js)", icon="🎨", url_path="ai-text2image")
 ai_linear = make_page("streamlit_candidates/01_AI_Data_Projects/daily_lessons/20260605/linear.py", title="線性回歸擬合展示", icon="📈", url_path="ai-linear-regression")
 ai_top10 = make_page("streamlit_candidates/01_AI_Data_Projects/daily_lessons/20260608/top10ml.py", title="Top 10 機器學習模型", icon="🤖", url_path="ai-top10-ml")
@@ -125,7 +127,7 @@ game_ttt = make_page("streamlit_candidates/04_Misc_Applications/15games/tictacto
 category_map = {
     "🏠 主頁總覽": [home_page],
     "🤖 AI 與數據學習專案": [
-        ai_t2i, ai_linear, ai_top10, ai_startup,
+        ai_flappy, ai_t2i, ai_linear, ai_top10, ai_startup,
         ai_boston, ai_california, ai_svm, ai_drama, ai_weather
     ],
     "🌿 ESG 企業永續專案": [
