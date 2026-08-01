@@ -1,5 +1,8 @@
 import os, sys
-sys.modules.pop('config', None)
+for k in list(sys.modules.keys()):
+    if k == 'utils' or k.startswith('utils.') or k == 'config':
+        sys.modules.pop(k, None)
+
 _btc_dir = os.path.dirname(os.path.abspath(__file__))
 if _btc_dir not in sys.path:
     sys.path.insert(0, _btc_dir)

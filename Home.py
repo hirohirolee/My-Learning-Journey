@@ -155,5 +155,7 @@ with st.sidebar:
 
 # Navigation Routing
 pg = st.navigation(category_map, position="sidebar")
-sys.modules.pop('config', None)
+for k in list(sys.modules.keys()):
+    if k in ('config', 'utils') or k.startswith('utils.'):
+        sys.modules.pop(k, None)
 pg.run()
