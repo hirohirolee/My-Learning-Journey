@@ -60,7 +60,7 @@ for p in candidate_paths:
 home_page = st.Page("home_landing.py", title="首頁總覽", icon="🏠", url_path="home", default=True)
 
 # 2. AI & Data Projects (daily_lessons)
-ai_t2i = st.Page("streamlit_candidates/01_AI_Data_Projects/daily_lessons/20260604/texttoimage.py", title="AI 圖像生成 (Text2Image)", icon="🎨", url_path="ai-text2image")
+ai_t2i = st.Page("streamlit_candidates/01_AI_Data_Projects/daily_lessons/20260604/app.py", title="AI 圖像生成 (Puter.js 版)", icon="🎨", url_path="ai-text2image")
 ai_linear = st.Page("streamlit_candidates/01_AI_Data_Projects/daily_lessons/20260605/linear.py", title="線性回歸擬合展示", icon="📈", url_path="ai-linear-regression")
 ai_top10 = st.Page("streamlit_candidates/01_AI_Data_Projects/daily_lessons/20260608/top10ml.py", title="Top 10 機器學習模型", icon="🤖", url_path="ai-top10-ml")
 ai_startup = st.Page("streamlit_candidates/01_AI_Data_Projects/daily_lessons/20260609/50startup.py", title="50 Startup 商業預測", icon="🏢", url_path="ai-50startups")
