@@ -1,0 +1,23 @@
+2026-08-01 22:29:21,774 - data_pipeline.nlp_sentiment - INFO - 啟動 NLPSentimentAnalyzer，使用本機 Ollama 模型: llama3
+2026-08-01 22:29:21,774 - data_pipeline.nlp_sentiment - INFO - ???脰? NLP ?寞活???? (??20 蝑?
+2026-08-01 22:29:24,601 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,605 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,608 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,611 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,614 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,616 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,619 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,622 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,624 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,627 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,630 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,633 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,636 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,639 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,641 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,644 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,646 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,649 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,651 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,654 - data_pipeline.nlp_sentiment - ERROR - LLM ????隢?憭望?: Error code: 404 - {'error': {'message': "model 'llama3' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-08-01 22:29:24,657 - data_pipeline.nlp_sentiment - INFO - NLP ??????摰?

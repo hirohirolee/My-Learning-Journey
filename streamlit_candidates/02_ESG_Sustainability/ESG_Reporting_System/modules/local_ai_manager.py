@@ -4,7 +4,11 @@ ESG 永續報告書自動化生成系統 - 地端 AI 管理模組 (全章節防�
 
 import os
 import json
-import ollama
+try:
+    import ollama
+except ImportError:
+    ollama = None
+
 import config
 from gri_config import GRI_CONFIG
 
@@ -17,14 +21,19 @@ class ESGLLMManager:
         self.model_name = model_name or config.MODEL_NAME
         self.host = host or config.OLLAMA_HOST
         
-        try:
-            self.client = ollama.Client(host=self.host, timeout=10.0)
-        except Exception as e:
+        if ollama is not None:
+            try:
+                self.client = ollama.Client(host=self.host, timeout=10.0)
+            except Exception as e:
+                self.client = None
+                print(f"⚠️ 初始化 Ollama 客戶端失敗: {e}")
+        else:
             self.client = None
-            print(f"⚠️ 初始化 Ollama 客戶端失敗: {e}")
 
     @staticmethod
     def check_connection(host, model_name):
+        if ollama is None:
+            return False, False, []
         try:
             client = ollama.Client(host=host, timeout=2.0)
             models_response = client.list()
