@@ -1,10 +1,12 @@
-import streamlit as st
-import os
-import sys
-from pathlib import Path
+_quant_root = str(Path(__file__).resolve().parent.parent)
+if _quant_root in sys.path:
+    sys.path.remove(_quant_root)
+sys.path.insert(0, _quant_root)
 
-sys.modules.pop('config', None)
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+for k in list(sys.modules.keys()):
+    if k == 'config' or k == 'utils' or k.startswith('utils.'):
+        sys.modules.pop(k, None)
+
 from config import UI_PAGE_TITLE, UI_PAGE_ICON, UI_LAYOUT
 
 # 1. 設定 Streamlit 頁面全局配置 (必須是第一個 st 指令)

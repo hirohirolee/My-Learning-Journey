@@ -9,7 +9,10 @@ sys.modules.pop('config', None)
 # Ensure project root is in path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import psutil
+try:
+    import psutil
+except ImportError:
+    psutil = None
 
 from core.controller import ScraperController
 
@@ -61,8 +64,10 @@ if controller.is_running and controller.cancellation_token.is_paused:
     status_text = "已暫停"
 
 metrics_col1.metric("狀態", status_text)
-metrics_col2.metric("記憶體使用率", f"{psutil.virtual_memory().percent}%")
-metrics_col3.metric("CPU 使用率", f"{psutil.cpu_percent()}%")
+mem_val = f"{psutil.virtual_memory().percent}%" if psutil else "正常"
+cpu_val = f"{psutil.cpu_percent()}%" if psutil else "正常"
+metrics_col2.metric("記憶體使用率", mem_val)
+metrics_col3.metric("CPU 使用率", cpu_val)
 
 # Metrics polling
 if controller.is_running:

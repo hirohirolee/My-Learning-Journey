@@ -3,13 +3,14 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 from datetime import datetime, timedelta
-import sys
-import os
-
-sys.modules.pop('config', None)
 _quant_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-if _quant_root not in sys.path:
-    sys.path.insert(0, _quant_root)
+if _quant_root in sys.path:
+    sys.path.remove(_quant_root)
+sys.path.insert(0, _quant_root)
+
+for k in list(sys.modules.keys()):
+    if k == 'config' or k == 'utils' or k.startswith('utils.'):
+        sys.modules.pop(k, None)
 
 from data_pipeline.gossip_crawler import GossipCrawler
 from data_pipeline.nlp_sentiment import NLPSentimentAnalyzer

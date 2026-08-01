@@ -1,11 +1,12 @@
 import os, sys
-for k in list(sys.modules.keys()):
-    if k == 'utils' or k.startswith('utils.') or k == 'config':
-        sys.modules.pop(k, None)
-
 _btc_dir = os.path.dirname(os.path.abspath(__file__))
-if _btc_dir not in sys.path:
-    sys.path.insert(0, _btc_dir)
+if _btc_dir in sys.path:
+    sys.path.remove(_btc_dir)
+sys.path.insert(0, _btc_dir)
+
+for k in list(sys.modules.keys()):
+    if k == 'config' or k == 'utils' or k.startswith('utils.'):
+        sys.modules.pop(k, None)
 
 import streamlit as st
 from config import settings

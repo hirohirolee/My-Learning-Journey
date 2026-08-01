@@ -13,27 +13,6 @@ st.set_page_config(
 # Custom CSS to hide Streamlit default decorations and create a seamless full-page dark layout.
 injection_html = """
     <style>
-        /* Force body and container backgrounds to match the slate-950 color of app.html */
-        html, body, [data-testid="stAppViewContainer"], .main, .block-container {
-            background-color: #020617 !important;
-            padding: 1rem !important;
-            width: 100% !important;
-        }
-
-        /* 3. Reset standard Streamlit component container spacing */
-        div[data-testid="stVerticalBlock"] {
-            gap: 0 !important;
-        }
-        div[data-testid="stVerticalBlock"] > div {
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-        div[data-testid="element-container"], div.stHtml {
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
         /* 4. Style the embedded iframe to cover container responsive width */
         iframe[srcdoc] {
             width: 100% !important;
