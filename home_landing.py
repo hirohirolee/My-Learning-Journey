@@ -1,11 +1,5 @@
 import streamlit as st
 
-st.set_page_config(
-    page_title="My Learning Journey | Portfolio",
-    page_icon="🚀",
-    layout="wide"
-)
-
 # Custom Styling with modern aesthetic
 st.markdown("""
     <style>

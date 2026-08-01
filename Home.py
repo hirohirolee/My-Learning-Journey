@@ -2,6 +2,20 @@ import sys
 import os
 import streamlit as st
 
+# 1. Set top-level page config ONCE at the start of Home.py
+st.set_page_config(
+    page_title="My Learning Journey",
+    page_icon="🚀",
+    layout="wide"
+)
+
+# 2. Safely prevent sub-pages from raising StreamlitAPIException when calling st.set_page_config
+_original_set_page_config = st.set_page_config
+def _safe_set_page_config(*args, **kwargs):
+    pass
+
+st.set_page_config = _safe_set_page_config
+
 # Automatically append sub-app directories to sys.path so sub-app internal imports work seamlessly
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CANDIDATE_ROOT = os.path.join(BASE_DIR, "streamlit_candidates")
