@@ -1,7 +1,3 @@
-import streamlit as st
-st.title('data_generator.py - 自動化展示')
-st.info('這是從原專案腳本自動包裝產生的互動式介面。')
-
 import numpy as np
 from sklearn.datasets import make_circles, make_moons, make_blobs
 

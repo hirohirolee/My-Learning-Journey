@@ -1,9 +1,11 @@
-import json
-import streamlit as st
-import numpy as np
-import plotly.graph_objects as go
-from sklearn.svm import SVC
-from utils.data_generator import generate_data
+import os, sys
+_dir = os.path.dirname(os.path.abspath(__file__))
+if _dir not in sys.path:
+    sys.path.insert(0, _dir)
+try:
+    from utils.data_generator import generate_data
+except ImportError:
+    from data_generator import generate_data
 
 st.set_page_config(page_title="SVM 核技巧 3D v2.2", layout="wide")
 

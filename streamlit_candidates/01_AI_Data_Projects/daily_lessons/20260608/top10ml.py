@@ -26,11 +26,8 @@ injection_html = """
         /* 2. Force body and container backgrounds to match the slate-950 color of app.html */
         html, body, [data-testid="stAppViewContainer"], .main, .block-container {
             background-color: #020617 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100vw !important;
-            height: 100dvh !important;
-            overflow: hidden !important;
+            padding: 1rem !important;
+            width: 100% !important;
         }
 
         /* 3. Reset standard Streamlit component container spacing */
@@ -43,21 +40,19 @@ injection_html = """
         }
         div[data-testid="element-container"], div.stHtml {
             width: 100% !important;
-            height: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
         }
 
-        /* 4. Style the embedded iframe to cover the full viewport */
+        /* 4. Style the embedded iframe to cover container responsive width */
         iframe[srcdoc] {
-            width: 100vw !important;
-            height: 100dvh !important;
+            width: 100% !important;
+            height: 85vh !important;
             border: none !important;
             display: block !important;
             margin: 0 !important;
             padding: 0 !important;
             background-color: #020617 !important;
-            z-index: 999999 !important;
         }
     </style>
 
