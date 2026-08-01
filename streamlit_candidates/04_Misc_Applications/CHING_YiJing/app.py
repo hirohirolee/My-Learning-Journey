@@ -7,7 +7,7 @@ st.set_page_config(
     page_title="大白話視覺系易經占卜",
     page_icon="🔮",
     layout="centered",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 # Custom Style Sheet

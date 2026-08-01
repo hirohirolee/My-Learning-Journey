@@ -1,13 +1,23 @@
-import os, sys
-_dir = os.path.dirname(os.path.abspath(__file__))
-if _dir not in sys.path:
-    sys.path.insert(0, _dir)
+import os
+import sys
+
+_cur_dir = os.path.dirname(os.path.abspath(__file__))
+if _cur_dir not in sys.path:
+    sys.path.insert(0, _cur_dir)
+utils_dir = os.path.join(_cur_dir, "utils")
+if utils_dir not in sys.path:
+    sys.path.insert(0, utils_dir)
+
 try:
     from utils.data_generator import generate_data
 except ImportError:
     from data_generator import generate_data
 
-st.set_page_config(page_title="SVM 核技巧 3D v2.2", layout="wide")
+import json
+import streamlit as st
+import numpy as np
+import plotly.graph_objects as go
+from sklearn.svm import SVC
 
 st.markdown(
     """

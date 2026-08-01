@@ -28,6 +28,7 @@ candidate_paths = [
     os.path.join(CANDIDATE_ROOT, "01_AI_Data_Projects", "daily_lessons", "20260609"),
     os.path.join(CANDIDATE_ROOT, "01_AI_Data_Projects", "daily_lessons", "20260615"),
     os.path.join(CANDIDATE_ROOT, "01_AI_Data_Projects", "daily_lessons", "20260618"),
+    os.path.join(CANDIDATE_ROOT, "01_AI_Data_Projects", "daily_lessons", "20260618", "utils"),
     os.path.join(CANDIDATE_ROOT, "01_AI_Data_Projects", "daily_lessons", "20260630"),
     os.path.join(CANDIDATE_ROOT, "01_AI_Data_Projects", "daily_lessons", "20260702"),
     # Category 2

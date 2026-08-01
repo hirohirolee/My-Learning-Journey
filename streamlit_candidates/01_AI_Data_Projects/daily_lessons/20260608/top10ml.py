@@ -7,23 +7,13 @@ st.set_page_config(
     page_title="十大機器學習演算法：全方位動態學習報告",
     page_icon="🧠",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # Custom CSS to hide Streamlit default decorations and create a seamless full-page dark layout.
-# Also includes a parent JS hack to inject camera permissions ('allow="camera"') into the sandboxed iframe.
 injection_html = """
     <style>
-        /* 1. Hide Streamlit default headers, footers, margins and paddings */
-        [data-testid="stHeader"] { display: none !important; }
-        [data-testid="stFooter"] { display: none !important; }
-        [data-testid="stDecoration"] { display: none !important; }
-        [data-testid="stToolbar"] { display: none !important; }
-        #MainMenu { visibility: hidden !important; }
-        footer { visibility: hidden !important; }
-        header { visibility: hidden !important; }
-
-        /* 2. Force body and container backgrounds to match the slate-950 color of app.html */
+        /* Force body and container backgrounds to match the slate-950 color of app.html */
         html, body, [data-testid="stAppViewContainer"], .main, .block-container {
             background-color: #020617 !important;
             padding: 1rem !important;

@@ -1,22 +1,22 @@
 import numpy as np
 import pandas as pd
-import streamlit as __st  # 規避特定命名限制
+import streamlit as st  # 規避特定命名限制
 import plotly.graph_objects as go
 
 # 1. 網頁基本設定
-__st.set_page_config(page_title="ESG 重大性矩陣分析工具", layout="wide")
+st.set_page_config(page_title="ESG 重大性矩陣分析工具", layout="wide")
 
-__st.title("🍀 00股份有限公司 永續重大議題矩陣工具")
-__st.markdown("透過左側控制面板調整重大性門檻，右側圖表將會即時動態更新。")
+st.title("🍀 00股份有限公司 永續重大議題矩陣工具")
+st.markdown("透過左側控制面板調整重大性門檻，右側圖表將會即時動態更新。")
 
 # =====================================================================
 # 2. 側邊欄控制面板 (Sidebar)
 # =====================================================================
-__st.sidebar.header("🛠️ 矩陣門檻設定")
-__st.sidebar.markdown("請設定「兩項分數相乘（滿分100分）」的切分門檻：")
+st.sidebar.header("🛠️ 矩陣門檻設定")
+st.sidebar.markdown("請設定「兩項分數相乘（滿分100分）」的切分門檻：")
 
 # 讓使用者調整低度重大與高度重大的門檻
-low_limit = __st.sidebar.slider(
+low_limit = st.sidebar.slider(
     "🟢 低度重大門檻 (中低優先分界點)",
     min_value=0,
     max_value=100,
@@ -24,7 +24,7 @@ low_limit = __st.sidebar.slider(
     step=1,
 )
 
-high_limit = __st.sidebar.slider(
+high_limit = st.sidebar.slider(
     "🟣 高度重大門檻 (中高優先分界點)",
     min_value=0,
     max_value=100,
@@ -34,14 +34,14 @@ high_limit = __st.sidebar.slider(
 
 # 限制條件：高度門檻必須大於低度門檻
 if high_limit <= low_limit:
-    __st.sidebar.warning("⚠️ 高度門檻必須大於低度門檻！系統已自動將高度門檻調整為低度門檻 + 1。")
+    st.sidebar.warning("⚠️ 高度門檻必須大於低度門檻！系統已自動將高度門檻調整為低度門檻 + 1。")
     high_limit = low_limit + 1
     if high_limit > 100:
         high_limit = 100
         low_limit = 99
 
-__st.sidebar.write("---")
-__st.sidebar.markdown(
+st.sidebar.write("---")
+st.sidebar.markdown(
     f"""
 **目前的分區邏輯：**
 * 兩項分數相乘 `< {low_limit}` ➡️ **🟢 低度重大**
@@ -50,7 +50,7 @@ __st.sidebar.markdown(
 """
 )
 
-axis_min = __st.sidebar.selectbox(
+axis_min = st.sidebar.selectbox(
     "🔍 圖表縮放起點 (軸線最小值)",
     options=[0, 3, 4, 5],
     index=2,
@@ -122,25 +122,25 @@ color_map = {
 # =====================================================================
 # 4. 資料與圖表渲染
 # =====================================================================
-col1, col2 = __st.columns([1.6, 1.4])
+col1, col2 = st.columns([1.6, 1.4])
 
 with col2:
-    __st.subheader("📝 議題數據編輯器")
-    __st.markdown("💡 雙擊格可修改。按下方 **`+ Add row`** 或選列按 Del 可增減。")
-    edited_df = __st.data_editor(
+    st.subheader("📝 議題數據編輯器")
+    st.markdown("💡 雙擊格可修改。按下方 **`+ Add row`** 或選列按 Del 可增減。")
+    edited_df = st.data_editor(
         init_df,
         num_rows="dynamic",
         use_container_width=True,
         height=300,
         column_config={
-            "面向": __st.column_config.SelectboxColumn("面向", options=["1.經濟面", "2.環境面", "3.社會面"], required=True, width="small"),
-            "重大議題": __st.column_config.TextColumn("重大議題", required=True, width="medium"),
-            "營運影響度": __st.column_config.NumberColumn("營運影響度", min_value=0.0, max_value=10.0, step=0.1, required=True, width="small"),
-            "關心度": __st.column_config.NumberColumn("關心度", min_value=0.0, max_value=10.0, step=0.1, required=True, width="small"),
+            "面向": st.column_config.SelectboxColumn("面向", options=["1.經濟面", "2.環境面", "3.社會面"], required=True, width="small"),
+            "重大議題": st.column_config.TextColumn("重大議題", required=True, width="medium"),
+            "營運影響度": st.column_config.NumberColumn("營運影響度", min_value=0.0, max_value=10.0, step=0.1, required=True, width="small"),
+            "關心度": st.column_config.NumberColumn("關心度", min_value=0.0, max_value=10.0, step=0.1, required=True, width="small"),
         }
     )
 
-    __st.subheader("🏆 重大性排序一覽")
+    st.subheader("🏆 重大性排序一覽")
     valid_df = edited_df.dropna(subset=["面向", "重大議題", "營運影響度", "關心度"]).copy()
     
     if not valid_df.empty:
@@ -159,9 +159,9 @@ with col2:
         
         valid_df["重大性等級"] = valid_df.apply(get_level, axis=1)
         show_df = valid_df.sort_values(by="重大主題指標", ascending=False).reset_index(drop=True)
-        __st.dataframe(show_df[["編號", "面向", "重大議題", "重大主題指標", "重大性等級"]], use_container_width=True, hide_index=True, height=250)
+        st.dataframe(show_df[["編號", "面向", "重大議題", "重大主題指標", "重大性等級"]], use_container_width=True, hide_index=True, height=250)
     else:
-        __st.info("請在上方編輯器中新增資料。")
+        st.info("請在上方編輯器中新增資料。")
 
 with col1:
     # 建立 Plotly 互動式圖表
@@ -268,4 +268,4 @@ with col1:
     )
 
     # 顯示 Plotly 圖表
-    __st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
