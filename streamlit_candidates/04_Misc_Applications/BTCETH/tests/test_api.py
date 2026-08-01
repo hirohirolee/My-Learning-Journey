@@ -3,7 +3,7 @@ import streamlit as st
 import pytest
 from unittest.mock import patch, MagicMock
 import time
-from core.bitcoin_api import BitcoinAPIManager, bitcoin_api
+from btc_core.bitcoin_api import BitcoinAPIManager, bitcoin_api
 
 @pytest.fixture
 def api_manager() -> BitcoinAPIManager:

@@ -5,13 +5,13 @@ import io
 import json
 import plotly.express as px
 from typing import Dict, Any, Tuple
-from core.probability import get_probability_over_horizons, calculate_waiting_time_metrics, get_poisson_probability_of_success
-from core.finance import calculate_financials, run_scenarios
-from core.simulation import run_monte_carlo_simulation
-from config import ASIC_DATABASE
-from utils.formatter import format_currency, format_duration, format_probability, format_hashrate
-from ui.metrics import render_kpi_card, render_risk_panel
-from ui.charts import (
+from btc_core.probability import get_probability_over_horizons, calculate_waiting_time_metrics, get_poisson_probability_of_success
+from btc_core.finance import calculate_financials, run_scenarios
+from btc_core.simulation import run_monte_carlo_simulation
+from btc_config import ASIC_DATABASE
+from btc_utils.formatter import format_currency, format_duration, format_probability, format_hashrate
+from btc_ui.metrics import render_kpi_card, render_risk_panel
+from btc_ui.charts import (
     create_probability_curve_chart,
     create_blocks_distribution_chart,
     create_cash_flow_fan_chart,

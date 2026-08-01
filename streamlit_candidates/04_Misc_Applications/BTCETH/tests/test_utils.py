@@ -2,13 +2,13 @@ import streamlit as st
 
 import pytest
 import math
-from utils.formatter import (
+from btc_utils.formatter import (
     format_currency,
     format_hashrate,
     format_probability,
     format_duration
 )
-from utils.logger import configure_logger
+from btc_utils.logger import configure_logger
 
 def test_format_currency() -> None:
     """Verifies that floating numbers map to currency strings correctly."""

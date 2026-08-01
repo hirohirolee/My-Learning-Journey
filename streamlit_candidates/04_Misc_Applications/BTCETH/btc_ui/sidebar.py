@@ -1,6 +1,6 @@
 import streamlit as st
-from config import ASIC_DATABASE, settings
-from core.difficulty import convert_hashrate, HASHRATE_MULTIPLIERS
+from btc_config import ASIC_DATABASE, settings
+from btc_core.difficulty import convert_hashrate, HASHRATE_MULTIPLIERS
 from typing import Dict, Any
 
 def render_sidebar(live_data: Dict[str, Any]) -> Dict[str, Any]:

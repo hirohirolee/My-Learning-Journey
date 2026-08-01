@@ -2,7 +2,7 @@ import streamlit as st
 
 import numpy as np
 from typing import Any, Dict, List
-from core.finance import calculate_opex
+from btc_core.finance import calculate_opex
 
 def run_monte_carlo_simulation(
     miner_hashrate_h_s: float,

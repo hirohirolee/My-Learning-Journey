@@ -2,7 +2,7 @@ import streamlit as st
 
 import pytest
 import math
-from core.finance import (
+from btc_core.finance import (
     calculate_opex,
     calculate_expected_revenue,
     calculate_irr,

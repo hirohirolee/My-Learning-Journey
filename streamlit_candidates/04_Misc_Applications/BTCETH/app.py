@@ -4,11 +4,7 @@ if _btc_dir in sys.path:
     sys.path.remove(_btc_dir)
 sys.path.insert(0, _btc_dir)
 
-# Clear any cached modules from other apps in the Streamlit multi-page environment
-_btc_modules = ['config', 'utils', 'core', 'ui']
-for k in list(sys.modules.keys()):
-    if any(k == m or k.startswith(m + '.') for m in _btc_modules):
-        sys.modules.pop(k, None)
+
 
 import streamlit as st
 import time
@@ -19,13 +15,13 @@ except ImportError:
     import logging
     logger = logging.getLogger("BTCETH")
 
-from config import settings
-from utils.logger import configure_logger
-from utils.formatter import format_currency, format_duration
-from core.bitcoin_api import bitcoin_api
-from ui.metrics import inject_custom_css
-from ui.sidebar import render_sidebar
-from ui.dashboard import render_dashboard
+from btc_config import settings
+from btc_utils.logger import configure_logger
+from btc_utils.formatter import format_currency, format_duration
+from btc_core.bitcoin_api import bitcoin_api
+from btc_ui.metrics import inject_custom_css
+from btc_ui.sidebar import render_sidebar
+from btc_ui.dashboard import render_dashboard
 
 
 def main() -> None:

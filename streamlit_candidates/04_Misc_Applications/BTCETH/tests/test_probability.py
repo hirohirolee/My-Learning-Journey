@@ -2,8 +2,8 @@ import streamlit as st
 
 import pytest
 import math
-from core.difficulty import convert_hashrate
-from core.probability import (
+from btc_core.difficulty import convert_hashrate
+from btc_core.probability import (
     get_block_mining_probability_per_second,
     get_expected_blocks_in_period,
     get_poisson_probability_of_success,
@@ -113,7 +113,7 @@ def test_probability_over_horizons() -> None:
 
 def test_forecast_difficulty_and_hashrate() -> None:
     """Verifies difficulty and hashrate forecasting functions, including growth floors."""
-    from core.difficulty import forecast_difficulty, forecast_hashrate
+    from btc_core.difficulty import forecast_difficulty, forecast_hashrate
     # Standard check
     assert forecast_difficulty(100.0, 0.10, 2.0) == 100.0 * (1.10 ** 2.0)
     assert forecast_hashrate(1000.0, 0.10, 2.0) == 1000.0 * (1.10 ** 2.0)

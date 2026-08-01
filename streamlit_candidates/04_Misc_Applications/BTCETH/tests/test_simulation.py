@@ -2,7 +2,7 @@ import streamlit as st
 
 import pytest
 import numpy as np
-from core.simulation import run_monte_carlo_simulation
+from btc_core.simulation import run_monte_carlo_simulation
 
 def test_monte_carlo_simulation_outputs() -> None:
     """Verifies that the simulation engine executes and produces all required data structures."""

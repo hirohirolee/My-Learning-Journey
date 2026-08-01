@@ -4,7 +4,7 @@ import time
 from typing import Any, Dict, Optional
 import requests
 from loguru import logger
-from config import settings
+from btc_config import settings
 
 class BitcoinAPIManager:
     """管理獲取即時比特幣區塊鏈指標與市場價格數據的管理器。

@@ -3,7 +3,7 @@ import streamlit as st
 import math
 from typing import Dict, List, Tuple, Any
 import scipy.stats as stats
-from core.difficulty import convert_hashrate
+from btc_core.difficulty import convert_hashrate
 
 # 時間區段（單位：秒）
 TIME_HORIZONS: Dict[str, float] = {

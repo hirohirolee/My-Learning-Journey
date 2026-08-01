@@ -4,7 +4,7 @@ import math
 from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import scipy.optimize as optimize
-from core.probability import get_expected_blocks_in_period
+from btc_core.probability import get_expected_blocks_in_period
 
 def calculate_opex(
     power_watts: float,

@@ -3,7 +3,7 @@ import streamlit as st
 import os
 import sys
 from loguru import logger
-from config import settings
+from btc_config import settings
 
 def configure_logger(debug: bool = False) -> None:
     """配置應用程式的 loguru 日誌記錄器。
