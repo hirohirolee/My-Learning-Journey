@@ -19,7 +19,7 @@ with st.sidebar:
     st.header("👔 商務個人網站導覽")
     view_mode = st.radio("選擇展示視圖 (View Mode):", [
         "🌐 原生 HTML5 網站全景展示",
-        "🤖 AI Studio 實戰彈窗總覽",
+        "🤖 AI Studio 專案畫廊展示",
         "📜 專業履歷與 6 大國際認證",
         "💼 核心服務與 STAR 專案實績"
     ])
@@ -29,7 +29,7 @@ with st.sidebar:
     **高階商務顧問主題 (v2 Executive Theme)**
     - 💎 暗色奢華金 (Dark Luxury Gold) 視覺設計
     - 🛡️ PMP 專案管理 & ISO 資安/溫室氣體盤查雙證照
-    - 🚀 Live Streamlit 互動彈窗與分類過濾引擎
+    - ⚡ 精緻專案卡片與分類過濾引擎
     """)
 
 if "🌐" in view_mode:
@@ -128,8 +128,8 @@ if "🌐" in view_mode:
     st.components.v1.html(full_html, height=880, scrolling=True)
 
 elif "🤖" in view_mode:
-    st.title("🤖 AI Innovation Studio (Streamlit 實境展演彈窗網頁)")
-    st.caption("點擊任一專案卡片上的「▶ 即時體驗 (Live App)」即可開啟無縫彈窗與跨裝置視圖切換！")
+    st.title("🤖 AI Innovation Studio (專案畫廊展示)")
+    st.caption("點擊任一專案卡片上的「前往專案」按鈕即可開啓對應的 Streamlit 大數據應用！")
     
     studio_html = load_file("ai-studio.html")
     css_files = ["css/variables.css", "css/base.css", "css/layout.css", "css/ai-studio.css", "css/animations.css"]
@@ -180,36 +180,6 @@ elif "🤖" in view_mode:
                 <div id="ai-studio-container"></div>
             </div>
         </main>
-
-        <div id="streamlit-modal" class="modal-backdrop" style="display:none;">
-            <div class="modal-container">
-                <div class="modal-header">
-                    <div class="modal-title-group">
-                        <span id="modal-project-icon" class="modal-icon"><i class="fa-solid fa-rocket"></i></span>
-                        <div>
-                            <h3 id="modal-project-title">Streamlit Live App</h3>
-                            <p id="modal-project-desc" class="modal-subtitle">Direct Cloud Execution</p>
-                        </div>
-                    </div>
-                    <div class="modal-controls">
-                        <div class="device-toggle">
-                            <button class="device-btn active" data-device="desktop" title="桌面視野"><i class="fa-solid fa-desktop"></i></button>
-                            <button class="device-btn" data-device="tablet" title="平板視野"><i class="fa-solid fa-tablet-screen-button"></i></button>
-                            <button class="device-btn" data-device="mobile" title="手機視野"><i class="fa-solid fa-mobile-screen-button"></i></button>
-                        </div>
-                        <a id="modal-external-link" href="#" target="_blank" class="modal-btn" title="新分頁開啟"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                        <button id="modal-close-btn" class="modal-btn close-btn" title="關閉"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                </div>
-                <div class="modal-body">
-                    <div id="modal-loader" class="modal-loader">
-                        <i class="fa-solid fa-circle-notch fa-spin"></i>
-                        <p>正在載入 Streamlit 雲端大數據算力引擎...</p>
-                    </div>
-                    <iframe id="streamlit-iframe" src="" frameborder="0" allowfullscreen></iframe>
-                </div>
-            </div>
-        </div>
 
         <script>
             {content_js}
