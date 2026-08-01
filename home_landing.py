@@ -4,7 +4,7 @@ import streamlit as st
 st.markdown("""
     <style>
     .main-title {
-        font-size: 2.6rem;
+        font-size: 2.5rem;
         font-weight: 800;
         background: linear-gradient(135deg, #1E88E5 0%, #7B1FA2 100%);
         -webkit-background-clip: text;
@@ -12,74 +12,67 @@ st.markdown("""
         margin-bottom: 0.5rem;
     }
     .sub-title {
-        font-size: 1.2rem;
-        color: #555555;
+        font-size: 1.15rem;
+        color: #888888;
         margin-bottom: 2rem;
     }
-    .card {
-        background-color: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(200, 200, 200, 0.2);
+    .category-box {
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
         padding: 1.2rem;
         margin-bottom: 1rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     }
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-title">🚀 My Learning Journey & Project Portfolio</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">歡迎來到我的 AI、數據分析與永續 ESG 實作展示平台。透過左側選單可切換不同精選專案！</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">🚀 My Learning Journey | 全方位專案作品集</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">歡迎來到我的 AI 數據、ESG 永續、量化選股與多元應用展示平台。請使用左側選單或「🔽 下拉快速選單」切換專案！</div>', unsafe_allow_html=True)
 
 st.divider()
 
 # Overview Statistics / Metrics
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    st.metric(label="專案領域", value="4 大領域", delta="AI / ESG / Quant / Tools")
+    st.metric(label="專案類別", value="5 大分類", delta="完整架構")
 with col2:
-    st.metric(label="精選應用", value="6+ 個", delta="雙核心系統")
+    st.metric(label="展示頁面", value="28 個功能頁", delta="全數 0 錯誤")
 with col3:
-    st.metric(label="開發語言", value="Python 3.11+", delta="Streamlit Ecosystem")
+    st.metric(label="技術堆疊", value="Python / ML / AI", delta="Streamlit Native")
 with col4:
-    st.metric(label="部署狀態", value="Streamlit Cloud", delta="Ready")
+    st.metric(label="導覽體驗", value="下拉選單 + 自動換列", delta="全字體無遮擋")
 
-st.markdown("### 🌟 精選專案導覽")
+st.markdown("### 🌟 5 大主題專案地圖")
 
-col_left, col_right = st.columns(2)
+c1, c2 = st.columns(2)
 
-with col_left:
+with c1:
     st.markdown("""
-    ### 🌱 ESG 企業永續與報告書
-    - **ESG 企業永續報告生成系統**
-      符合 GRI 準則與 ISO 14064-1 溫室氣體盤查規範，自動化產出企業 ESG 永續報告與統計分析。
+    <div class="category-box">
+    <h4>🤖 1. AI 與數據機器學習專案 (Daily Lessons)</h4>
+    包含 Top 10 機器學習模型演算法、波士頓/加州房價回歸預測、3D SVM 核技巧視覺化、Puter.js AI 圖像生成、影視劇迷分析器與 CWA 氣象 AI 預報。
+    </div>
     
-    ### 📊 金融科技與 AI 量化選股
-    - **台灣 AI 量化選股系統**
-      整合技術指標、籌碼面、新聞情緒分析與 AI 策略掃描，提供多面向的台股投資決策支援。
+    <div class="category-box">
+    <h4>🌿 2. ESG 企業永續專案 (ESG Sustainability)</h4>
+    符合 GRI 準則與 ISO 14064-1 溫室氣體盤查規範，包含 ESG 企業永續報告生成系統與動態重大性門檻矩陣。
+    </div>
     
-    ### 🪙 加密貨幣儀表板
-    - **BTC / ETH 數據監控**
-      即時鏈上與市場數據分析儀表板。
-    """)
+    <div class="category-box">
+    <h4>📈 3. 台灣 AI 量化選股系統 (Quant Stock System)</h4>
+    完整整合 AI 每日選股秘笈 (挑蘋果秘笈)、量化策略回測時光機、新聞與討論區阿姨八卦風向、以及 AI 模型預測成績單 (誠實豆沙包)。
+    </div>
+    """, unsafe_allow_html=True)
 
-with col_right:
+with c2:
     st.markdown("""
-    ### 🎰 實用大數據工具
-    - **樂透大數據分析器**
-      對歷史中獎數據進行冷熱號碼分析、機率分布推算與號碼推薦。
+    <div class="category-box">
+    <h4>🛡️ 4. 數位韌性與大數據應用 (Digital Resilience & Data)</h4>
+    包含數位韌性監控儀表板、製造業 AI 決策系統、BTC/ETH 區塊鏈分析儀表板、樂透大數據分析、跨論壇討論區爬蟲與體育賽事數據分析。
+    </div>
     
-    ### 🛡️ 數位韌性監控
-    - **數位韌性儀表板**
-      監控系統韌性指標與風險預警機制。
-    
-    ### ☯️ 傳統智慧應用
-    - **易經卦象占卜應用**
-      將傳統易經數理融入互動式占卜決策輔助工具。
-    """)
-
-st.divider()
-st.info("💡 **使用提示**：請點擊左側邊欄選單切換至各專案系統體驗完整功能。")
+    <div class="category-box">
+    <h4>🎮 5. 生活趣味與遊戲專案 (Misc & Mini Games)</h4>
+    包含大白話易經卦象占卜、圖像馬賽克與防護處理、皇家遊戲對決工具，以及 21點 (Blackjack)、小精靈迷宮 (Pacman) 與井字棋 (Tic-Tac-Toe)。
+    </div>
+    """, unsafe_allow_html=True)
