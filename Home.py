@@ -34,48 +34,55 @@ for p in candidate_paths:
     if os.path.exists(p) and p not in sys.path:
         sys.path.insert(0, p)
 
-# Define Streamlit Pages
+# Define Streamlit Pages with explicit URL url_path to ensure uniqueness
 home_page = st.Page(
     "home_landing.py",
     title="首頁總覽",
     icon="🏠",
+    url_path="home",
     default=True
 )
 
 esg_page = st.Page(
     "streamlit_candidates/02_ESG_Sustainability/ESG_Reporting_System/esgreport.py",
     title="ESG 企業永續報告生成系統",
-    icon="🌱"
+    icon="🌱",
+    url_path="esg-reporting"
 )
 
 quant_page = st.Page(
     "streamlit_candidates/04_Misc_Applications/finance/tw_ai_quant_system/web_ui/app.py",
     title="台灣 AI 量化選股系統",
-    icon="📊"
+    icon="📊",
+    url_path="tw-quant-system"
 )
 
 lotto_page = st.Page(
     "streamlit_candidates/04_Misc_Applications/lotto/app.py",
     title="樂透大數據分析器",
-    icon="🎰"
+    icon="🎰",
+    url_path="lotto-analyzer"
 )
 
 resilience_page = st.Page(
     "streamlit_candidates/04_Misc_Applications/Digital_Resilience_Dashboard/app/app.py",
     title="數位韌性監控儀表板",
-    icon="🛡️"
+    icon="🛡️",
+    url_path="digital-resilience"
 )
 
 yijing_page = st.Page(
     "streamlit_candidates/04_Misc_Applications/CHING_YiJing/app.py",
     title="易經卦象占卜應用",
-    icon="🔮"
+    icon="🔮",
+    url_path="yijing-divination"
 )
 
 btceth_page = st.Page(
     "streamlit_candidates/04_Misc_Applications/BTCETH/app.py",
     title="BTC/ETH 區塊鏈儀表板",
-    icon="🪙"
+    icon="🪙",
+    url_path="btc-eth-dashboard"
 )
 
 # Organize pages into navigation sections
