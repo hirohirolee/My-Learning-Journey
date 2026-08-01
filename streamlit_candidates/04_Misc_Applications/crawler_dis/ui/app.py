@@ -5,9 +5,14 @@ import time
 import pandas as pd
 import streamlit as st
 
-sys.modules.pop('config', None)
-# Ensure project root is in path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+_crawler_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if _crawler_root in sys.path:
+    sys.path.remove(_crawler_root)
+sys.path.insert(0, _crawler_root)
+
+for k in list(sys.modules.keys()):
+    if k == 'config' or k == 'utils' or k.startswith('utils.'):
+        sys.modules.pop(k, None)
 
 try:
     import psutil

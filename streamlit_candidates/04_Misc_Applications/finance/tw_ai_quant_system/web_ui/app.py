@@ -1,3 +1,7 @@
+import os
+import sys
+from pathlib import Path
+
 _quant_root = str(Path(__file__).resolve().parent.parent)
 if _quant_root in sys.path:
     sys.path.remove(_quant_root)
@@ -6,6 +10,8 @@ sys.path.insert(0, _quant_root)
 for k in list(sys.modules.keys()):
     if k == 'config' or k == 'utils' or k.startswith('utils.'):
         sys.modules.pop(k, None)
+
+import streamlit as st
 
 from config import UI_PAGE_TITLE, UI_PAGE_ICON, UI_LAYOUT
 
