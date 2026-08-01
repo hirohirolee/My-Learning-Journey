@@ -32,113 +32,123 @@ const contentData = {
   ],
   "aiStudioProjects": [
     {
+      "id": "flappy-dqn",
+      "title": "Flappy Bird DQN 強化學習 AI",
+      "category": "ai",
+      "description": "基於 Dueling Double DQN 深度強化學習與拋物線決策引擎。實現 60 FPS HTML5 Canvas 原生 GPU 動畫與 100% 無碰撞大師級遊戲連勝。",
+      "icon": "fa-dove",
+      "businessImpact": "展示自主 AI 代理 (Autonomous Agent) 於複雜即時環境下的超精準物理軌跡算力與決策模型。",
+      "techStack": ["DQN", "PyTorch", "60FPS Canvas", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/flappy-bird-dqn"
+      }
+    },
+    {
       "id": "ai-image-gen",
-      "title": "AI Image Generation",
-      "description": "結合 Hugging Face Inference API 與 Streamlit 的 AI 圖像生成系統。支援雙重金鑰安全防護與畫風選擇。",
+      "title": "AI 圖像生成 Web App (Multi-Engine)",
+      "category": "ai",
+      "description": "整合 Pollinations AI Flux, Turbo 與 Stable Diffusion 雙重神經網路引擎。支援動態長寬比、隨機種子與即時二進位原檔下載。",
       "icon": "fa-wand-magic-sparkles",
-      "businessImpact": "降低 80% 企業行銷素材生成成本，提升跨部門提案效率。",
-      "techStack": ["Hugging Face", "Stable Diffusion", "Streamlit"],
+      "businessImpact": "降低 80% 企業行銷素材生成成本，實現秒級高品質視覺創造與商業提案出圖。",
+      "techStack": ["Flux Model", "Stable Diffusion", "Puter.js", "Streamlit"],
       "links": {
-        "liveDemo": "https://my-learning-journey-a9egpqgpvwec9kup8grj6x.streamlit.app/"
+        "liveDemo": "https://hiro-journey.streamlit.app/ai-text2image"
       }
     },
     {
-      "id": "linear-regression",
-      "title": "Linear Regression & Analytics",
-      "description": "自適應線上數據擬合與線性迴歸分析，提供實作動態趨勢預測、殘差分析與資料視覺化的科學沙盒。",
-      "icon": "fa-chart-line",
-      "businessImpact": "協助決策者快速驗證市場數據，將數據分析耗時從數天縮短至數分鐘。",
-      "techStack": ["Python", "Data Science", "Matplotlib", "Streamlit"],
+      "id": "esg-materiality",
+      "title": "ESG 重大性議題 2D 雙曲線矩陣分析系統",
+      "category": "esg",
+      "description": "動態 GRI 永續議題重大性矩陣分析工具。支援雙曲線邊界計算、Plotly 高畫質互動式圖表與即時數據表格編輯器。",
+      "icon": "fa-leaf",
+      "businessImpact": "幫助企業高層精準定義 GRI / ESG 核心重大議題，自動化生成永續報告書決策矩陣。",
+      "techStack": ["Plotly", "GRI Standard", "ESG Analytics", "Streamlit"],
       "links": {
-        "liveDemo": "https://hiro-linear-regression.streamlit.app/"
+        "liveDemo": "https://hiro-journey.streamlit.app/esg-materiality-matrix"
       }
     },
     {
-      "id": "ml-emotion",
-      "title": "ML Models & Emotion AI",
-      "description": "結合 client-side 臉部表情偵測與互動式數學沙盒，動態分析讀書專注力與困惑度，並由 AI 導師進行解說。",
-      "icon": "fa-brain",
-      "businessImpact": "建立高階教育培訓的情緒反饋迴圈，學員參與度與完課率提升 40%。",
-      "techStack": ["Face API", "Gemini API", "Tailwind CSS", "Streamlit"],
+      "id": "tw-ai-quant",
+      "title": "台灣 AI 量化選股與市場風向儀表板",
+      "category": "quant",
+      "description": "整合多因子量化選股模型、阿嬤每日挑蘋果特徵篩選、時光機回測與市場新聞情緒風向分析。",
+      "icon": "fa-chart-line-up",
+      "businessImpact": "結合數據科學與台股籌碼/財報大數據，打造客觀、高夏普比率的量化投資決策體系。",
+      "techStack": ["Quant Finance", "Scikit-Learn", "Financial NLP", "Streamlit"],
       "links": {
-        "liveDemo": "https://my-learning-journey-fa32pwgnj5bn8ccq2gabte.streamlit.app/"
+        "liveDemo": "https://hiro-journey.streamlit.app/tw-ai-quant"
+      }
+    },
+    {
+      "id": "btc-eth-analytics",
+      "title": "BTC/ETH 區塊鏈單機挖礦與機率分析儀表板",
+      "category": "resilience",
+      "description": "實時鏈上區塊鏈數據監測、單機挖礦成功機率蒙地卡羅模擬與資安防禦風險分析平台。",
+      "icon": "fa-bitcoin-sign",
+      "businessImpact": "精確量化加密資產與區塊鏈運算節點風險，提供金融科技業精準的營運模型評估。",
+      "techStack": ["Blockchain API", "Monte Carlo", "Risk Analytics", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/btc-eth-analytics"
       }
     },
     {
       "id": "50-startups",
-      "title": "50 Startups Profit Prediction",
-      "description": "基於 CRISP-DM 流程的新創公司利潤預測與多模型效能分析平台。提供投影級大圖表、對數尺度與多選演算法篩選。",
+      "title": "50 Startups 新創公司利潤預測系統",
+      "category": "ai",
+      "description": "基於 CRISP-DM 流程的新創公司利潤預測與多模型效能分析平台。提供投影級大圖表與對數尺度分析。",
       "icon": "fa-square-poll-vertical",
       "businessImpact": "提供投資機構精確的投資回報率 (ROI) 預測，降低 25% 投資風險評估誤差。",
       "techStack": ["Plotly", "Scikit-Learn", "CRISP-DM", "Streamlit"],
       "links": {
-        "liveDemo": "https://my-learning-journey-x3iuqegsphhxdmrvrzvfry.streamlit.app/"
+        "liveDemo": "https://hiro-journey.streamlit.app/50-startups-profit"
       }
     },
     {
       "id": "boston-housing",
-      "title": "Boston Housing ML Studio",
-      "description": "波士頓房價多模型預測與分析系統。支援特徵選取（SelectKBest, RFE）、多元迴歸模型評估與殘差可視化。",
+      "title": "Boston Housing ML 多模型房價分析沙盒",
+      "category": "ai",
+      "description": "波士頓房價多模型預測與分析系統。支援特徵選取（SelectKBest, RFE）、多元迴歸評估與殘差可視化。",
       "icon": "fa-house-chimney",
       "businessImpact": "將房地產估價模型自動化，提升 30% 估價作業效率與市場趨勢洞察力。",
       "techStack": ["Scikit-Learn", "Plotly", "Regression", "Streamlit"],
       "links": {
-        "liveDemo": "https://kaggle-50startup-hiro.streamlit.app/"
-      }
-    },
-    {
-      "id": "california-housing",
-      "title": "California Housing ML Studio",
-      "description": "加州房價特徵分析與預估沙盒。結合數據標準化與特徵交叉驗證，視覺化展示不同迴歸模型預測分佈與準確度。",
-      "icon": "fa-tree",
-      "businessImpact": "強化區域市場定價策略，透過資料特徵工程找出隱藏的利潤空間。",
-      "techStack": ["Scikit-Learn", "Plotly", "Regression", "Streamlit"],
-      "links": {
-        "liveDemo": "https://my-learning-journey-ygqnvuspaxqockzyns7usq.streamlit.app/"
+        "liveDemo": "https://hiro-journey.streamlit.app/boston-housing-ml"
       }
     },
     {
       "id": "svm-kernel",
-      "title": "SVM Kernel Trick 3D Explorer",
+      "title": "SVM Kernel Trick 3D 高維決策邊界探索器",
+      "category": "ai",
       "description": "支援向量機 (SVM) 高維核技巧 (Kernel Trick) 三維動態探討平台。視覺化線性與非線性投影決策邊界。",
       "icon": "fa-cube",
       "businessImpact": "透過三維動態展示複雜演算法邏輯，大幅降低技術決策層的理解門檻。",
       "techStack": ["SVM", "Kernel Trick", "Plotly 3D", "Streamlit"],
       "links": {
-        "liveDemo": "https://my-learning-journey-jcbr6wiykdjiyw58u9z7tp.streamlit.app/"
-      }
-    },
-    {
-      "id": "cinebot",
-      "title": "CineBot Movie Assistant",
-      "description": "CineBot 爬取電影搜尋與 AI 助理。整合 100 部熱門電影數據庫，支援本地離線搜尋與 Gemini 雙引擎問答對話。",
-      "icon": "fa-film",
-      "businessImpact": "打造智能客服與檢索雙引擎，提升用戶留存率並節省大量第一線客服人力。",
-      "techStack": ["Gemini API", "Movie Database", "Crawler Data", "Streamlit"],
-      "links": {
-        "liveDemo": "https://my-learning-journey-mmy8cjnhdxxcu8j4szp23e.streamlit.app/"
+        "liveDemo": "https://hiro-journey.streamlit.app/svm-kernel-3d"
       }
     },
     {
       "id": "weather-dashboard",
-      "title": "Taiwan Weather Dashboard",
-      "description": "全台即時天氣監測儀表板。整合氣象觀測數據，採用 Folium 地圖繪製觀測站點，並以 Plotly 繪製未來天氣預報。",
+      "title": "全台即時氣象與地理資訊監測儀表板",
+      "category": "resilience",
+      "description": "整合全台氣象觀測數據，採用 Folium 地圖繪製動態觀測站點，並以 Plotly 繪製未來天氣預報。",
       "icon": "fa-cloud-sun-rain",
       "businessImpact": "提供供應鏈與物流中心即時氣象風險預警，避免極端天氣造成的營運中斷。",
       "techStack": ["Folium Map", "Plotly", "Weather API", "Streamlit"],
       "links": {
-        "liveDemo": "https://my-learning-journey-cusqcaxnqwy92twlrrtpfw.streamlit.app/"
+        "liveDemo": "https://hiro-journey.streamlit.app/taiwan-weather-live"
       }
     },
     {
-      "id": "pr-analyst",
-      "title": "AI PR & Social Media Analyst",
-      "description": "基於 LangGraph 狀態機的多 Agent 協同公關輿情分析總管。自動分析 Google 地圖評論情緒，生成專業公關回應報告與感謝/道歉信。",
-      "icon": "fa-comments",
-      "businessImpact": "實現品牌公關危機 24 小時自動化應對，降低 90% 負評擴散風險與處理時間。",
-      "techStack": ["LangGraph", "ChromaDB", "OpenAI / Ollama", "Streamlit"],
+      "id": "yijing-divination",
+      "title": "大白話易經六十四卦互動占卜沙盒",
+      "category": "games",
+      "description": "融合傳統易經哲學與現代數據演算法。提供動態搖卦、卦象解構、本卦與變卦解義。",
+      "icon": "fa-yin-yang",
+      "businessImpact": "展示高互動性國學文化與數位娛樂產品設計理念。",
+      "techStack": ["Algorithms", "Cultural AI", "Streamlit"],
       "links": {
-        "liveDemo": "https://group-project-v1-jvjspvsb9d3qsbcqrebylh.streamlit.app/"
+        "liveDemo": "https://hiro-journey.streamlit.app/yijing-divination"
       }
     }
   ],

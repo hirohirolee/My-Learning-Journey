@@ -19,9 +19,9 @@ with st.sidebar:
     st.header("👔 商務個人網站導覽")
     view_mode = st.radio("選擇展示視圖 (View Mode):", [
         "🌐 原生 HTML5 網站全景展示",
+        "🤖 AI Studio 實戰彈窗總覽",
         "📜 專業履歷與 6 大國際認證",
-        "💼 核心服務與 STAR 專案實績",
-        "🤖 AI Studio 實戰專案展示"
+        "💼 核心服務與 STAR 專案實績"
     ])
     
     st.divider()
@@ -29,24 +29,20 @@ with st.sidebar:
     **高階商務顧問主題 (v2 Executive Theme)**
     - 💎 暗色奢華金 (Dark Luxury Gold) 視覺設計
     - 🛡️ PMP 專案管理 & ISO 資安/溫室氣體盤查雙證照
-    - ⚡ 響應式 STAR 框架實績展示
+    - 🚀 Live Streamlit 互動彈窗與分類過濾引擎
     """)
 
 if "🌐" in view_mode:
     st.title("👔 高階商務顧問 | 個人品牌網站")
     st.caption("引領 AI 賦能與永續合規，將國際標準轉化為企業營運優勢。19年經驗企業講師與專案治理專家。")
     
-    # Read HTML and CSS/JS
     index_html = load_file("index.html")
-    
     css_files = ["css/variables.css", "css/base.css", "css/layout.css", "css/components.css", "css/animations.css"]
     combined_css = "\n".join([load_file(f) for f in css_files])
-    
     content_js = load_file("data/content.js")
     app_js = load_file("js/app.js")
     main_js = load_file("js/main.js")
     
-    # Embed compiled standalone HTML
     full_html = f"""
     <!DOCTYPE html>
     <html lang="zh-TW">
@@ -74,7 +70,6 @@ if "🌐" in view_mode:
         </style>
     </head>
     <body>
-        <!-- Header -->
         <header class="site-header">
             <div class="container" style="display:flex; justify-content:space-between; align-items:center; padding: 1rem 2rem;">
                 <a href="#" class="logo" style="font-size:1.4rem; font-weight:700; color:#d97706; text-decoration:none;">
@@ -90,7 +85,6 @@ if "🌐" in view_mode:
         </header>
 
         <main>
-            <!-- Hero -->
             <section class="section hero" id="profile" style="padding: 3rem 2rem;">
                 <div class="container">
                     <div id="hero-container"></div>
@@ -98,7 +92,6 @@ if "🌐" in view_mode:
                 </div>
             </section>
 
-            <!-- Experience -->
             <section class="section" id="experience" style="background-color: #111827; padding: 3rem 2rem;">
                 <div class="container">
                     <h2 style="color:#f59e0b; border-bottom: 2px solid #f59e0b; padding-bottom: 0.5rem;">專業經歷 (Experience)</h2>
@@ -107,7 +100,6 @@ if "🌐" in view_mode:
                 </div>
             </section>
 
-            <!-- Services -->
             <section class="section" id="services" style="padding: 3rem 2rem;">
                 <div class="container">
                     <h2 style="color:#38bdf8; border-bottom: 2px solid #38bdf8; padding-bottom: 0.5rem;">核心服務與專業領域</h2>
@@ -116,7 +108,6 @@ if "🌐" in view_mode:
                 </div>
             </section>
 
-            <!-- STAR Case Studies -->
             <section class="section" id="case-studies" style="background-color: #111827; padding: 3rem 2rem;">
                 <div class="container">
                     <h2 style="color:#38bdf8; border-bottom: 2px solid #38bdf8; padding-bottom: 0.5rem;">專案實績 (Impact & Case Studies)</h2>
@@ -134,8 +125,100 @@ if "🌐" in view_mode:
     </body>
     </html>
     """
+    st.components.v1.html(full_html, height=880, scrolling=True)
+
+elif "🤖" in view_mode:
+    st.title("🤖 AI Innovation Studio (Streamlit 實境展演彈窗網頁)")
+    st.caption("點擊任一專案卡片上的「▶ 即時體驗 (Live App)」即可開啟無縫彈窗與跨裝置視圖切換！")
     
-    st.components.v1.html(full_html, height=850, scrolling=True)
+    studio_html = load_file("ai-studio.html")
+    css_files = ["css/variables.css", "css/base.css", "css/layout.css", "css/ai-studio.css", "css/animations.css"]
+    combined_css = "\n".join([load_file(f) for f in css_files])
+    content_js = load_file("data/content.js")
+    studio_js = load_file("js/ai-studio.js")
+    
+    full_studio_html = f"""
+    <!DOCTYPE html>
+    <html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AI Innovation Studio</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            {combined_css}
+            body {{
+                background: #03060E !important;
+                color: #e2e8f0;
+                margin: 0;
+                padding: 0;
+            }}
+            .site-header {{ display: none; }}
+            main {{ padding-top: 20px !important; }}
+        </style>
+    </head>
+    <body class="studio-page">
+        <main>
+            <div class="container">
+                <header class="studio-header">
+                    <h1>AI Innovation Studio</h1>
+                    <p>探索由無伺服器架構與 Streamlit 全站數據科學構建的互動式實戰作品。</p>
+                </header>
+
+                <div class="filter-bar" style="display:flex; justify-content:center; gap:0.8rem; margin-bottom:2.5rem; flex-wrap:wrap;">
+                    <button class="filter-btn active" data-filter="all"><i class="fa-solid fa-layer-group"></i> 全部專案</button>
+                    <button class="filter-btn" data-filter="ai"><i class="fa-solid fa-brain"></i> AI & 機器學習</button>
+                    <button class="filter-btn" data-filter="esg"><i class="fa-solid fa-leaf"></i> ESG 永續數據</button>
+                    <button class="filter-btn" data-filter="quant"><i class="fa-solid fa-chart-line-up"></i> AI 量化金融</button>
+                    <button class="filter-btn" data-filter="resilience"><i class="fa-solid fa-shield-halved"></i> 數位韌性</button>
+                    <button class="filter-btn" data-filter="games"><i class="fa-solid fa-gamepad"></i> 互動遊戲與沙盒</button>
+                </div>
+                
+                <div id="ai-studio-container"></div>
+            </div>
+        </main>
+
+        <div id="streamlit-modal" class="modal-backdrop" style="display:none;">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title-group">
+                        <span id="modal-project-icon" class="modal-icon"><i class="fa-solid fa-rocket"></i></span>
+                        <div>
+                            <h3 id="modal-project-title">Streamlit Live App</h3>
+                            <p id="modal-project-desc" class="modal-subtitle">Direct Cloud Execution</p>
+                        </div>
+                    </div>
+                    <div class="modal-controls">
+                        <div class="device-toggle">
+                            <button class="device-btn active" data-device="desktop" title="桌面視野"><i class="fa-solid fa-desktop"></i></button>
+                            <button class="device-btn" data-device="tablet" title="平板視野"><i class="fa-solid fa-tablet-screen-button"></i></button>
+                            <button class="device-btn" data-device="mobile" title="手機視野"><i class="fa-solid fa-mobile-screen-button"></i></button>
+                        </div>
+                        <a id="modal-external-link" href="#" target="_blank" class="modal-btn" title="新分頁開啟"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                        <button id="modal-close-btn" class="modal-btn close-btn" title="關閉"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div id="modal-loader" class="modal-loader">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                        <p>正在載入 Streamlit 雲端大數據算力引擎...</p>
+                    </div>
+                    <iframe id="streamlit-iframe" src="" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            {content_js}
+            {studio_js}
+        </script>
+    </body>
+    </html>
+    """
+    st.components.v1.html(full_studio_html, height=880, scrolling=True)
 
 elif "📜" in view_mode:
     st.header("📜 高階主管個人簡介與國際權威認證")
@@ -163,9 +246,8 @@ elif "📜" in view_mode:
         for cert in certs:
             st.success(cert)
 
-elif "💼" in view_mode:
+else:
     st.header("💼 核心服務與 STAR 專案實績")
-    
     st.markdown("### 🌟 三大核心顧問服務")
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -196,14 +278,3 @@ elif "💼" in view_mode:
         - **Action (行動)**: 擔任主導稽核員，進行全公司資產盤點、風險評估與零信任身分驗證導入。
         - **Result (成果)**: 零缺失通過 ISO 27001 外部驗證，資安事件應變時間縮短 75%。
         """)
-
-else:
-    st.header("🤖 AI Studio 實戰展示")
-    st.caption("結合最新 AI 技術與實戰沙盒模組")
-    
-    st.markdown("""
-    - 🎨 **AI Image Generation**：基於 Hugging Face Inference API 的高畫質圖像生成系統。
-    - 📈 **Linear Regression Analytics**：自適應線上數據擬合與線性迴歸數據科學沙盒。
-    - 🧠 **ML Emotion AI**：臉部表情偵測與學習專注度即時分析系統。
-    """)
-    st.success("💡 提示：您可使用本站導覽前往各 AI 與數據專案頁面進行互動體驗！")
