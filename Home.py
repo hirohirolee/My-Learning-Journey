@@ -62,7 +62,6 @@ candidate_paths = [
     os.path.join(CANDIDATE_ROOT, "04_Misc_Applications", "BTCETH"),
     os.path.join(CANDIDATE_ROOT, "04_Misc_Applications", "crawler_dis", "ui"),
     os.path.join(CANDIDATE_ROOT, "04_Misc_Applications", "crawler_dis"),
-    os.path.join(CANDIDATE_ROOT, "04_Misc_Applications", "Sports Analysis"),
     os.path.join(CANDIDATE_ROOT, "04_Misc_Applications", "Royalgame"),
     os.path.join(CANDIDATE_ROOT, "04_Misc_Applications", "Mosaic"),
     os.path.join(CANDIDATE_ROOT, "04_Misc_Applications", "15games"),
