@@ -102,7 +102,6 @@ esg_legacy = make_page("streamlit_candidates/02_ESG_Sustainability/ESG_Reporting
 quant_main = make_page("streamlit_candidates/04_Misc_Applications/finance/tw_ai_quant_system/web_ui/app.py", title="台灣 AI 量化選股主系統", icon="📊", url_path="tw-ai-quant-main")
 quant_apple = make_page("streamlit_candidates/04_Misc_Applications/finance/tw_ai_quant_system/web_ui/pages/01_🔥_阿嬤的每日挑蘋果秘笈.py", title="AI 每日選股秘笈", icon="🍎", url_path="tw-ai-quant-apple")
 quant_time = make_page("streamlit_candidates/04_Misc_Applications/finance/tw_ai_quant_system/web_ui/pages/02_📊_阿嬤的時光機.py", title="量化策略回測時光機", icon="⏰", url_path="tw-ai-quant-time-machine")
-quant_gossip = make_page("streamlit_candidates/04_Misc_Applications/finance/tw_ai_quant_system/web_ui/pages/03_📰_市場阿姨們的八卦風向.py", title="新聞與討論區情緒風向", icon="📰", url_path="tw-ai-quant-gossip")
 quant_eval = make_page("streamlit_candidates/04_Misc_Applications/finance/tw_ai_quant_system/web_ui/pages/05_🎯_老頭家誠實豆沙包.py", title="AI 模型預測成績單", icon="🎯", url_path="tw-ai-quant-eval")
 
 # 5. Digital Resilience & Big Data Applications
@@ -134,7 +133,7 @@ category_map = {
         esg_main, esg_legacy
     ],
     "📈 台灣 AI 量化選股系統": [
-        quant_main, quant_apple, quant_time, quant_gossip, quant_eval
+        quant_main, quant_apple, quant_time, quant_eval
     ],
     "🛡️ 數位韌性與大數據應用": [
         resilience_legacy, lotto_app, btceth_app, crawler_app, sports_app

@@ -9,7 +9,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pandas as pd
 from typing import List, Dict
-from openai import OpenAI
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
 from config import OPENAI_API_KEY, LLM_MODEL, USE_OLLAMA, OLLAMA_BASE_URL, OLLAMA_MODEL
 from utils.logger import get_logger
 
@@ -19,7 +22,11 @@ class NLPSentimentAnalyzer:
     """
     鞈?蝞∠?嚗???LLM (憒?OpenAI GPT) ?脰??啗????? (NLP)??    撠?蝯????鞈?頧???-1 (璆萄漲?脰?/?拍征) ??1 (璆萄漲璅?/?拙?) ????蝺??詻?    """
     def __init__(self):
-        if USE_OLLAMA:
+        if OpenAI is None:
+            self.client = None
+            self.model_name = "RuleBasedFallback"
+            logger.warning("OpenAI 模組未安裝，啟用規則情緒分析備援模式。")
+        elif USE_OLLAMA:
             # 使用 Ollama 的 OpenAI 相容 API 介面
             self.client = OpenAI(base_url=OLLAMA_BASE_URL, api_key="ollama")
             self.model_name = OLLAMA_MODEL
