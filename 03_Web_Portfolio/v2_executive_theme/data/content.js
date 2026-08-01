@@ -68,15 +68,39 @@ const contentData = {
       }
     },
     {
-      "id": "tw-ai-quant",
-      "title": "台灣 AI 量化選股與市場風向儀表板",
+      "id": "esg-reporting",
+      "title": "ESG 企業永續報告生成系統",
+      "category": "esg",
+      "description": "整合 31 個 GRI 永續主題數據字典與 ISO 14064-1 溫室氣體盤查模組，自動化生成企業永續報告書。",
+      "icon": "fa-file-contract",
+      "businessImpact": "自動化處理碳盤查與永續指標，節省 90% 永續報告書編製時間。",
+      "techStack": ["ISO 14064-1", "GRI 31 Topics", "ESG Data Engine", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/esg-reporting-system"
+      }
+    },
+    {
+      "id": "tw-ai-quant-main",
+      "title": "台灣 AI 量化選股主系統",
       "category": "quant",
       "description": "整合多因子量化選股模型、阿嬤每日挑蘋果特徵篩選、時光機回測與市場新聞情緒風向分析。",
       "icon": "fa-chart-line-up",
       "businessImpact": "結合數據科學與台股籌碼/財報大數據，打造客觀、高夏普比率的量化投資決策體系。",
       "techStack": ["Quant Finance", "Scikit-Learn", "Financial NLP", "Streamlit"],
       "links": {
-        "liveDemo": "https://hiro-journey.streamlit.app/tw-ai-quant"
+        "liveDemo": "https://hiro-journey.streamlit.app/tw-ai-quant-main"
+      }
+    },
+    {
+      "id": "tw-ai-quant-apple",
+      "title": "AI 每日挑蘋果特徵選股秘笈",
+      "category": "quant",
+      "description": "基於阿嬤的挑蘋果哲學，運用特徵工程篩選高成長、低估值的台股優良企業。",
+      "icon": "fa-apple-whole",
+      "businessImpact": "提供每日精準基本面與技術面雙重篩選，提高投資勝率。",
+      "techStack": ["Feature Engineering", "Taiwan Stock", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/tw-ai-quant-apple"
       }
     },
     {
@@ -92,7 +116,19 @@ const contentData = {
       }
     },
     {
-      "id": "50-startups",
+      "id": "digital-resilience",
+      "title": "製造業 AI 決策與數位韌性儀表板",
+      "category": "resilience",
+      "description": "專為工業 4.0 製造業打造的 AI 產能預測、設備故障防禦與供應鏈數位韌性決策系統。",
+      "icon": "fa-gears",
+      "businessImpact": "實現關鍵設備 24 小時故障預警，降低 45% 非預期停機損失。",
+      "techStack": ["Digital Resilience", "Industry 4.0", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/digital-resilience-legacy"
+      }
+    },
+    {
+      "id": "ai-50startups",
       "title": "50 Startups 新創公司利潤預測系統",
       "category": "ai",
       "description": "基於 CRISP-DM 流程的新創公司利潤預測與多模型效能分析平台。提供投影級大圖表與對數尺度分析。",
@@ -100,11 +136,11 @@ const contentData = {
       "businessImpact": "提供投資機構精確的投資回報率 (ROI) 預測，降低 25% 投資風險評估誤差。",
       "techStack": ["Plotly", "Scikit-Learn", "CRISP-DM", "Streamlit"],
       "links": {
-        "liveDemo": "https://hiro-journey.streamlit.app/50-startups-profit"
+        "liveDemo": "https://hiro-journey.streamlit.app/ai-50startups"
       }
     },
     {
-      "id": "boston-housing",
+      "id": "ai-boston-housing",
       "title": "Boston Housing ML 多模型房價分析沙盒",
       "category": "ai",
       "description": "波士頓房價多模型預測與分析系統。支援特徵選取（SelectKBest, RFE）、多元迴歸評估與殘差可視化。",
@@ -112,11 +148,23 @@ const contentData = {
       "businessImpact": "將房地產估價模型自動化，提升 30% 估價作業效率與市場趨勢洞察力。",
       "techStack": ["Scikit-Learn", "Plotly", "Regression", "Streamlit"],
       "links": {
-        "liveDemo": "https://hiro-journey.streamlit.app/boston-housing-ml"
+        "liveDemo": "https://hiro-journey.streamlit.app/ai-boston-housing"
       }
     },
     {
-      "id": "svm-kernel",
+      "id": "ai-california-housing",
+      "title": "California Housing 加州房價預測工作室",
+      "category": "ai",
+      "description": "加州地理與經濟特徵房價模型。視覺化展示不同迴歸模型預測分佈與殘差極限驗證。",
+      "icon": "fa-tree",
+      "businessImpact": "強化區域市場定價策略，透過資料特徵工程找出隱藏的利潤空間。",
+      "techStack": ["Scikit-Learn", "Plotly", "Regression", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/ai-california-housing"
+      }
+    },
+    {
+      "id": "ai-3d-svm",
       "title": "SVM Kernel Trick 3D 高維決策邊界探索器",
       "category": "ai",
       "description": "支援向量機 (SVM) 高維核技巧 (Kernel Trick) 三維動態探討平台。視覺化線性與非線性投影決策邊界。",
@@ -124,11 +172,11 @@ const contentData = {
       "businessImpact": "透過三維動態展示複雜演算法邏輯，大幅降低技術決策層的理解門檻。",
       "techStack": ["SVM", "Kernel Trick", "Plotly 3D", "Streamlit"],
       "links": {
-        "liveDemo": "https://hiro-journey.streamlit.app/svm-kernel-3d"
+        "liveDemo": "https://hiro-journey.streamlit.app/ai-3d-svm"
       }
     },
     {
-      "id": "weather-dashboard",
+      "id": "ai-cwa-weather",
       "title": "全台即時氣象與地理資訊監測儀表板",
       "category": "resilience",
       "description": "整合全台氣象觀測數據，採用 Folium 地圖繪製動態觀測站點，並以 Plotly 繪製未來天氣預報。",
@@ -136,7 +184,7 @@ const contentData = {
       "businessImpact": "提供供應鏈與物流中心即時氣象風險預警，避免極端天氣造成的營運中斷。",
       "techStack": ["Folium Map", "Plotly", "Weather API", "Streamlit"],
       "links": {
-        "liveDemo": "https://hiro-journey.streamlit.app/taiwan-weather-live"
+        "liveDemo": "https://hiro-journey.streamlit.app/ai-cwa-weather"
       }
     },
     {
@@ -149,6 +197,18 @@ const contentData = {
       "techStack": ["Algorithms", "Cultural AI", "Streamlit"],
       "links": {
         "liveDemo": "https://hiro-journey.streamlit.app/yijing-divination"
+      }
+    },
+    {
+      "id": "game-blackjack",
+      "title": "21 點撲克牌智力博弈遊戲 (Blackjack)",
+      "category": "games",
+      "description": "經典 21 點博弈演算法沙盒。提供多牌桌點數概率計算、發牌器與勝率動態估算。",
+      "icon": "fa-spade",
+      "businessImpact": "展示機率演算法與高互動前端遊戲開發現代化流程。",
+      "techStack": ["Probability Model", "Card Game", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/game-blackjack"
       }
     }
   ],
