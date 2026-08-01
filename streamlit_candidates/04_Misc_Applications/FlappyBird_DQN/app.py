@@ -2,10 +2,14 @@ import streamlit as st
 import numpy as np
 import random
 import time
-import torch
-import torch.nn as nn
 from typing import Tuple, List
 from PIL import Image, ImageDraw
+
+try:
+    import torch
+    import torch.nn as nn
+except ImportError:
+    torch = None
 
 st.set_page_config(page_title="Flappy Bird 強化學習 AI", layout="wide")
 st.title("🐦 Flappy Bird 大師級 AI (Dueling Double DQN)")
@@ -109,44 +113,57 @@ class MasterFlappyEnvironment:
 # 2. Dueling Double DQN 模型與物理導引 Agent
 # =============================================================================
 
-class DuelingDQN(nn.Module):
-    def __init__(self, state_dim: int = 4, action_dim: int = 2) -> None:
-        super().__init__()
-        self.feature_layer = nn.Sequential(
-            nn.Linear(state_dim, 128),
-            nn.ReLU(),
-            nn.Linear(128, 128),
-            nn.ReLU()
-        )
-        self.value_stream = nn.Sequential(
-            nn.Linear(128, 64),
-            nn.ReLU(),
-            nn.Linear(64, 1)
-        )
-        self.advantage_stream = nn.Sequential(
-            nn.Linear(128, 64),
-            nn.ReLU(),
-            nn.Linear(64, action_dim)
-        )
+if torch is not None:
+    class DuelingDQN(nn.Module):
+        def __init__(self, state_dim: int = 4, action_dim: int = 2) -> None:
+            super().__init__()
+            self.feature_layer = nn.Sequential(
+                nn.Linear(state_dim, 128),
+                nn.ReLU(),
+                nn.Linear(128, 128),
+                nn.ReLU()
+            )
+            self.value_stream = nn.Sequential(
+                nn.Linear(128, 64),
+                nn.ReLU(),
+                nn.Linear(64, 1)
+            )
+            self.advantage_stream = nn.Sequential(
+                nn.Linear(128, 64),
+                nn.ReLU(),
+                nn.Linear(64, action_dim)
+            )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        features = self.feature_layer(x)
-        values = self.value_stream(features)
-        advantages = self.advantage_stream(features)
-        return values + (advantages - advantages.mean(dim=1, keepdim=True))
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            features = self.feature_layer(x)
+            values = self.value_stream(features)
+            advantages = self.advantage_stream(features)
+            return values + (advantages - advantages.mean(dim=1, keepdim=True))
+else:
+    DuelingDQN = None
 
 
 class PhysicsGuidedMasterAgent:
     def __init__(self):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = DuelingDQN().to(self.device)
-        self.model.eval()
+        if torch is not None:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            self.model = DuelingDQN().to(self.device)
+            self.model.eval()
+        else:
+            self.model = None
 
     def select_action(self, env: MasterFlappyEnvironment, state: np.ndarray) -> Tuple[int, Tuple[float, float]]:
-        st_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
-        with torch.no_grad():
-            q_vals = self.model(st_tensor)[0]
-            q_display = (q_vals[0].item(), q_vals[1].item())
+        if torch is not None and self.model is not None:
+            st_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
+            with torch.no_grad():
+                q_vals = self.model(st_tensor)[0]
+                q_display = (q_vals[0].item(), q_vals[1].item())
+        else:
+            next_pipe = env._get_next_pipe()
+            target_y = next_pipe['top_h'] + env.pipe_gap / 2.0
+            dist_hold = abs(env.bird_y + env.bird_vy + env.gravity - target_y)
+            dist_flap = abs(env.bird_y + env.flap_strength + env.gravity - target_y)
+            q_display = (float(100.0 - dist_hold), float(100.0 - dist_flap))
 
         next_pipe = env._get_next_pipe()
         target_y = next_pipe['top_h'] + env.pipe_gap / 2.0
