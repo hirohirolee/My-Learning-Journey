@@ -97,19 +97,54 @@ body.studio-page {
 }
 
 .studio-card h3 {
-    font-family: monospace;
     color: var(--color-text-main);
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     margin-bottom: var(--spacing-sm);
     display: flex;
     align-items: center;
+    line-height: 1.4;
 }
 
-.studio-card h3::before {
-    content: '~/';
-    color: var(--color-accent-gold);
-    margin-right: 8px;
-    font-weight: normal;
+.card-icon-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+    border-radius: 8px;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    margin-right: 10px;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+}
+
+.card-title-text {
+    flex: 1;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.action-icon-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(56, 189, 248, 0.1);
+    color: #38bdf8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 0.4rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.action-icon-link:hover {
+    background: #38bdf8;
+    color: #0f172a !important;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
 }
 
 .studio-card .card-desc {

@@ -56,12 +56,14 @@ function renderAiStudio(projects) {
         }
         
         const demoUrl = project.links && project.links.liveDemo ? project.links.liveDemo : '#';
-        const projectIcon = project.icon ? `<i class="fa-solid ${project.icon}"></i>` : `<i class="fa-solid fa-code"></i>`;
+        const iconClass = project.icon || 'fa-code';
+        const iconBoxHtml = `<span class="card-icon-box"><i class="fa-solid ${iconClass}"></i></span>`;
+        const titleTextHtml = `<span class="card-title-text">${project.title}</span>`;
         
         let linksHtml = `<div class="studio-actions">`;
         if (demoUrl !== '#') {
             linksHtml += `
-                <a href="${demoUrl}" target="_blank" rel="noopener noreferrer" class="action-icon" title="前往開啟專案">
+                <a href="${demoUrl}" target="_blank" rel="noopener noreferrer" class="action-icon-link" title="前往開啟專案">
                     <i class="fa-solid fa-arrow-up-right-from-square"></i> 前往專案
                 </a>
             `;
@@ -75,7 +77,7 @@ function renderAiStudio(projects) {
 
         html += `
             <article class="studio-card anim-target" data-anim="slide-up" style="animation-delay: ${delay}">
-                <h3>${projectIcon} ${project.title}</h3>
+                <h3>${iconBoxHtml}${titleTextHtml}</h3>
                 <p class="card-desc">${project.description}</p>
                 ${impactHtml}
                 ${tagsHtml}
