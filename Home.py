@@ -154,14 +154,16 @@ for c_idx, (cat_name, cat_pages) in enumerate(category_map.items()):
             active_page_idx = p_idx
             break
 
-# Top Header Global Navigation Bar
+# Ultra-compact Top Header Global Navigation Bar
 with st.container():
-    st.markdown("### 🧭 全站目錄導覽")
     cat_keys = list(category_map.keys())
-    c1, c2, c3 = st.columns([4, 5, 2])
+    c0, c1, c2, c3 = st.columns([1.6, 3.8, 4.4, 2.0])
+    
+    with c0:
+        st.markdown("<div style='padding-top: 8px; font-size: 14px; font-weight: bold; color: #4FA8D1;'>🧭 全站導覽:</div>", unsafe_allow_html=True)
     
     with c1:
-        selected_cat_name = st.selectbox("1️⃣ 選擇專案分類", cat_keys, index=active_cat_idx, key="top_nav_cat")
+        selected_cat_name = st.selectbox("分類", cat_keys, index=active_cat_idx, key="top_nav_cat", label_visibility="collapsed")
     
     pages_in_cat = category_map[selected_cat_name]
     page_options = {f"{p.icon} {p.title}": p for p in pages_in_cat}
@@ -169,15 +171,15 @@ with st.container():
     default_p_idx = active_page_idx if selected_cat_name == cat_keys[active_cat_idx] and active_page_idx < len(page_keys) else 0
     
     with c2:
-        selected_page_name = st.selectbox("2️⃣ 選擇功能頁面", page_keys, index=default_p_idx, key="top_nav_page")
+        selected_page_name = st.selectbox("頁面", page_keys, index=default_p_idx, key="top_nav_page", label_visibility="collapsed")
         
     with c3:
-        st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
         if st.button("🚀 切換頁面", use_container_width=True, type="primary", key="top_nav_btn"):
             target_page = page_options[selected_page_name]
             if target_page != pg:
                 st.switch_page(target_page)
-    st.divider()
+                
+    st.markdown("<hr style='margin: 4px 0 12px 0; border: none; border-top: 1px solid rgba(255,255,255,0.1);'/>", unsafe_allow_html=True)
 
 # Module cache isolation
 for k in list(sys.modules.keys()):
