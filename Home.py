@@ -154,23 +154,29 @@ for c_idx, (cat_name, cat_pages) in enumerate(category_map.items()):
             active_page_idx = p_idx
             break
 
-# Compact Sidebar Category & Page Dropdown Selector
-with st.sidebar:
+# Top Header Global Navigation Bar
+with st.container():
     st.markdown("### 🧭 全站目錄導覽")
     cat_keys = list(category_map.keys())
-    selected_cat_name = st.selectbox("1️⃣ 選擇專案分類", cat_keys, index=active_cat_idx, key="nav_cat_select")
+    c1, c2, c3 = st.columns([4, 5, 2])
+    
+    with c1:
+        selected_cat_name = st.selectbox("1️⃣ 選擇專案分類", cat_keys, index=active_cat_idx, key="top_nav_cat")
     
     pages_in_cat = category_map[selected_cat_name]
     page_options = {f"{p.icon} {p.title}": p for p in pages_in_cat}
     page_keys = list(page_options.keys())
-    
     default_p_idx = active_page_idx if selected_cat_name == cat_keys[active_cat_idx] and active_page_idx < len(page_keys) else 0
-    selected_page_name = st.selectbox("2️⃣ 選擇功能頁面", page_keys, index=default_p_idx, key="nav_page_select")
     
-    if st.button("🚀 切換至該頁面", use_container_width=True, type="primary", key="nav_switch_btn"):
-        target_page = page_options[selected_page_name]
-        if target_page != pg:
-            st.switch_page(target_page)
+    with c2:
+        selected_page_name = st.selectbox("2️⃣ 選擇功能頁面", page_keys, index=default_p_idx, key="top_nav_page")
+        
+    with c3:
+        st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
+        if st.button("🚀 切換頁面", use_container_width=True, type="primary", key="top_nav_btn"):
+            target_page = page_options[selected_page_name]
+            if target_page != pg:
+                st.switch_page(target_page)
     st.divider()
 
 # Module cache isolation
