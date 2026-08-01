@@ -20,8 +20,8 @@ canvas_html = """
         button:hover { background: #7DD3FC; transform: translateY(-1px); }
         button.active { background: #22C55E; color: #FFFFFF; }
         button.danger { background: #EF4444; color: #FFFFFF; }
-        .flap-btn { background: #22C55E; color: #FFFFFF; font-size: 18px; padding: 14px; width: 100%; border-radius: 10px; display: none; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4); }
-        .flap-btn:active { transform: scale(0.98); background: #16A34A; }
+        .flap-btn { background: #22C55E; color: #FFFFFF; font-size: 20px; font-weight: bold; padding: 16px; width: 100%; border-radius: 12px; display: none; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.5); cursor: pointer; border: 2px solid #16A34A; }
+        .flap-btn:active { transform: scale(0.96); background: #15803D; }
         canvas { border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); background-color: #70C5CE; cursor: pointer; outline: none; }
         .info-panel { display: flex; justify-content: space-between; width: 100%; background: #0F172A; padding: 10px 14px; border-radius: 10px; font-size: 13px; border: 1px solid #334155; }
         .metric { display: flex; flex-direction: column; align-items: center; }
@@ -39,7 +39,7 @@ canvas_html = """
 
     <canvas id="flappyCanvas" width="340" height="480" tabindex="0"></canvas>
 
-    <button id="btnFlap" class="flap-btn" onclick="triggerFlap(event)">🚀 點擊起飛 / 跳躍 (FLAP)</button>
+    <button id="btnFlap" class="flap-btn" onmousedown="triggerFlap(event)" ontouchstart="triggerFlap(event)">🚀 點擊起飛 / 跳躍 (FLAP)</button>
 
     <div class="info-panel">
         <div class="metric">
@@ -51,7 +51,7 @@ canvas_html = """
             <div id="valDist" class="metric-val">0 px</div>
         </div>
         <div class="metric">
-            <span>AI 決策動作 Action</span>
+            <span>AI/玩家動作 Action</span>
             <div id="valAction" class="metric-val" style="color:#38BDF8;">HOLD 🪂</div>
         </div>
     </div>
@@ -65,17 +65,18 @@ canvas_html = """
     const WIDTH = 340;
     const HEIGHT = 480;
     
-    // Calibrated physics for standard realistic game speed
+    // Smooth & responsive physics
     const GRAVITY = 0.38;
-    const FLAP_STRENGTH = -6.0;
-    const PIPE_SPEED = 2.0; // Comfortably smooth speed
+    const FLAP_STRENGTH = -7.2; // Generous upward boost
+    const PIPE_SPEED = 2.0;    // Comfortable arcade speed
     const PIPE_WIDTH = 52;
-    const PIPE_GAP = 140;
+    const PIPE_GAP = 145;      // Easy fair gap for players
     const BIRD_RADIUS = 12;
 
     let mode = 'ai'; // 'ai' or 'player'
     let score = 0;
     let gameOver = false;
+    let gameStarted = false; // Prevents auto-falling until first tap in player mode!
 
     let bird = {
         x: 65,
@@ -101,11 +102,13 @@ canvas_html = """
         bird.vy = 0;
         score = 0;
         gameOver = false;
+        gameStarted = (mode === 'ai'); // AI starts immediately, Player waits for first click
         pipes = [];
         spawnPipe(WIDTH + 40);
         spawnPipe(WIDTH + 40 + 190);
         document.getElementById("valScore").innerText = "0";
         document.getElementById("valAction").innerText = mode === 'ai' ? "HOLD 🪂" : "READY 🎮";
+        document.getElementById("valAction").style.color = "#38BDF8";
     }
 
     function setMode(m) {
@@ -158,27 +161,31 @@ canvas_html = """
             e.preventDefault();
             e.stopPropagation();
         }
-        if (!gameOver) {
-            bird.vy = FLAP_STRENGTH;
-            if (mode === 'player') {
-                document.getElementById("valAction").innerText = "FLAP 🚀";
-                document.getElementById("valAction").style.color = "#22C55E";
-            }
-        } else {
+
+        if (gameOver) {
             resetGame();
+            return;
+        }
+
+        if (!gameStarted) {
+            gameStarted = true;
+        }
+
+        bird.vy = FLAP_STRENGTH;
+
+        if (mode === 'player') {
+            document.getElementById("valAction").innerText = "FLAP 🚀";
+            document.getElementById("valAction").style.color = "#22C55E";
         }
     }
 
-    // Touch & Mouse Listener on Canvas
-    canvas.addEventListener("pointerdown", (e) => {
-        if (mode === 'player') {
-            triggerFlap(e);
-        }
-    });
+    // Touch & Pointer Listeners on Canvas & Window
+    canvas.addEventListener("pointerdown", triggerFlap);
+    canvas.addEventListener("touchstart", triggerFlap);
 
     // Keyboard Listeners
     window.addEventListener("keydown", (e) => {
-        if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") {
+        if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW" || e.code === "Enter") {
             if (mode === 'player') {
                 e.preventDefault();
                 triggerFlap(null);
@@ -188,6 +195,12 @@ canvas_html = """
 
     function update() {
         if (gameOver) return;
+
+        // Player waiting for first jump
+        if (mode === 'player' && !gameStarted) {
+            bird.y = HEIGHT / 2 - 20 + Math.sin(Date.now() / 180) * 5;
+            return;
+        }
 
         let action = 0;
         if (mode === 'ai') {
@@ -323,6 +336,21 @@ canvas_html = """
 
         ctx.restore();
 
+        // Get Ready Banner (Player Mode)
+        if (mode === 'player' && !gameStarted && !gameOver) {
+            ctx.fillStyle = "rgba(15, 23, 42, 0.55)";
+            ctx.fillRect(0, HEIGHT / 2 - 50, WIDTH, 70);
+
+            ctx.fillStyle = "#F59E0B";
+            ctx.font = "bold 22px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("READY! 🎯 準備好了嗎？", WIDTH / 2, HEIGHT / 2 - 20);
+
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "14px sans-serif";
+            ctx.fillText("點擊綠色按鈕或畫面開始起飛！", WIDTH / 2, HEIGHT / 2 + 5);
+        }
+
         // Game Over Overlay
         if (gameOver) {
             ctx.fillStyle = "rgba(15, 23, 42, 0.8)";
@@ -336,7 +364,7 @@ canvas_html = """
             ctx.fillStyle = "#FFFFFF";
             ctx.font = "15px sans-serif";
             ctx.fillText("最終成績: " + score + " 個水管", WIDTH / 2, HEIGHT / 2 + 15);
-            ctx.fillText(mode === 'player' ? "點擊綠色按鈕或空白鍵重試" : "點擊「重新開始」按鈕", WIDTH / 2, HEIGHT / 2 + 45);
+            ctx.fillText("點擊綠色按鈕或畫面重試！", WIDTH / 2, HEIGHT / 2 + 45);
         }
     }
 
@@ -363,11 +391,11 @@ with c_right:
     st.markdown("### 🕹️ 遊戲操作指南")
     st.info("""
     **1️⃣ 🤖 AI 大師模式**：
-    - 已調校為標準適中速度，展示 **Dueling Double DQN** 自動拋物線導航連勝！
+    - 展示 **Dueling Double DQN** 自動拋物線導航連勝！
 
-    **2️⃣ 👤 玩家手動模式**：
-    - 切換至手動模式後，畫面下方會出現大型 **`🚀 點擊起飛 / 跳躍 (FLAP)`** 按鈕！
-    - 同時支援 **點擊遊戲畫面**、按下鍵盤 **`Space (空白鍵)`** 或 **`⬆️ 上方向鍵`** 起飛！
+    **2️⃣ 👤 玩家手動模式 (已優化懸停起飛)**：
+    - 切換至手動模式時，小精靈會**懸停在空中等待**，不會一開始就掉落！
+    - 點擊下方大型 **`🚀 點擊起飛 / 跳躍 (FLAP)`** 按鈕、**點擊畫面上任何地方** 或 按下 **`Space 空白鍵`** 即可起飛！
     """)
 
     st.markdown("### 🧠 強化學習 Q-Value 算力邏輯")
