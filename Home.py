@@ -141,21 +141,41 @@ category_map = {
     ]
 }
 
-# Sidebar Dropdown Fast Selector UI
+# Navigation Routing
+pg = st.navigation(category_map, position="hidden")
+
+# Auto-detect current active category and page index
+active_cat_idx = 0
+active_page_idx = 0
+for c_idx, (cat_name, cat_pages) in enumerate(category_map.items()):
+    for p_idx, p in enumerate(cat_pages):
+        if p == pg:
+            active_cat_idx = c_idx
+            active_page_idx = p_idx
+            break
+
+# Compact Sidebar Category & Page Dropdown Selector
 with st.sidebar:
-    st.markdown("### 🔽 下拉快速選單")
-    selected_cat = st.selectbox("1️⃣ 選擇專案分類", list(category_map.keys()), index=0)
-    pages_in_cat = category_map[selected_cat]
-    page_options = {f"{p.icon} {p.title}": p for p in pages_in_cat}
-    selected_page_name = st.selectbox("2️⃣ 選擇功能頁面", list(page_options.keys()), index=0)
+    st.markdown("### 🧭 全站目錄導覽")
+    cat_keys = list(category_map.keys())
+    selected_cat_name = st.selectbox("1️⃣ 選擇專案分類", cat_keys, index=active_cat_idx, key="nav_cat_select")
     
-    if st.button("🚀 切換至該頁面", use_container_width=True, type="primary"):
-        st.switch_page(page_options[selected_page_name])
+    pages_in_cat = category_map[selected_cat_name]
+    page_options = {f"{p.icon} {p.title}": p for p in pages_in_cat}
+    page_keys = list(page_options.keys())
+    
+    default_p_idx = active_page_idx if selected_cat_name == cat_keys[active_cat_idx] and active_page_idx < len(page_keys) else 0
+    selected_page_name = st.selectbox("2️⃣ 選擇功能頁面", page_keys, index=default_p_idx, key="nav_page_select")
+    
+    if st.button("🚀 切換至該頁面", use_container_width=True, type="primary", key="nav_switch_btn"):
+        target_page = page_options[selected_page_name]
+        if target_page != pg:
+            st.switch_page(target_page)
     st.divider()
 
-# Navigation Routing
-pg = st.navigation(category_map, position="sidebar")
+# Module cache isolation
 for k in list(sys.modules.keys()):
     if k in ('config', 'utils') or k.startswith('utils.'):
         sys.modules.pop(k, None)
+
 pg.run()
