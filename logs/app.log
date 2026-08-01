@@ -3,3 +3,13 @@
 2026-08-01 22:48:07 | INFO     | core.bitcoin_api:fetch_mempool_space:54 - 嘗試從 mempool.space 獲取數據
 2026-08-01 22:48:08 | INFO     | core.bitcoin_api:get_blockchain_data:293 - 成功自以下來源獲取區塊鏈數據: mempool.space
 2026-08-01 22:48:08 | INFO     | __main__:main:59 - Successfully fetched network data.
+2026-08-01 22:52:08 | INFO     | utils.logger:configure_logger:57 - 日誌系統初始化完成。日誌等級: INFO, 存檔路徑: logs/app.log
+2026-08-01 22:52:08 | INFO     | __main__:main:40 - Streamlit application initialized.
+2026-08-01 22:52:08 | INFO     | core.bitcoin_api:fetch_mempool_space:54 - 嘗試從 mempool.space 獲取數據
+2026-08-01 22:52:09 | INFO     | core.bitcoin_api:get_blockchain_data:293 - 成功自以下來源獲取區塊鏈數據: mempool.space
+2026-08-01 22:52:09 | INFO     | __main__:main:59 - Successfully fetched network data.
+2026-08-01 22:53:33 | INFO     | utils.logger:configure_logger:57 - 日誌系統初始化完成。日誌等級: INFO, 存檔路徑: logs/app.log
+2026-08-01 22:53:33 | INFO     | __main__:main:40 - Streamlit application initialized.
+2026-08-01 22:53:33 | INFO     | core.bitcoin_api:fetch_mempool_space:54 - 嘗試從 mempool.space 獲取數據
+2026-08-01 22:53:35 | INFO     | core.bitcoin_api:get_blockchain_data:293 - 成功自以下來源獲取區塊鏈數據: mempool.space
+2026-08-01 22:53:35 | INFO     | __main__:main:59 - Successfully fetched network data.

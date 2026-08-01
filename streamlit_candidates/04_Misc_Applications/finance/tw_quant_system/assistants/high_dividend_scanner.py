@@ -1,6 +1,4 @@
 import streamlit as st
-st.title('high_dividend_scanner.py - 自動化展示')
-st.info('這是從原專案腳本自動包裝產生的互動式介面。')
 
 from typing import List, Dict
 from data_loader.yfinance_loader import YFinanceLoader

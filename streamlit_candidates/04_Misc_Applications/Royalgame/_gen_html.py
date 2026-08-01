@@ -1,6 +1,4 @@
 import streamlit as st
-st.title('_gen_html.py - 自動化展示')
-st.info('這是從原專案腳本自動包裝產生的互動式介面。')
 
 # Generates index.html – the complete Phase 3 "Beyond Clash Royale" HTML5 Canvas port
 # Run once: python _gen_html.py

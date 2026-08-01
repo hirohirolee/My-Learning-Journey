@@ -1,6 +1,4 @@
 import streamlit as st
-st.title('database.py - 自動化展示')
-st.info('這是從原專案腳本自動包裝產生的互動式介面。')
 
 import sqlite3
 from sqlite3 import Connection

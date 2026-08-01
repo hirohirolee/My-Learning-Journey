@@ -1,6 +1,4 @@
 import streamlit as st
-st.title('iching_pdf.py - 自動化展示')
-st.info('這是從原專案腳本自動包裝產生的互動式介面。')
 
 """
 易經 64 卦超白話現代生活生存手冊 - PDF 生成器

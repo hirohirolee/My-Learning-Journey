@@ -1,6 +1,4 @@
 import streamlit as st
-st.title('charts.py - 自動化展示')
-st.info('這是從原專案腳本自動包裝產生的互動式介面。')
 
 import plotly.graph_objects as go
 import plotly.express as px

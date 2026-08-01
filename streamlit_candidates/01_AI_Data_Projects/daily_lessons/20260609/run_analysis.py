@@ -1,6 +1,4 @@
 import streamlit as st
-st.title('run_analysis.py - 自動化展示')
-st.info('這是從原專案腳本自動包裝產生的互動式介面。')
 
 import os
 import pandas as pd

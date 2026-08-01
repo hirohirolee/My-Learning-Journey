@@ -1,6 +1,4 @@
 import streamlit as st
-st.title('data_provider.py - 自動化展示')
-st.info('這是從原專案腳本自動包裝產生的互動式介面。')
 
 """
 data_provider.py - The Odds API 資料提供者

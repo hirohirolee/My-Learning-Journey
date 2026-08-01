@@ -1,11 +1,16 @@
-import streamlit as st
-st.title('config.py - 自動化展示')
-st.info('這是從原專案腳本自動包裝產生的互動式介面。')
-
 import os
 from dataclasses import dataclass
 from typing import Dict, List
-from pydantic_settings import BaseSettings, SettingsConfigDict
+
+try:
+    from pydantic_settings import BaseSettings, SettingsConfigDict
+except ImportError:
+    class BaseSettings:
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+    def SettingsConfigDict(*args, **kwargs):
+        return {}
 
 @dataclass(frozen=True)
 class ASICSpecs:
