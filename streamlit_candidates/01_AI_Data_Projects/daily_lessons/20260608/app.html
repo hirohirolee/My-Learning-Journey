@@ -1,0 +1,2865 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>十大機器學習演算法：全方位動態學習報告</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Face API JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+            background-color: #020617; /* slate-950 */
+            color: #f8fafc; /* slate-50 */
+        }
+        code, pre, .font-mono {
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+        .backdrop-blur-md {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+        @media print {
+            .no-print, aside, button, input[type="range"], .fixed {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #0f172a !important;
+            }
+            main {
+                margin-left: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+            .print-container {
+                background: #ffffff !important;
+                box-shadow: none !important;
+            }
+            .print-header {
+                background: #f8fafc !important;
+                border: 1px solid #e2e8f0 !important;
+                border-bottom: 3px solid #cbd5e1 !important;
+                color: #0f172a !important;
+                padding: 1.5rem !important;
+                border-radius: 12px !important;
+            }
+            .print-header h1, .print-header p, .print-header span {
+                color: #0f172a !important;
+            }
+            article, section {
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                color: #0f172a !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                margin-bottom: 2rem !important;
+                padding: 1.5rem !important;
+                border-radius: 12px !important;
+            }
+            h2, h3, h4, h5 {
+                color: #0f172a !important;
+                border-bottom-color: #cbd5e1 !important;
+            }
+            p, span, li, td {
+                color: #334155 !important;
+            }
+            .bg-slate-950, .bg-slate-900, .bg-slate-900/20, .bg-slate-900/40, .bg-slate-950/60 {
+                background: #f8fafc !important;
+                border-color: #e2e8f0 !important;
+            }
+            table { width: 100% !important; border-collapse: collapse !important; }
+            tr { border-bottom: 1px solid #e2e8f0 !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+            th { background: #f1f5f9 !important; color: #0f172a !important; border-bottom: 2px solid #cbd5e1 !important; }
+        }
+    </style>
+</head>
+<body class="flex min-h-screen selection:bg-emerald-500/30 selection:text-emerald-400">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-80 bg-slate-900 border-r border-slate-800 fixed top-0 bottom-0 left-0 p-6 overflow-y-auto hidden lg:block z-30 no-print shadow-2xl">
+        <div class="mb-8 border-b border-emerald-500/30 pb-4">
+            <h2 class="text-xl font-black tracking-wider text-white flex items-center gap-2 mb-1">
+                <i data-lucide="book-open" class="text-emerald-400"></i> ML 演算法導覽
+            </h2>
+            <span class="text-[10px] uppercase font-bold tracking-widest text-slate-500 block">
+                NCHU AI Training 互動教材
+            </span>
+        </div>
+
+        <nav class="space-y-1 mt-6" id="sidebar-menu">
+            <!-- Dynamic sidebar items -->
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 lg:ml-80 p-6 md:p-10 max-w-5xl mx-auto print-container">
+        
+        <!-- Hero Header -->
+        <header class="relative bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl mb-10 overflow-hidden print-header">
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-indigo-400 block mb-1">
+                        NCHU AI TRAINING班 專屬互動教材
+                    </span>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-wide leading-tight">
+                        十大機器學習演算法：全方位動態學習報告
+                    </h1>
+                    <p class="text-slate-400 text-xs md:text-sm mt-2 max-w-xl leading-relaxed">
+                        結合 client-side <strong>Face API 臉部表情偵測</strong> 與互動式數學沙盒，分析你的讀書專注力與困惑度，由 AI 助教為你動態解說演算法精髓！
+                    </p>
+                </div>
+                <button onclick="window.print()" class="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition duration-150 no-print shadow-lg shadow-emerald-950/30">
+                    <i data-lucide="printer" class="w-4 h-4"></i> 一鍵導出 PDF / 列印
+                </button>
+            </div>
+        </header>
+
+        <!-- CRISP-DM Filter Tabs -->
+        <section class="mb-10 no-print">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-3 flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-indigo-500 rounded-full"></span> 實戰任務快速篩選器 (CRISP-DM 專題型態)
+            </h3>
+            <div class="flex flex-wrap gap-2" id="filter-tabs">
+                <!-- Tab items populated via JS -->
+            </div>
+        </section>
+
+        <!-- Content Area -->
+        <div class="space-y-12" id="content-container">
+            
+            <!-- 📌 Core Paradigms -->
+            <article id="intro" class="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 md:p-8 space-y-4">
+                <h2 class="text-xl md:text-2xl font-bold text-white border-b border-slate-800 pb-3 flex items-center gap-2">
+                    📌 機器學習的核心範式 (Core Paradigms)
+                </h2>
+                <p class="text-slate-300 text-sm leading-relaxed text-justify">
+                    機器學習（Machine Learning, ML）是數據科學與人工智慧發展的基石。其本質在於開發出能從過往經驗中自我修正、學習規律的演算法，而無須依賴工程師寫死（Hard-coded）的邏輯規則。在進入各個演算法深度探討前，我們必須清晰界定以下三大核心學習架構：
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div class="bg-slate-900 border border-slate-800/80 p-4 rounded-xl space-y-2">
+                        <h4 class="text-blue-400 font-bold text-sm">1. 監督式學習 (Supervised)</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">資料庫中同時包含輸入特徵與標籤 (答案)。尋找映射函數，預測連續變數的迴歸任務，與預測離散類別的分類任務。</p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800/80 p-4 rounded-xl space-y-2">
+                        <h4 class="text-purple-400 font-bold text-sm">2. 非監督式學習 (Unsupervised)</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">資料不具備標籤，模型自主探索結構。主要用於客戶特徵的「分群任務」與降低維度複雜度的「降維任務」。</p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800/80 p-4 rounded-xl space-y-2">
+                        <h4 class="text-emerald-400 font-bold text-sm">3. 強化學習 (Reinforcement)</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">智能體 (Agent) 與環境互動，透過獲取即時的獎勵或懲罰機制，逐步迭代出長期的最優決策鏈。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 1. Linear Regression -->
+            <article id="algo1" class="bg-slate-900/20 border border-slate-855 rounded-2xl p-6 space-y-4 algo-section" data-category="numbers">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-bold text-blue-400 flex items-center gap-2">
+                        1. 線性迴歸 (Linear Regression)
+                    </h3>
+                    <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded-full border border-blue-500/20">監督式</span>
+                </div>
+                <p class="text-slate-355 text-xs leading-relaxed text-justify">
+                    線性迴歸是歷史最悠久、同時也是產業界用來建立基礎建模（Baseline Model）的首選工具。其基本假設為特徵與預測目標之間存在連續的線性映射關係，並透過最小化殘差平方和 (OLS) 來尋找最佳擬合參數。
+                </p>
+                <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl font-mono text-xs text-blue-400 font-bold">
+                    數學模型：Y = β₀ + β₁X₁ + β₂X₂ + ... + ε
+                </div>
+
+                <!-- Linear Regression Widget -->
+                <div class="no-print bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg max-w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h4 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                                📊 線性迴歸互動式沙盒 (Sandbox)
+                            </h4>
+                            <p class="text-slate-400 text-[10px] mt-0.5">在網格中點擊任意位置放置資料點，系統將自動擬合最佳趨勢線。</p>
+                        </div>
+                        <button onclick="lrReset()" class="flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 清空點
+                        </button>
+                    </div>
+                    <div class="relative border border-slate-700 rounded-xl overflow-hidden bg-slate-950 flex justify-center">
+                        <canvas id="lrCanvas" width="500" height="320" class="cursor-crosshair w-full block max-w-full bg-slate-950"></canvas>
+                        <div id="lrPlaceholder" class="absolute inset-0 flex items-center justify-center pointer-events-none bg-slate-950/60 backdrop-blur-[1px]">
+                            <p class="text-slate-455 text-xs flex items-center gap-1.5"><i data-lucide="help-circle" class="w-4 h-4 text-blue-400"></i> 請點擊畫布放置至少 2 個數據點</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4 text-center">
+                        <div class="bg-slate-950 border border-slate-850 p-2.5 rounded-xl">
+                            <span class="text-slate-500 text-[10px] block uppercase">迴歸方程式</span>
+                            <span id="lrEq" class="text-emerald-400 font-mono font-bold text-sm block mt-0.5">y = 0x + 0</span>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-850 p-2.5 rounded-xl">
+                            <span class="text-slate-500 text-[10px] block uppercase">決定係數 R²</span>
+                            <span id="lrR2" class="text-blue-400 font-mono font-bold text-sm block mt-0.5">0.0000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl space-y-1">
+                    <h5 class="text-xs font-bold text-white">💡 實務應用案例：房地產自動估價系統</h5>
+                    <p class="text-slate-400 text-xs leading-relaxed">
+                        利用房屋的建坪、屋齡、公設比等多元特徵作為自變數 X，歷史實價登錄金額作為應變數 Y。透過多元線性迴歸模型，系統可在新物件上架的一瞬間給予客觀的合理市價估算。
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-emerald-950/20 border border-emerald-900/30 p-3 rounded-xl">
+                      <span class="text-emerald-400 text-xs font-bold block">✓ 優點 (Pros)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">計算速度快，對大型數據集的即時預測表現出色，且各特徵係數具有強烈的業務解釋性。</p>
+                    </div>
+                    <div class="bg-rose-950/20 border border-rose-900/30 p-3 rounded-xl">
+                      <span class="text-rose-455 text-xs font-bold block">✗ 缺點 (Cons)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">容易受極端異常值 (Outliers) 干擾，且無法捕捉現實世界中複雜的非線性關係。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 2. Logistic Regression -->
+            <article id="algo2" class="bg-slate-900/20 border border-slate-855 rounded-2xl p-6 space-y-4 algo-section" data-category="labels">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-bold text-emerald-400 flex items-center gap-2">
+                        2. 邏輯迴歸 (Logistic Regression)
+                    </h3>
+                    <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded-full border border-blue-500/20">監督式</span>
+                </div>
+                <p class="text-slate-355 text-xs leading-relaxed text-justify">
+                    雖然名為迴歸，但邏輯迴歸實質上為二元分類系統的核心骨幹。它將線性迴歸的連續預測值，透過 Sigmoid 函數投射到 0 到 1 之間的機率區間，以劃分出清晰的分類邊界。
+                </p>
+                <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl font-mono text-xs text-emerald-400 font-bold">
+                    Sigmoid 函數：P(Y=1|X) = 1 / (1 + e^-(wX + b))
+                </div>
+
+                <!-- Logistic Regression Widget -->
+                <div class="no-print bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg max-w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h4 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                                🛑 邏輯迴歸邊界二分沙盒 (Sandbox)
+                            </h4>
+                            <p class="text-slate-400 text-[10px] mt-0.5">添加不同類型的點，觀察分類邊界和 Sigmoid 機率分布的動態更新。</p>
+                        </div>
+                        <button onclick="logrReset()" class="flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 清空點
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-center gap-6 mb-4">
+                        <span class="text-xs font-semibold text-slate-300">選擇放置類別：</span>
+                        <div class="flex items-center gap-4">
+                            <button id="btnClass0" onclick="logrSetClass(0)" class="px-2.5 py-1 bg-orange-500/20 text-orange-400 border border-orange-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span> 類別 0
+                            </button>
+                            <button id="btnClass1" onclick="logrSetClass(1)" class="px-2.5 py-1 bg-slate-855 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800">
+                                <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> 類別 1
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative border border-slate-700 rounded-xl overflow-hidden bg-slate-950 flex justify-center">
+                        <canvas id="logrCanvas" width="500" height="320" class="cursor-crosshair w-full block max-w-full bg-slate-950"></canvas>
+                        <div id="logrPlaceholder" class="absolute inset-0 flex items-center justify-center pointer-events-none bg-slate-950/60 backdrop-blur-[1px]">
+                            <p class="text-slate-455 text-xs flex items-center gap-1.5"><i data-lucide="help-circle" class="w-4 h-4 text-blue-400"></i> 請在畫布兩側點擊，放置兩種顏色類別的點</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4 text-center">
+                        <div class="bg-slate-950 border border-slate-850 p-2.5 rounded-xl">
+                            <span class="text-slate-500 text-[10px] block uppercase">梯度下降疊代次數</span>
+                            <span id="logrSteps" class="text-emerald-400 font-mono font-bold text-sm block mt-0.5">阻斷</span>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-850 p-2.5 rounded-xl">
+                            <span class="text-slate-500 text-[10px] block uppercase">交叉熵損失值</span>
+                            <span id="logrLoss" class="text-blue-400 font-mono font-bold text-sm block mt-0.5">0.00000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl space-y-1">
+                    <h5 class="text-xs font-bold text-white">💡 實務應用案例：信用卡欺詐與信用违約預測</h5>
+                    <p class="text-slate-400 text-xs leading-relaxed">
+                        分析交易金額、交易地點、刷卡頻率等特徵，輸出 0 到 1 之間的數值代表欺詐的機率。銀行得藉此即時發出阻斷訊號。
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-emerald-950/20 border border-emerald-900/30 p-3 rounded-xl">
+                      <span class="text-emerald-400 text-xs font-bold block">✓ 優點 (Pros)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">輸出具有明確的機率物理意義，便於配合特徵權重進行業務決策與風險評估。</p>
+                    </div>
+                    <div class="bg-rose-950/20 border border-rose-900/30 p-3 rounded-xl">
+                      <span class="text-rose-455 text-xs font-bold block">✗ 缺點 (Cons)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">其本質為線性邊界分割，在處理複雜、高度非線性交互作用的資料時表現欠佳。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 3. Decision Tree -->
+            <article id="algo3" class="bg-slate-900/20 border border-slate-855 rounded-2xl p-6 space-y-4 algo-section" data-category="labels">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-bold text-purple-400 flex items-center gap-2">
+                        3. 決策樹 (Decision Tree)
+                    </h3>
+                    <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded-full border border-blue-500/20">監督式</span>
+                </div>
+                <p class="text-slate-355 text-xs leading-relaxed text-justify">
+                    決策樹運用訊息增益（如不純度 Gini）作為指標，像做心理測驗般建立一連串條件分支篩選。其結構完全透明，是最經典的「白箱」演算法。
+                </p>
+                <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl font-mono text-xs text-purple-400 font-bold">
+                    不純度計算 (Gini Index)：Gini(D) = 1 - ∑ p_i^2
+                </div>
+
+                <!-- Decision Tree Widget -->
+                <div class="no-print bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg max-w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h4 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                                🌿 決策樹空間分割沙盒 (Sandbox)
+                            </h4>
+                            <p class="text-slate-400 text-[10px] mt-0.5">點擊放置不同類別的點，觀察樹節點如何進行分割以極小化基尼係數。</p>
+                        </div>
+                        <button onclick="dtReset()" class="flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 清空點
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-center gap-6 mb-4">
+                        <span class="text-xs font-semibold text-slate-300">選擇類別：</span>
+                        <div class="flex items-center gap-4">
+                            <button id="dtBtn0" onclick="dtSetClass(0)" class="px-2.5 py-1 bg-orange-500/20 text-orange-400 border border-orange-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span> 類別 0
+                            </button>
+                            <button id="dtBtn1" onclick="dtSetClass(1)" class="px-2.5 py-1 bg-slate-850 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800">
+                                <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> 類別 1
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative border border-slate-700 rounded-xl overflow-hidden bg-slate-950 flex justify-center">
+                        <canvas id="dtCanvas" width="500" height="320" class="cursor-crosshair w-full block max-w-full bg-slate-950"></canvas>
+                        <div id="dtPlaceholder" class="absolute inset-0 flex items-center justify-center pointer-events-none bg-slate-950/60 backdrop-blur-[1px]">
+                            <p class="text-slate-455 text-xs flex items-center gap-1.5"><i data-lucide="help-circle" class="w-4 h-4 text-blue-400"></i> 請在畫布兩側點擊，放置兩種顏色類別的點</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4 text-center">
+                        <div class="bg-slate-950 border border-slate-850 p-2.5 rounded-xl">
+                            <span class="text-slate-500 text-[10px] block uppercase">最佳切割規則</span>
+                            <span id="dtSplitRule" class="text-emerald-400 font-mono font-bold text-sm block mt-0.5">無分割</span>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-850 p-2.5 rounded-xl">
+                            <span class="text-slate-500 text-[10px] block uppercase">分割後基尼係數</span>
+                            <span id="dtGini" class="text-blue-400 font-mono font-bold text-sm block mt-0.5">0.5000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl space-y-1">
+                    <h5 class="text-xs font-bold text-white">💡 實務應用案例：銀行核貸信用審查系統</h5>
+                    <p class="text-slate-400 text-xs leading-relaxed">
+                        「年收入是否大於 100 萬？」➡️「是」➡️「是否有債務拖欠？」➡️「否」➡️「核發貸款」。決策樹的規則能被稽核與法遵部門輕易理解並導入系統。
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-emerald-950/20 border border-emerald-900/30 p-3 rounded-xl">
+                      <span class="text-emerald-400 text-xs font-bold block">✓ 優點 (Pros)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">不需對特徵欄位做繁瑣的標準化處理，規則可視化強，解釋性極佳。</p>
+                    </div>
+                    <div class="bg-rose-950/20 border border-rose-900/30 p-3 rounded-xl">
+                      <span class="text-rose-455 text-xs font-bold block">✗ 缺點 (Cons)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">樹木容易生長過深，導致模型死背特徵（過擬合），且對微小的訓練資料變動極為敏感。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 4. Random Forest -->
+            <article id="algo4" class="bg-slate-900/20 border border-slate-855 rounded-2xl p-6 space-y-4 algo-section" data-category="labels">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-bold text-indigo-400 flex items-center gap-2">
+                        4. 隨機森林 (Random Forest)
+                    </h3>
+                    <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded-full border border-blue-500/20">監督式</span>
+                </div>
+                <p class="text-slate-355 text-xs leading-relaxed text-justify">
+                    隨機森林是集成學習 (Ensemble) 的經典作。它隨機抽取數據樣本和特徵，建立數百棵獨立的決策樹進行多數決投票，大幅降低了單棵樹容易過擬合的缺點。
+                </p>
+                <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl font-mono text-xs text-indigo-400 font-bold">
+                    集成多數決 (Ensemble Voting): y = mode{ T_1(x), T_2(x), ..., T_B(x) }
+                </div>
+
+                <!-- Random Forest Widget -->
+                <div class="no-print bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg max-w-full">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h4 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                                🌲 隨機森林集成多數決沙盒 (Sandbox)
+                            </h4>
+                            <p class="text-slate-400 text-[10px] mt-0.5">放置不同的點。系統會訓練 5 棵隨機子樹，並用多數決投票融合成更平滑、穩定的決策邊界。</p>
+                        </div>
+                        <button onclick="rfReset()" class="flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 清空點
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-center gap-6 mb-4">
+                        <span class="text-xs font-semibold text-slate-300">選擇類別：</span>
+                        <div class="flex items-center gap-4">
+                            <button id="rfBtn0" onclick="rfSetClass(0)" class="px-2.5 py-1 bg-orange-500/20 text-orange-400 border border-orange-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span> 類別 0
+                            </button>
+                            <button id="rfBtn1" onclick="rfSetClass(1)" class="px-2.5 py-1 bg-slate-850 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800">
+                                <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> 類別 1
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative border border-slate-700 rounded-xl overflow-hidden bg-slate-950 flex justify-center">
+                        <canvas id="rfCanvas" width="500" height="320" class="cursor-crosshair w-full block max-w-full bg-slate-950"></canvas>
+                        <div id="rfPlaceholder" class="absolute inset-0 flex items-center justify-center pointer-events-none bg-slate-950/60 backdrop-blur-[1px]">
+                            <p class="text-slate-455 text-xs flex items-center gap-1.5"><i data-lucide="help-circle" class="w-4 h-4 text-blue-400"></i> 請在畫布兩側點擊，放置兩種顏色類別的點</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4 text-center">
+                        <div class="bg-slate-950 border border-slate-850 p-2.5 rounded-xl">
+                            <span class="text-slate-500 text-[10px] block uppercase">森林子樹數量</span>
+                            <span class="text-emerald-400 font-mono font-bold text-sm block mt-0.5">5 棵決策樹</span>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-850 p-2.5 rounded-xl">
+                            <span class="text-slate-500 text-[10px] block uppercase">投票表決狀態</span>
+                            <span id="rfStatus" class="text-blue-400 font-mono font-bold text-sm block mt-0.5">等待數據點</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl space-y-1">
+                    <h5 class="text-xs font-bold text-white">💡 實務應用案例：電商顧客流失預測</h5>
+                    <p class="text-slate-400 text-xs leading-relaxed">
+                      結合用戶點擊流、消費金額、活躍天數等數十種複雜特徵，預測用戶是否即將流失，並輸出特徵重要性評估，協助營運團隊找出核心流失因素。
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-emerald-950/20 border border-emerald-900/30 p-3 rounded-xl">
+                      <span class="text-emerald-400 text-xs font-bold block">✓ 優點 (Pros)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">泛化能力極強，能有效避免過擬合，且能直接評估每個特徵對預測目標的重要性。</p>
+                    </div>
+                    <div class="bg-rose-950/20 border border-rose-900/30 p-3 rounded-xl">
+                      <span class="text-rose-455 text-xs font-bold block">✗ 缺點 (Cons)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">由於包含大量樹木，計算與儲存資源消耗較大，且難以用單一規則簡單解釋（黑箱傾向）。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 5. SVM -->
+            <article id="algo5" class="bg-slate-900/20 border border-slate-855 rounded-2xl p-6 space-y-4 algo-section" data-category="labels">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-bold text-cyan-400 flex items-center gap-2">
+                        5. 支援向量機 (Support Vector Machine, SVM)
+                    </h3>
+                    <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded-full border border-blue-500/20">監督式</span>
+                </div>
+                <p class="text-slate-355 text-xs leading-relaxed text-justify">
+                    SVM 的目標是尋找一個具有最大安全邊際 (Margin) 的超平面來切分資料。若資料混雜，SVM 可以使用核技巧 (Kernel Trick) 將資料拉高至高維度，實現完美分類。
+                </p>
+                <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl font-mono text-xs text-cyan-400 font-bold">
+                    最大化間距：Max Margin = 2 / ||w|| 滿足 y_i(wᵀx_i + b) ≥ 1
+                </div>
+
+                <!-- SVM Widget -->
+                <div class="no-print bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg max-w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h4 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                                ⚔️ SVM 最大間距邊界沙盒 (Sandbox)
+                            </h4>
+                            <p class="text-slate-400 text-[10px] mt-0.5">點擊放置點。系統將尋找「最大邊際」決策超平面，並圈出核心的支援向量（Support Vectors）。</p>
+                        </div>
+                        <button onclick="svmReset()" class="flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 清空點
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-center gap-6 mb-4">
+                        <span class="text-xs font-semibold text-slate-300">選擇類別：</span>
+                        <div class="flex items-center gap-4">
+                            <button id="svmBtn0" onclick="svmSetClass(0)" class="px-2.5 py-1 bg-orange-500/20 text-orange-400 border border-orange-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span> 類別 0
+                            </button>
+                            <button id="svmBtn1" onclick="svmSetClass(1)" class="px-2.5 py-1 bg-slate-850 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800">
+                                <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> 類別 1
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative border border-slate-700 rounded-xl overflow-hidden bg-slate-950 flex justify-center">
+                        <canvas id="svmCanvas" width="500" height="320" class="cursor-crosshair w-full block max-w-full bg-slate-950"></canvas>
+                        <div id="svmPlaceholder" class="absolute inset-0 flex items-center justify-center pointer-events-none bg-slate-950/60 backdrop-blur-[1px]">
+                            <p class="text-slate-455 text-xs flex items-center gap-1.5"><i data-lucide="help-circle" class="w-4 h-4 text-blue-400"></i> 請在畫布兩側點擊，放置兩種顏色類別的點</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4 text-center">
+                        <div class="bg-slate-950 border border-slate-855 p-2.5 rounded-xl">
+                            <span class="text-slate-500 text-[10px] block uppercase">安全間距 (Margin)</span>
+                            <span id="svmMargin" class="text-emerald-400 font-mono font-bold text-sm block mt-0.5">0.00</span>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-855 p-2.5 rounded-xl">
+                            <span class="text-slate-500 text-[10px] block uppercase">支援向量個數</span>
+                            <span id="svmSVCount" class="text-blue-400 font-mono font-bold text-sm block mt-0.5">0 個</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl space-y-1">
+                    <h5 class="text-xs font-bold text-white">💡 實務應用案例：醫學影像組織特徵診斷與分類</h5>
+                    <p class="text-slate-400 text-xs leading-relaxed">
+                        在基因特徵與醫學磁振造影 (MRI) 中，資料維度極高但樣本數相對有限。SVM 在此類小樣本高維度分類任務中具有極佳的數學穩定度。
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-emerald-950/20 border border-emerald-900/30 p-3 rounded-xl">
+                      <span class="text-emerald-400 text-xs font-bold block">✓ 優點 (Pros)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">在高維空間中依然非常有效，且有核技巧可處理複雜的非線性關係，能避免局部極值。</p>
+                    </div>
+                    <div class="bg-rose-950/20 border border-rose-900/30 p-3 rounded-xl">
+                      <span class="text-rose-455 text-xs font-bold block">✗ 缺點 (Cons)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">對大規模樣本的計算開銷十分龐大，且核函數及參數的調校極為困難。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 6. KNN -->
+            <article id="algo6" class="bg-slate-900/20 border border-slate-855 rounded-2xl p-6 space-y-4 algo-section" data-category="labels">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-bold text-pink-400 flex items-center gap-2">
+                        6. K-最近鄰 (K-Nearest Neighbors, KNN)
+                    </h3>
+                    <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded-full border border-blue-500/20">監督式</span>
+                </div>
+                <p class="text-slate-355 text-xs leading-relaxed text-justify">
+                    KNN 跨越了時間空間，直接以距離聚類。新資料進來時，不需前期模型訓練，直接計算與所有點的距離，看最近的 K 個鄰居誰佔多數，就決定自己屬於哪一類。
+                </p>
+                <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl font-mono text-xs text-pink-400 font-bold">
+                    歐氏距離：d(p, q) = √ ∑ (p_i - q_i)^2
+                </div>
+
+                <!-- KNN Widget -->
+                <div class="no-print bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg max-w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h4 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                                📍 KNN 鄰近決策互動式沙盒 (Sandbox)
+                            </h4>
+                            <p class="text-slate-400 text-[10px] mt-0.5"><strong>一般點擊：</strong>放置點。<strong>Shift+點擊 / 拖曳：</strong>移動定位雙環靶心。</p>
+                        </div>
+                        <button onclick="knnReset()" class="flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 清空點
+                        </button>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 bg-slate-950 border border-slate-800/80 p-3 rounded-xl">
+                        <div class="flex items-center gap-3 w-full sm:w-auto">
+                            <span class="text-xs font-semibold text-slate-300">新增類別：</span>
+                            <div class="flex gap-2">
+                                <button onclick="knnSetClass(0)" id="knnBtn0" class="w-6 h-6 rounded-full bg-blue-400 border-2 border-white scale-110 shadow-lg"></button>
+                                <button onclick="knnSetClass(1)" id="knnBtn1" class="w-6 h-6 rounded-full bg-orange-500 border border-transparent opacity-60 hover:opacity-100"></button>
+                                <button onclick="knnSetClass(2)" id="knnBtn2" class="w-6 h-6 rounded-full bg-purple-500 border border-transparent opacity-60 hover:opacity-100"></button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 w-full sm:w-auto">
+                            <span class="text-xs font-semibold text-slate-300">K 值: <span id="knnKValueText">3</span></span>
+                            <input type="range" id="knnKValue" min="1" max="9" value="3" oninput="knnChangeK(this.value)" class="w-24 h-1 bg-slate-850 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                        </div>
+                    </div>
+                    <div class="relative border border-slate-700 rounded-xl overflow-hidden bg-slate-950 flex justify-center">
+                        <canvas id="knnCanvas" width="500" height="320" class="cursor-crosshair w-full block max-w-full bg-slate-950"></canvas>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-2 text-center">
+                            <span class="text-slate-500 text-[10px] block uppercase">鄰居投票計數</span>
+                            <span id="knnVotes" class="text-slate-300 font-mono font-bold text-xs block mt-1">藍色: 0, 橘色: 0, 紫色: 0</span>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-2 text-center">
+                            <span class="text-slate-500 text-[10px] block uppercase">預測標籤</span>
+                            <span id="knnPrediction" class="font-bold text-xs block mt-1 text-slate-400">未知</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-855 p-4 rounded-xl space-y-1">
+                    <h5 class="text-xs font-bold text-white">💡 實務應用案例：影音平台個性化相似推薦</h5>
+                    <p class="text-slate-400 text-xs leading-relaxed">
+                        將用戶喜好向量化，找出特徵空間中最鄰近的 K 個相似用戶，並將他們喜愛的影音內容推薦給目標用戶。
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-emerald-950/20 border border-emerald-900/30 p-3 rounded-xl">
+                      <span class="text-emerald-400 text-xs font-bold block">✓ 優點 (Pros)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">極其簡單直觀，完全不需要前期訓練時間 (Lazy Learner)，非常適合在線即時插入新點。</p>
+                    </div>
+                    <div class="bg-rose-950/20 border border-rose-900/30 p-3 rounded-xl">
+                      <span class="text-rose-455 text-xs font-bold block">✗ 缺點 (Cons)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">預測時需要計算與所有樣本的距離，計算量極大，且在高維空間中容易受到維度災難影響。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 7. Naive Bayes -->
+            <article id="algo7" class="bg-slate-900/20 border border-slate-855 rounded-2xl p-6 space-y-4 algo-section" data-category="labels">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-bold text-amber-500 flex items-center gap-2">
+                        7. 單純貝氏 (Naive Bayes)
+                    </h3>
+                    <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded-full border border-blue-500/20">監督式</span>
+                </div>
+                <p class="text-slate-355 text-xs leading-relaxed text-justify">
+                    單純貝氏基於貝氏定理，並「單純」地假設所有特徵在給定類別下皆互相獨立。它能在大規模文本中，光速計算出分類的後驗機率分佈，效率極佳。
+                </p>
+                <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl font-mono text-xs text-amber-500 font-bold">
+                    貝氏定理：P(C|X) = [P(X|C) · P(C)] / P(X)
+                </div>
+
+                <!-- Naive Bayes Widget -->
+                <div class="no-print bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg max-w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h4 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                                ✉️ 單純貝氏高斯機率場沙盒 (Sandbox)
+                            </h4>
+                            <p class="text-slate-400 text-[10px] mt-0.5">放置資料點。系統將利用獨立的高斯常態分佈，擬合出非線性的貝氏機率密度劃分圖。</p>
+                        </div>
+                        <button onclick="nbReset()" class="flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 清空點
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-center gap-6 mb-4">
+                        <span class="text-xs font-semibold text-slate-300">選擇類別：</span>
+                        <div class="flex items-center gap-4">
+                            <button id="nbBtn0" onclick="nbSetClass(0)" class="px-2.5 py-1 bg-orange-500/20 text-orange-400 border border-orange-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span> 類別 0
+                            </button>
+                            <button id="nbBtn1" onclick="nbSetClass(1)" class="px-2.5 py-1 bg-slate-850 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800">
+                                <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> 類別 1
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative border border-slate-700 rounded-xl overflow-hidden bg-slate-950 flex justify-center">
+                        <canvas id="nbCanvas" width="500" height="320" class="cursor-crosshair w-full block max-w-full bg-slate-950"></canvas>
+                        <div id="nbPlaceholder" class="absolute inset-0 flex items-center justify-center pointer-events-none bg-slate-950/60 backdrop-blur-[1px]">
+                            <p class="text-slate-455 text-xs flex items-center gap-1.5"><i data-lucide="help-circle" class="w-4 h-4 text-blue-400"></i> 請在畫布兩側點擊，放置兩種顏色類別的點</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4 text-center">
+                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-2.5">
+                            <span class="text-slate-500 text-[10px] block uppercase">模型特徵分佈</span>
+                            <span class="text-emerald-400 font-mono font-bold text-sm block mt-0.5">高斯獨立機率 (Gaussian)</span>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-2.5">
+                            <span class="text-slate-500 text-[10px] block uppercase">條件獨立性假設</span>
+                            <span class="text-blue-400 font-mono font-bold text-sm block mt-0.5">P(X,Y|C) = P(X|C)P(Y|C)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl space-y-1">
+                    <h5 class="text-xs font-bold text-white">💡 實務應用案例：電子郵件系統中的垃圾郵件過濾</h5>
+                    <p class="text-slate-400 text-xs leading-relaxed">
+                        計算特定關鍵詞（如「免費」、「中獎」）在垃圾郵件中出現的機率。一旦乘積後的後驗機率超過閥值，系統便自動將信件歸類為垃圾信。
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-emerald-950/20 border border-emerald-900/30 p-3 rounded-xl">
+                      <span class="text-emerald-400 text-xs font-bold block">✓ 優點 (Pros)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">計算開銷極小，能以極快速度處理海量文本數據，且非常適合小規模數據的建模。</p>
+                    </div>
+                    <div class="bg-rose-950/20 border border-rose-900/30 p-3 rounded-xl">
+                      <span class="text-rose-455 text-xs font-bold block">✗ 缺點 (Cons)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">其前提假設「特徵之間完全獨立」在真實世界中幾乎不成立，限制了特定複雜場景下的精度。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 8. K-Means -->
+            <article id="algo8" class="bg-slate-900/20 border border-slate-855 rounded-2xl p-6 space-y-4 algo-section" data-category="clustering">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-bold text-fuchsia-400 flex items-center gap-2">
+                        8. K-Means 分群 (K-Means Clustering)
+                    </h3>
+                    <span class="px-2.5 py-0.5 bg-fuchsia-500/10 text-fuchsia-400 text-[10px] font-bold rounded-full border border-fuchsia-500/20">非監督式</span>
+                </div>
+                <p class="text-slate-355 text-xs leading-relaxed text-justify">
+                    在沒有任何答案標籤的狀況下，K-Means 藉由設定群體數 K，讓電腦不斷更新群心，利用歐氏距離最小化，將數據自動聚集、黏合為 K 個大類別。
+                </p>
+                <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl font-mono text-xs text-fuchsia-400 font-bold">
+                    {"最小化內誤差 (Objective): J = ∑_{i=1}^K ∑_{x ∈ S_i} ||x - μ_i||^2"}
+                </div>
+
+                <!-- KMeans Widget -->
+                <div class="no-print bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg max-w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h4 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                                🧲 K-Means 自主分群沙盒 (Sandbox)
+                            </h4>
+                            <p class="text-slate-400 text-[10px] mt-0.5">點擊畫布放置資料點，選擇 K 值並點擊「單步迭代」或「一鍵收斂」觀察群心移動。</p>
+                        </div>
+                        <button onclick="kmReset()" class="flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] transition">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> 重設點
+                        </button>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 bg-slate-950 border border-slate-800/80 p-3 rounded-xl">
+                        <div class="flex items-center gap-3 w-full sm:w-auto">
+                            <span class="text-xs font-semibold text-slate-300">設定 K 值: <span id="kmKValueText">3</span></span>
+                            <input type="range" id="kmKValue" min="2" max="5" value="3" oninput="kmChangeK(this.value)" class="w-24 h-1 bg-slate-850 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto justify-end">
+                            <button onclick="kmInitCentroids()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-[10px] font-bold transition flex items-center gap-1">🎲 隨機中心</button>
+                            <button onclick="kmStep()" id="kmStepBtn" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-bold transition flex items-center gap-1 shadow-lg shadow-emerald-950/20"><i data-lucide="play" class="w-3.5 h-3.5"></i> 單步迭代</button>
+                            <button onclick="kmRun()" id="kmRunBtn" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-bold transition flex items-center gap-1 shadow-lg shadow-blue-950/20"><i data-lucide="fast-forward" class="w-3.5 h-3.5"></i> 一鍵收斂</button>
+                        </div>
+                    </div>
+                    <div class="relative border border-slate-700 rounded-xl overflow-hidden bg-slate-950 flex justify-center">
+                        <canvas id="kmCanvas" width="500" height="320" class="cursor-crosshair w-full block max-w-full bg-slate-950"></canvas>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4 text-center">
+                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-2.5">
+                            <span class="text-slate-500 text-[10px] block uppercase">目前迭代次數</span>
+                            <span id="kmStepText" class="text-emerald-400 font-mono font-bold text-sm block mt-0.5">第 0 次</span>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-2.5">
+                            <span class="text-slate-500 text-[10px] block uppercase">演算法狀態</span>
+                            <span id="kmStatusText" class="text-amber-500 font-mono font-bold text-sm block mt-0.5">等待開始</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-855 p-4 rounded-xl space-y-1">
+                    <h5 class="text-xs font-bold text-white">💡 實務應用案例：零售業的客群劃分與精準行銷</h5>
+                    <p class="text-slate-400 text-xs leading-relaxed">
+                        分析消費金額、頻率、喜好類別，自動將百萬客戶劃分成 3 到 5 個聚類（例如高消費高頻率、低消費高敏感等），幫助營運團隊投放不同的促銷方案。
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-emerald-950/20 border border-emerald-900/30 p-3 rounded-xl">
+                      <span class="text-emerald-400 text-xs font-bold block">✓ 優點 (Pros)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">原理簡單，演算法收斂速度極快，能作為大規模無標籤資料的優秀探索工具。</p>
+                    </div>
+                    <div class="bg-rose-950/20 border border-rose-900/30 p-3 rounded-xl">
+                      <span class="text-rose-455 text-xs font-bold block">✗ 缺點 (Cons)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">必須預先指定 K 值，且對異常值 (Outliers) 以及群心的初始隨機位置非常敏感。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 9. PCA -->
+            <article id="algo9" class="bg-slate-900/20 border border-slate-855 rounded-2xl p-6 space-y-4 algo-section" data-category="features">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-bold text-teal-400 flex items-center gap-2">
+                        9. 主成分分析 (Principal Component Analysis, PCA)
+                    </h3>
+                    <span class="px-2.5 py-0.5 bg-fuchsia-500/10 text-fuchsia-400 text-[10px] font-bold rounded-full border border-fuchsia-500/20">非監督式</span>
+                </div>
+                <p class="text-slate-355 text-xs leading-relaxed text-justify">
+                    PCA 就像數據的精華濃縮相機。它將高維度、具高度相關性的眾多欄位特徵，壓扁成少數幾個彼此正交的主成分 (PCs)，並保留數據中最大變異數（代表最高資訊量）。
+                </p>
+                <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl font-mono text-xs text-teal-400 font-bold">
+                    特徵值方程式：Σ v = λ v (Σ 為協方差矩陣, v 為特徵向量, λ 為特徵值)
+                </div>
+
+                <!-- PCA Widget -->
+                <div class="no-print bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg max-w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h4 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                                📉 PCA 降維與特徵向量沙盒 (Sandbox)
+                            </h4>
+                            <p class="text-slate-400 text-[10px] mt-0.5">點擊畫布放置資料點。系統將自動計算並繪製第一主成分 (PC1) 與第二主成分 (PC2) 的方向。</p>
+                        </div>
+                        <button onclick="pcaReset()" class="flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 清空點
+                        </button>
+                    </div>
+                    <div class="relative border border-slate-700 rounded-xl overflow-hidden bg-slate-950 flex justify-center">
+                        <canvas id="pcaCanvas" width="500" height="320" class="cursor-crosshair w-full block max-w-full bg-slate-950"></canvas>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4 text-center">
+                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-2.5">
+                            <span class="text-slate-500 text-[10px] block uppercase">第一主成分 (PC1) 資訊量</span>
+                            <span id="pcaPC1Info" class="text-red-400 font-mono font-bold text-xs block mt-0.5">0.0%</span>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-2.5">
+                            <span class="text-slate-500 text-[10px] block uppercase">第二主成分 (PC2) 資訊量</span>
+                            <span id="pcaPC2Info" class="text-blue-400 font-mono font-bold text-xs block mt-0.5">0.0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl space-y-1">
+                    <h5 class="text-xs font-bold text-white">💡 實務應用案例：機器視覺臉部特徵降維與圖像壓縮</h5>
+                    <p class="text-slate-400 text-xs leading-relaxed">
+                        在高維度的圖像像素中，運用 PCA 擷取前幾個主成分（特徵臉 Eigenfaces），既能保留主要面部輪覦特徵，又能將後續模型的運算負載縮減 90% 以上。
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-emerald-950/20 border border-emerald-900/30 p-3 rounded-xl">
+                      <span class="text-emerald-400 text-xs font-bold block">✓ 優點 (Pros)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">消除變數間的多重共線性，節省運算成本與儲存空間，避免遭遇高維度災難。</p>
+                    </div>
+                    <div class="bg-rose-950/20 border border-rose-900/30 p-3 rounded-xl">
+                      <span class="text-rose-455 text-xs font-bold block">✗ 缺點 (Cons)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">轉換後的主成分是原始維度的線性組合，難以對應回實務物理意義，且可能丟失細微的重要資訊。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 10. Neural Network / Deep Learning -->
+            <article id="algo10" class="bg-slate-900/20 border border-slate-855 rounded-2xl p-6 space-y-4 algo-section" data-category="deep">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-bold text-rose-400 flex items-center gap-2">
+                        10. 類神經網路 / 深度學習 (Neural Network / Deep Learning)
+                    </h3>
+                    <span class="px-2.5 py-0.5 bg-indigo-500/10 text-indigo-400 text-[10px] font-bold rounded-full border border-indigo-500/20">混合/多層</span>
+                </div>
+                <p class="text-slate-355 text-xs leading-relaxed text-justify">
+                    類神經網路模擬人類大腦的突觸連接結構。它將大量邏輯迴歸像積木一樣疊加成多個隱藏層 (Hidden Layers)，利用反向傳播演算法自動提取高維特徵與非線性擬合。
+                </p>
+                <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl font-mono text-xs text-rose-400 font-bold">
+                    人工神經元模型：y = f( ∑ w_i x_i + b ) (f 為非線性激活函數，如 ReLU)
+                </div>
+
+                <!-- Face API Widget -->
+                <div class="no-print bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg max-w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h4 class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                                🧠 AI 視覺相機室 (Face API 現場示範)
+                            </h4>
+                            <p class="text-slate-400 text-[10px] mt-0.5">即時定位 68 個臉部標記並辨識情緒表情。需相機權限。</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+                        <div class="md:col-span-6 flex flex-col items-center">
+                            <div class="relative w-[320px] h-[240px] border border-slate-700 bg-slate-950 rounded-xl overflow-hidden shadow-2xl">
+                                <video id="faceapiVideo" width="320" height="240" autoplay muted playsinline class="absolute inset-0 object-cover scale-x-[-1]"></video>
+                                <canvas id="faceapiCanvas" width="320" height="240" class="absolute inset-0 pointer-events-none scale-x-[-1]"></canvas>
+                                <div id="faceapiControls" class="absolute inset-0 flex flex-col items-center justify-center p-4 bg-slate-950/90 text-center">
+                                    <i id="faceapiIcon" data-lucide="camera-off" class="text-slate-500 w-10 h-10 mb-2"></i>
+                                    <p id="faceapiStatus" class="text-slate-400 text-xs">開啟相機體驗情緒感知的「動態適應學習模式」</p>
+                                    <button onclick="faceapiToggleCamera()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition mt-2 shadow-lg shadow-emerald-950/30">
+                                        <i data-lucide="camera" class="w-3.5 h-3.5"></i> 開啟相機
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="md:col-span-6 space-y-4">
+                            <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-3">
+                                <span class="text-slate-500 text-[10px] block uppercase">偵測表情</span>
+                                <span id="faceapiResult" class="text-emerald-400 font-bold text-sm block mt-0.5">相機未開啟</span>
+                            </div>
+                            <div class="space-y-2" id="faceapiProbabilities">
+                                <!-- Bars populated via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl space-y-1">
+                    <h5 class="text-xs font-bold text-white">💡 實務應用案例：Face API 臉部地標定位與表情辨識</h5>
+                    <p class="text-slate-400 text-xs leading-relaxed">
+                        在前端環境中，透過卷積神經網路 (CNN) 即時定位相機畫面中人臉的 68 個地標特徵點，並運算判定目前的表情概率，實現智慧情緒適應學習。
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-emerald-950/20 border border-emerald-900/30 p-3 rounded-xl">
+                      <span class="text-emerald-400 text-xs font-bold block">✓ 優點 (Pros)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">模型表徵能力極限，能自動做特徵工程與提取，擅長擬合極端複雜非線性模型 (如圖像、語音)。</p>
+                    </div>
+                    <div class="bg-rose-950/20 border border-rose-900/30 p-3 rounded-xl">
+                      <span class="text-rose-455 text-xs font-bold block">✗ 缺點 (Cons)</span>
+                      <p class="text-slate-455 text-[11px] mt-1">是極致的「黑箱模型」，幾乎無法給出白箱決策鏈，且需極大數據集與強大算力 (GPU) 支援。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Algorithm Matrix -->
+            <article id="matrix" class="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 md:p-8 space-y-4 algo-section" data-category="all">
+              <h2 class="text-xl md:text-2xl font-bold text-white border-b border-slate-800 pb-3 flex items-center gap-2">
+                📊 演算法綜合矩陣 (Summary Matrix)
+              </h2>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 font-bold">
+                      <th class="py-3 px-3">演算法名稱</th>
+                      <th class="py-3 px-3">學習型態</th>
+                      <th class="py-3 px-3">解釋度</th>
+                      <th class="py-3 px-3">運算開銷</th>
+                      <th class="py-3 px-3">核心主要用途</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-850">
+                    <tr>
+                      <td class="py-2.5 px-3 font-semibold text-blue-400">1. 線性迴歸</td>
+                      <td class="py-2.5 px-3 text-slate-300">監督式</td>
+                      <td class="py-2.5 px-3 text-emerald-400 font-bold">極高 (白箱)</td>
+                      <td class="py-2.5 px-3 text-slate-400">極低</td>
+                      <td class="py-2.5 px-3 text-slate-400">預測連續數值量化</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2.5 px-3 font-semibold text-emerald-400">2. 邏輯迴歸</td>
+                      <td class="py-2.5 px-3 text-slate-300">監督式</td>
+                      <td class="py-2.5 px-3 text-emerald-400 font-bold">高 (白箱)</td>
+                      <td class="py-2.5 px-3 text-slate-400">極低</td>
+                      <td class="py-2.5 px-3 text-slate-400">二分類機率估計</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2.5 px-3 font-semibold text-purple-400">3. 決策樹</td>
+                      <td class="py-2.5 px-3 text-slate-300">監督式</td>
+                      <td class="py-2.5 px-3 text-emerald-400 font-bold">極高 (白箱)</td>
+                      <td class="py-2.5 px-3 text-slate-400">低</td>
+                      <td class="py-2.5 px-3 text-slate-400">條件分支決策分類</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2.5 px-3 font-semibold text-indigo-400">4. 隨機森林</td>
+                      <td class="py-2.5 px-3 text-slate-300">監督式</td>
+                      <td class="py-2.5 px-3 text-amber-500 font-bold">中等</td>
+                      <td class="py-2.5 px-3 text-slate-400">中等</td>
+                      <td class="py-2.5 px-3 text-slate-400">高強度特徵分类</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2.5 px-3 font-semibold text-cyan-400">5. SVM</td>
+                      <td class="py-2.5 px-3 text-slate-300">監督式</td>
+                      <td class="py-2.5 px-3 text-rose-500 font-bold">低 (黑箱)</td>
+                      <td class="py-2.5 px-3 text-slate-400">高</td>
+                      <td class="py-2.5 px-3 text-slate-400">高維複雜邊界切分</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2.5 px-3 font-semibold text-pink-400">6. KNN</td>
+                      <td class="py-2.5 px-3 text-slate-300">監督式</td>
+                      <td class="py-2.5 px-3 text-emerald-400 font-bold">極高 (白箱)</td>
+                      <td class="py-2.5 px-3 text-slate-400">高 (預測階段)</td>
+                      <td class="py-2.5 px-3 text-slate-400">鄰近比對相似推荐</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2.5 px-3 font-semibold text-amber-500">7. 單純貝氏</td>
+                      <td class="py-2.5 px-3 text-slate-300">監督式</td>
+                      <td class="py-2.5 px-3 text-emerald-400 font-bold">高 (白箱)</td>
+                      <td class="py-2.5 px-3 text-slate-400">極低</td>
+                      <td class="py-2.5 px-3 text-slate-400">高速垃圾郵件過濾</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2.5 px-3 font-semibold text-fuchsia-400">8. K-Means</td>
+                      <td class="py-2.5 px-3 text-slate-300">非監督式</td>
+                      <td class="py-2.5 px-3 text-emerald-400 font-bold">高 (白箱)</td>
+                      <td class="py-2.5 px-3 text-slate-400">低</td>
+                      <td class="py-2.5 px-3 text-slate-400">未知群組自動凝聚分流</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2.5 px-3 font-semibold text-teal-400">9. PCA</td>
+                      <td class="py-2.5 px-3 text-slate-300">非監督式</td>
+                      <td class="py-2.5 px-3 text-rose-500 font-bold">低 (黑箱)</td>
+                      <td class="py-2.5 px-3 text-slate-400">中等</td>
+                      <td class="py-2.5 px-3 text-slate-400">高維特徵提取與投影瘦身</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2.5 px-3 font-semibold text-rose-400">10. 深度學習</td>
+                      <td class="py-2.5 px-3 text-slate-300">混合/多層</td>
+                      <td class="py-2.5 px-3 text-rose-500 font-bold">極低 (極限黑箱)</td>
+                      <td class="py-2.5 px-3 text-slate-400">極高</td>
+                      <td class="py-2.5 px-3 text-slate-400">非線性高維圖像語音提取</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 border-t border-slate-900 pt-6 text-center text-slate-500 text-xs pb-12">
+            <p>© 2026 NCHU AI Training Program. All rights reserved.</p>
+        </footer>
+
+    </main>
+
+    <!-- Floating Emotion Adaptive Learning Assistant -->
+    <div id="ai-assistant-widget" class="fixed bottom-6 left-6 z-40 max-w-sm w-full transition-all duration-300 no-print hidden">
+        <!-- Dialog content dynamically added by JS -->
+    </div>
+
+    <!-- Floating AI Chatbot Button -->
+    <div class="fixed top-6 right-6 z-45 no-print">
+        <button id="chatbot-toggle-btn" onclick="toggleChatbot()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold p-3.5 rounded-full shadow-2xl flex items-center justify-center transition transform hover:scale-105 active:scale-95 border border-indigo-400/20 relative">
+            <i data-lucide="message-square" class="w-5 h-5"></i>
+            <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-slate-950 animate-ping"></span>
+        </button>
+    </div>
+
+    <!-- Floating AI Chatbot Window -->
+    <div id="chatbot-window" class="fixed top-24 right-6 z-45 max-w-sm w-96 h-[480px] bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-2xl shadow-2xl flex flex-col transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-none no-print">
+        <!-- Chat Header -->
+        <div class="p-3 border-b border-slate-800 flex justify-between items-center bg-slate-950/40 rounded-t-2xl">
+            <div class="flex items-center gap-2">
+                <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                <div>
+                    <h5 class="text-white font-bold text-xs tracking-wide">AI 機器學習導師</h5>
+                    <span class="text-[9px] text-slate-500 font-semibold block uppercase">NCHU ML Tutor</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleApiKeySettings()" class="text-slate-400 hover:text-white transition p-1 rounded-lg hover:bg-slate-800">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                </button>
+                <button onclick="toggleChatbot()" class="text-slate-400 hover:text-white transition p-1 rounded-lg hover:bg-slate-800">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- API Key Settings Panel -->
+        <div id="chatbot-settings" class="p-3 border-b border-slate-800 bg-slate-950/80 text-xs hidden space-y-1.5">
+            <p class="text-slate-300 font-bold">Gemini API Key 設定</p>
+            <p class="text-slate-500 text-[10px] leading-relaxed">設定後將啟用真實 Gemini AI 聊天。金鑰將僅存在您的瀏覽器中。</p>
+            <div class="flex gap-2">
+                <input type="password" id="chatbot-api-key-input" placeholder="貼上您的 Gemini API Key..." class="flex-1 bg-slate-900 border border-slate-800 text-slate-100 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-indigo-500">
+                <button onclick="saveApiKey()" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition text-[10px]">儲存</button>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="chatbot-messages" class="flex-1 overflow-y-auto p-4 space-y-3 text-xs scroll-smooth">
+            <!-- Initial message -->
+            <div class="flex items-start gap-2.5">
+                <div class="bg-indigo-600/10 text-indigo-400 p-1.5 rounded-lg shrink-0">
+                    <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="bg-slate-850 border border-slate-800/80 text-slate-200 px-3 py-2 rounded-2xl rounded-tl-none max-w-[80%] leading-relaxed">
+                    你好！我是你的 AI 機器學習導師。您可以向我詢問關於這十大機器學習主題的任何問題，例如：
+                    <div class="mt-2 text-[10px] text-indigo-400 font-semibold space-y-1">
+                        <div>💡 「SVM 的最大間距邊界是？」</div>
+                        <div>💡 「決策樹基尼係數如何計算？」</div>
+                        <div>💡 「過擬合 (Overfitting) 是什麼意思？」</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suggestion Chips -->
+        <div class="px-3 py-1.5 border-t border-slate-850/50 flex gap-1.5 overflow-x-auto whitespace-nowrap text-[10px] no-print" style="scrollbar-width: none;">
+            <button onclick="sendQuickQuestion('SVM 的最大邊際是什麼？')" class="px-2 py-1 bg-slate-850 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-full transition shrink-0">🛡️ SVM 邊際</button>
+            <button onclick="sendQuickQuestion('請解釋決策樹的基尼係數')" class="px-2 py-1 bg-slate-850 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-full transition shrink-0">🌿 決策樹 Gini</button>
+            <button onclick="sendQuickQuestion('什麼是機器學習的過擬合？')" class="px-2 py-1 bg-slate-850 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-full transition shrink-0">⚠️ 什麼是過擬合？</button>
+            <button onclick="sendQuickQuestion('單純貝氏的獨立假設是什麼？')" class="px-2 py-1 bg-slate-850 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-full transition shrink-0">✉️ 貝氏獨立假設</button>
+        </div>
+
+        <!-- Input Box -->
+        <div class="p-3 border-t border-slate-800 bg-slate-950/40 rounded-b-2xl flex gap-2">
+            <input type="text" id="chatbot-input" onkeydown="handleChatSubmit(event)" placeholder="輸入問題..." class="flex-1 bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-500">
+            <button onclick="submitChatMessage()" class="bg-indigo-600 hover:bg-indigo-500 text-white p-2 rounded-xl flex items-center justify-center transition shadow-md shadow-indigo-950/30">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Script Block -->
+    <script>
+        // Init Lucide Icons
+        setTimeout(() => { lucide.createIcons(); }, 100);
+
+        // Sidebar Items Configuration
+        const sections = [
+            { id: "intro", title: "📌 機器學習三大範式", category: "intro" },
+            { id: "algo1", title: "1. 線性迴歸 (Linear)", category: "numbers" },
+            { id: "algo2", title: "2. 邏輯迴歸 (Logistic)", category: "labels" },
+            { id: "algo3", title: "3. 決策樹 (Decision)", category: "labels" },
+            { id: "algo4", title: "4. 隨機森林 (Random Forest)", category: "labels" },
+            { id: "algo5", title: "5. 支援向量機 (SVM)", category: "labels" },
+            { id: "algo6", title: "6. K-最近鄰 (KNN)", category: "labels" },
+            { id: "algo7", title: "7. 單純貝氏 (Naive Bayes)", category: "labels" },
+            { id: "algo8", title: "8. K-Means 分群", category: "clustering" },
+            { id: "algo9", title: "9. 主成分分析 (PCA)", category: "features" },
+            { id: "algo10", title: "10. 類神經網路 (Deep)", category: "deep" },
+            { id: "matrix", title: "📊 演算法綜合矩陣", category: "all" }
+        ];
+
+        // Populate Sidebar
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        sections.forEach(s => {
+            const isHeader = s.id === 'intro' || s.id === 'matrix';
+            const btn = document.createElement('button');
+            btn.id = `sidebar-btn-${s.id}`;
+            btn.className = `w-full text-left py-2 px-3 rounded-xl text-xs font-semibold transition duration-150 flex items-center justify-between ${
+                isHeader 
+                ? 'text-slate-400 mt-4 bg-slate-950/30 font-bold border-l-2 border-emerald-500/20' 
+                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+            }`;
+            btn.innerHTML = `<span>${s.title}</span><i data-lucide="arrow-right" class="w-3.5 h-3.5 text-white opacity-0 transition-opacity"></i>`;
+            btn.onclick = () => scrollToSection(s.id);
+            sidebarMenu.appendChild(btn);
+        });
+
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            updateActiveSidebar(id);
+        }
+
+        function updateActiveSidebar(activeId) {
+            sections.forEach(s => {
+                const btn = document.getElementById(`sidebar-btn-${s.id}`);
+                if (!btn) return;
+                const isHeader = s.id === 'intro' || s.id === 'matrix';
+                const arrow = btn.querySelector('svg');
+                
+                if (s.id === activeId) {
+                    btn.classList.remove('text-slate-400', 'hover:bg-slate-800');
+                    if (!isHeader) {
+                        btn.classList.add('bg-emerald-600', 'text-white', 'shadow-lg', 'scale-[1.02]');
+                        if (arrow) arrow.style.opacity = '1';
+                    }
+                } else {
+                    if (!isHeader) {
+                        btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-lg', 'scale-[1.02]');
+                        btn.classList.add('text-slate-400', 'hover:bg-slate-800');
+                        if (arrow) arrow.style.opacity = '0';
+                    }
+                }
+            });
+            activeSection = activeId;
+        }
+
+        // Scrollspy
+        let activeSection = 'intro';
+        window.addEventListener('scroll', () => {
+            const scrollPos = window.scrollY + 220;
+            for (let i = 0; i < sections.length; i++) {
+                const el = document.getElementById(sections[i].id);
+                if (el) {
+                    const top = el.offsetTop;
+                    const height = el.offsetHeight;
+                    if (scrollPos >= top && scrollPos < top + height) {
+                        updateActiveSidebar(sections[i].id);
+                        break;
+                    }
+                }
+            }
+        });
+
+        // Tab Filter setup
+        const tabs = [
+            { id: "all", label: "🌐 顯示全部 10 大", desc: "完整教材" },
+            { id: "numbers", label: "🔢 預測連續數值", desc: "迴歸" },
+            { id: "labels", label: "🏷️ 分類標籤預測", desc: "分類" },
+            { id: "clustering", label: "🧲 盲測自動分群", desc: "分群" },
+            { id: "features", label: "🧪 特徵工程瘦身", desc: "降維" }
+        ];
+
+        const tabContainer = document.getElementById('filter-tabs');
+        tabs.forEach(tab => {
+            const btn = document.createElement('button');
+            btn.id = `tab-btn-${tab.id}`;
+            btn.className = `py-2 px-4 rounded-xl text-xs transition flex flex-col items-center justify-center border border-slate-800 text-slate-400 bg-slate-900 hover:bg-slate-850 hover:text-white`;
+            btn.innerHTML = `<span class="font-bold">${tab.label}</span><span class="text-[9px] opacity-60 mt-0.5">${tab.desc}</span>`;
+            btn.onclick = () => filterTab(tab.id);
+            tabContainer.appendChild(btn);
+        });
+
+        function filterTab(tabId) {
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t.id}`);
+                if (btn) {
+                    if (t.id === tabId) {
+                        btn.className = "py-2 px-4 rounded-xl text-xs transition flex flex-col items-center justify-center border border-indigo-400/20 bg-indigo-600 text-white shadow-lg shadow-indigo-950/20";
+                    } else {
+                        btn.className = "py-2 px-4 rounded-xl text-xs transition flex flex-col items-center justify-center border border-slate-800 text-slate-400 bg-slate-900 hover:bg-slate-850 hover:text-white";
+                    }
+                }
+            });
+
+            const cards = document.querySelectorAll('.algo-section');
+            cards.forEach(card => {
+                const cat = card.getAttribute('data-category');
+                const id = card.id;
+                if (tabId === 'all' || cat === tabId || id === 'intro' || id === 'matrix') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        filterTab('all');
+
+        // ==========================================
+        // Linear Regression Sandbox Logic
+        // ==========================================
+        const lrCanvas = document.getElementById('lrCanvas');
+        const lrCtx = lrCanvas.getContext('2d');
+        const lrPlaceholder = document.getElementById('lrPlaceholder');
+        let lrPoints = [
+            { x: 120, y: 240 }, { x: 180, y: 210 }, { x: 250, y: 160 }, { x: 340, y: 100 }
+        ];
+
+        function lrDraw() {
+            const w = lrCanvas.width;
+            const h = lrCanvas.height;
+            lrCtx.clearRect(0, 0, w, h);
+
+            // Draw Grid
+            lrCtx.strokeStyle = "#1e293b";
+            lrCtx.lineWidth = 1;
+            for(let x=40; x<w; x+=40) { lrCtx.beginPath(); lrCtx.moveTo(x,0); lrCtx.lineTo(x,h); lrCtx.stroke(); }
+            for(let y=40; y<h; y+=40) { lrCtx.beginPath(); lrCtx.moveTo(0,y); lrCtx.lineTo(w,y); lrCtx.stroke(); }
+
+            // Draw axis
+            lrCtx.strokeStyle = "#475569";
+            lrCtx.lineWidth = 2;
+            lrCtx.beginPath(); lrCtx.moveTo(0, h-30); lrCtx.lineTo(w, h-30); lrCtx.moveTo(40, 0); lrCtx.lineTo(40, h); lrCtx.stroke();
+
+            // Draw points
+            lrCtx.fillStyle = "#60a5fa";
+            lrPoints.forEach(p => {
+                lrCtx.beginPath(); lrCtx.arc(p.x, p.y, 6, 0, Math.PI*2); lrCtx.fill();
+            });
+
+            if(lrPoints.length >= 2) {
+                lrPlaceholder.classList.add('hidden');
+                const n = lrPoints.length;
+                let sumX=0, sumY=0, sumXY=0, sumX2=0, sumY2=0;
+                
+                const mathPts = lrPoints.map(p => ({ x: p.x - 40, y: h - 30 - p.y }));
+                mathPts.forEach(p => {
+                    sumX += p.x; sumY += p.y; sumXY += p.x * p.y; sumX2 += p.x*p.x; sumY2 += p.y*p.y;
+                });
+
+                const denom = n * sumX2 - sumX * sumX;
+                if(denom !== 0) {
+                    const m = (n * sumXY - sumX * sumY) / denom;
+                    const b = (sumY - m * sumX) / n;
+
+                    let sst = 0, ssr = 0;
+                    const avgY = sumY / n;
+                    mathPts.forEach(p => {
+                        const pred = m * p.x + b;
+                        sst += Math.pow(p.y - avgY, 2);
+                        ssr += Math.pow(p.y - pred, 2);
+                    });
+                    const r2 = sst === 0 ? 1 : 1 - (ssr/sst);
+
+                    document.getElementById('lrEq').innerText = `y = ${m.toFixed(2)}x + ${b.toFixed(0)}`;
+                    document.getElementById('lrR2').innerText = r2.toFixed(4);
+
+                    // Draw fit line
+                    const y1 = h - 30 - (m * 0 + b);
+                    const y2 = h - 30 - (m * (w - 40) + b);
+                    lrCtx.strokeStyle = "#10b981";
+                    lrCtx.lineWidth = 3;
+                    lrCtx.beginPath(); lrCtx.moveTo(40, y1); lrCtx.lineTo(w, y2); lrCtx.stroke();
+                }
+            } else {
+                lrPlaceholder.classList.remove('hidden');
+                document.getElementById('lrEq').innerText = "y = 0x + 0";
+                document.getElementById('lrR2').innerText = "0.0000";
+            }
+        }
+
+        lrCanvas.onclick = (e) => {
+            const rect = lrCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (lrCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (lrCanvas.height / rect.height);
+            if (x > 40 && y < lrCanvas.height - 30) {
+                lrPoints.push({ x, y });
+                lrDraw();
+            }
+        };
+
+        function lrReset() { lrPoints = []; lrDraw(); }
+        lrDraw();
+
+        // ==========================================
+        // Logistic Regression Sandbox Logic
+        // ==========================================
+        const logrCanvas = document.getElementById('logrCanvas');
+        const logrCtx = logrCanvas.getContext('2d');
+        const logrPlaceholder = document.getElementById('logrPlaceholder');
+        let logrClass = 1;
+        let logrPoints = [
+            { x: 120, y: 100, label: 0 }, { x: 150, y: 160, label: 0 }, { x: 100, y: 220, label: 0 },
+            { x: 380, y: 100, label: 1 }, { x: 350, y: 180, label: 1 }, { x: 400, y: 250, label: 1 }
+        ];
+
+        function logrSetClass(c) {
+            logrClass = c;
+            const btn0 = document.getElementById('btnClass0');
+            const btn1 = document.getElementById('btnClass1');
+            if (c === 0) {
+                btn0.className = "px-2.5 py-1 bg-orange-500/20 text-orange-400 border border-orange-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5";
+                btn1.className = "px-2.5 py-1 bg-slate-850 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800";
+            } else {
+                btn0.className = "px-2.5 py-1 bg-slate-855 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800";
+                btn1.className = "px-2.5 py-1 bg-purple-500/20 text-purple-400 border border-purple-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5";
+            }
+        }
+
+        function logrDraw() {
+            const w = logrCanvas.width;
+            const h = logrCanvas.height;
+            logrCtx.clearRect(0, 0, w, h);
+
+            let w0 = 0, w1 = 0, b = 0, currentLoss = 0;
+            const scaleX = w / 2, scaleY = h / 2;
+
+            if (logrPoints.length >= 2) {
+                logrPlaceholder.classList.add('hidden');
+                // Fit logistic regression
+                const mathPts = logrPoints.map(p => ({
+                    x: (p.x - w / 2) / scaleX,
+                    y: (h / 2 - p.y) / scaleY,
+                    label: p.label
+                }));
+
+                const lr = 0.1, steps = 1000;
+                for (let step = 0; step < steps; step++) {
+                    let dw0 = 0, dw1 = 0, db = 0, tempLoss = 0;
+                    mathPts.forEach(p => {
+                        const z = w0 * p.x + w1 * p.y + b;
+                        const pred = 1 / (1 + Math.exp(-z));
+                        const diff = pred - p.label;
+                        dw0 += diff * p.x;
+                        dw1 += diff * p.y;
+                        db += diff;
+
+                        const epsilon = 1e-15;
+                        const predClip = Math.max(epsilon, Math.min(1 - epsilon, pred));
+                        tempLoss += -(p.label * Math.log(predClip) + (1 - p.label) * Math.log(1 - predClip));
+                    });
+                    w0 -= lr * (dw0 / logrPoints.length);
+                    w1 -= lr * (dw1 / logrPoints.length);
+                    b -= lr * (db / logrPoints.length);
+                    currentLoss = tempLoss / logrPoints.length;
+                }
+
+                document.getElementById('logrSteps').innerText = "1,000 Steps (GD)";
+                document.getElementById('logrLoss').innerText = currentLoss.toFixed(5);
+
+                // Draw background probability
+                const step = 5;
+                for(let x=0; x<w; x+=step) {
+                    for(let y=0; y<h; y+=step) {
+                        const mx = (x + step/2 - w/2) / scaleX;
+                        const my = (h/2 - (y + step/2)) / scaleY;
+                        const z = w0*mx + w1*my + b;
+                        const prob = 1 / (1 + Math.exp(-z));
+                        logrCtx.fillStyle = `rgba(${Math.floor(168*prob + 249*(1-prob))}, ${Math.floor(85*prob + 115*(1-prob))}, ${Math.floor(247*prob + 22*(1-prob))}, 0.12)`;
+                        logrCtx.fillRect(x, y, step, step);
+                    }
+                }
+
+                // Draw decision boundary w0*x + w1*y + b = 0 => y = -(w0*x+b)/w1
+                if (Math.abs(w1) > 0.001) {
+                    logrCtx.strokeStyle = "#10b981";
+                    logrCtx.lineWidth = 2.5;
+                    logrCtx.beginPath();
+                    let my1 = -(w0 * (-1) + b) / w1;
+                    let my2 = -(w0 * 1 + b) / w1;
+                    logrCtx.moveTo(0, h/2 - my1*scaleY);
+                    logrCtx.lineTo(w, h/2 - my2*scaleY);
+                    logrCtx.stroke();
+                }
+            } else {
+                logrPlaceholder.classList.remove('hidden');
+                document.getElementById('logrSteps').innerText = "等待點輸入";
+                document.getElementById('logrLoss').innerText = "0.00000";
+            }
+
+            // Draw grid
+            logrCtx.strokeStyle = "rgba(30, 41, 59, 0.4)";
+            logrCtx.lineWidth = 1;
+            for(let x=40; x<w; x+=40) { logrCtx.beginPath(); logrCtx.moveTo(x,0); logrCtx.lineTo(x,h); logrCtx.stroke(); }
+            for(let y=40; y<h; y+=40) { logrCtx.beginPath(); logrCtx.moveTo(0,y); logrCtx.lineTo(w,y); logrCtx.stroke(); }
+
+            // Draw points
+            logrPoints.forEach(p => {
+                logrCtx.beginPath(); logrCtx.arc(p.x, p.y, 6, 0, Math.PI*2);
+                logrCtx.fillStyle = p.label === 1 ? "#a855f7" : "#f97316";
+                logrCtx.fill();
+            });
+        }
+
+        logrCanvas.onclick = (e) => {
+            const rect = logrCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (logrCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (logrCanvas.height / rect.height);
+            logrPoints.push({ x, y, label: logrClass });
+            logrDraw();
+        };
+
+        function logrReset() { logrPoints = []; logrDraw(); }
+        logrDraw();
+
+        // ==========================================
+        // Decision Tree Sandbox Logic
+        // ==========================================
+        const dtCanvas = document.getElementById('dtCanvas');
+        const dtCtx = dtCanvas.getContext('2d');
+        const dtPlaceholder = document.getElementById('dtPlaceholder');
+        let dtClass = 1;
+        let dtPoints = [
+            { x: 120, y: 100, label: 0 }, { x: 150, y: 160, label: 0 }, { x: 100, y: 220, label: 0 },
+            { x: 380, y: 100, label: 1 }, { x: 350, y: 180, label: 1 }, { x: 400, y: 250, label: 1 }
+        ];
+
+        function dtSetClass(c) {
+            dtClass = c;
+            const btn0 = document.getElementById('dtBtn0');
+            const btn1 = document.getElementById('dtBtn1');
+            if (c === 0) {
+                btn0.className = "px-2.5 py-1 bg-orange-500/20 text-orange-400 border border-orange-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5";
+                btn1.className = "px-2.5 py-1 bg-slate-850 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800";
+            } else {
+                btn0.className = "px-2.5 py-1 bg-slate-850 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800";
+                btn1.className = "px-2.5 py-1 bg-purple-500/20 text-purple-400 border border-purple-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5";
+            }
+        }
+
+        function dtDraw() {
+            const w = dtCanvas.width;
+            const h = dtCanvas.height;
+            dtCtx.clearRect(0, 0, w, h);
+
+            let bestSplit = null; 
+            let bestGini = 1.0;
+
+            if (dtPoints.length >= 2) {
+                dtPlaceholder.classList.add('hidden');
+                
+                const n = dtPoints.length;
+                const p1_init = dtPoints.filter(p => p.label === 1).length / n;
+                const p0_init = 1 - p1_init;
+                const giniInit = 1 - p1_init*p1_init - p0_init*p0_init;
+                bestGini = giniInit;
+
+                const xCandidates = dtPoints.map(p => p.x);
+                const yCandidates = dtPoints.map(p => p.y);
+
+                const evaluateSplit = (type, val) => {
+                    const left = dtPoints.filter(p => type === 'x' ? p.x < val : p.y < val);
+                    const right = dtPoints.filter(p => type === 'x' ? p.x >= val : p.y >= val);
+                    if (left.length === 0 || right.length === 0) return;
+
+                    const p1_L = left.filter(p => p.label === 1).length / left.length;
+                    const giniL = 1 - p1_L*p1_L - Math.pow(1 - p1_L, 2);
+
+                    const p1_R = right.filter(p => p.label === 1).length / right.length;
+                    const giniR = 1 - p1_R*p1_R - Math.pow(1 - p1_R, 2);
+
+                    const weightedGini = (left.length / n) * giniL + (right.length / n) * giniR;
+                    if (weightedGini < bestGini) {
+                        bestGini = weightedGini;
+                        const left0 = left.filter(p => p.label === 0).length;
+                        const left1 = left.length - left0;
+                        const right0 = right.filter(p => p.label === 0).length;
+                        const right1 = right.length - right0;
+
+                        bestSplit = {
+                            type,
+                            value: val,
+                            gini: weightedGini,
+                            leftLabel: left1 >= left0 ? 1 : 0,
+                            rightLabel: right1 >= right0 ? 1 : 0
+                        };
+                    }
+                };
+
+                xCandidates.forEach(val => evaluateSplit('x', val));
+                yCandidates.forEach(val => evaluateSplit('y', val));
+
+                if (bestSplit) {
+                    if (bestSplit.type === 'x') {
+                        dtCtx.fillStyle = bestSplit.leftLabel === 1 ? "rgba(168, 85, 247, 0.08)" : "rgba(249, 115, 22, 0.08)";
+                        dtCtx.fillRect(0, 0, bestSplit.value, h);
+                        dtCtx.fillStyle = bestSplit.rightLabel === 1 ? "rgba(168, 85, 247, 0.08)" : "rgba(249, 115, 22, 0.08)";
+                        dtCtx.fillRect(bestSplit.value, 0, w - bestSplit.value, h);
+                    } else {
+                        dtCtx.fillStyle = bestSplit.leftLabel === 1 ? "rgba(168, 85, 247, 0.08)" : "rgba(249, 115, 22, 0.08)";
+                        dtCtx.fillRect(0, 0, w, bestSplit.value);
+                        dtCtx.fillStyle = bestSplit.rightLabel === 1 ? "rgba(168, 85, 247, 0.08)" : "rgba(249, 115, 22, 0.08)";
+                        dtCtx.fillRect(0, bestSplit.value, w, h - bestSplit.value);
+                    }
+
+                    document.getElementById('dtSplitRule').innerText = `${bestSplit.type.toUpperCase()} ${bestSplit.type === 'x' ? '水平分割' : '垂直分割'} @ ${bestSplit.value.toFixed(0)}`;
+                    document.getElementById('dtGini').innerText = bestSplit.gini.toFixed(4);
+                } else {
+                    document.getElementById('dtSplitRule').innerText = "無有效分割";
+                    document.getElementById('dtGini').innerText = giniInit.toFixed(4);
+                }
+            } else {
+                dtPlaceholder.classList.remove('hidden');
+                document.getElementById('dtSplitRule').innerText = "無分割";
+                document.getElementById('dtGini').innerText = "0.5000";
+            }
+
+            if (bestSplit) {
+                dtCtx.strokeStyle = "#10b981";
+                dtCtx.lineWidth = 2.5;
+                dtCtx.setLineDash([4, 4]);
+                dtCtx.beginPath();
+                if (bestSplit.type === 'x') {
+                    dtCtx.moveTo(bestSplit.value, 0); dtCtx.lineTo(bestSplit.value, h);
+                } else {
+                    dtCtx.moveTo(0, bestSplit.value); dtCtx.lineTo(w, bestSplit.value);
+                }
+                dtCtx.stroke();
+                dtCtx.setLineDash([]);
+            }
+
+            // Draw grid
+            dtCtx.strokeStyle = "rgba(30, 41, 59, 0.4)";
+            dtCtx.lineWidth = 1;
+            for(let x=40; x<w; x+=40) { dtCtx.beginPath(); dtCtx.moveTo(x,0); dtCtx.lineTo(x,h); dtCtx.stroke(); }
+            for(let y=40; y<h; y+=40) { dtCtx.beginPath(); dtCtx.moveTo(0,y); dtCtx.lineTo(w,y); dtCtx.stroke(); }
+
+            // Draw points
+            dtPoints.forEach(p => {
+                dtCtx.beginPath(); dtCtx.arc(p.x, p.y, 6, 0, Math.PI*2);
+                dtCtx.fillStyle = p.label === 1 ? "#a855f7" : "#f97316";
+                dtCtx.fill();
+            });
+        }
+
+        dtCanvas.onclick = (e) => {
+            const rect = dtCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (dtCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (dtCanvas.height / rect.height);
+            dtPoints.push({ x, y, label: dtClass });
+            dtDraw();
+        };
+
+        function dtReset() { dtPoints = []; dtDraw(); }
+        dtDraw();
+
+
+        // ==========================================
+        // Random Forest Sandbox Logic
+        // ==========================================
+        const rfCanvas = document.getElementById('rfCanvas');
+        const rfCtx = rfCanvas.getContext('2d');
+        const rfPlaceholder = document.getElementById('rfPlaceholder');
+        let rfClass = 1;
+        let rfPoints = [
+            { x: 120, y: 100, label: 0 }, { x: 150, y: 160, label: 0 }, { x: 100, y: 220, label: 0 },
+            { x: 380, y: 100, label: 1 }, { x: 350, y: 180, label: 1 }, { x: 400, y: 250, label: 1 }
+        ];
+
+        function rfSetClass(c) {
+            rfClass = c;
+            const btn0 = document.getElementById('rfBtn0');
+            const btn1 = document.getElementById('rfBtn1');
+            if (c === 0) {
+                btn0.className = "px-2.5 py-1 bg-orange-500/20 text-orange-400 border border-orange-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5";
+                btn1.className = "px-2.5 py-1 bg-slate-850 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800";
+            } else {
+                btn0.className = "px-2.5 py-1 bg-slate-855 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800";
+                btn1.className = "px-2.5 py-1 bg-purple-500/20 text-purple-400 border border-purple-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5";
+            }
+        }
+
+        function rfDraw() {
+            const w = rfCanvas.width;
+            const h = rfCanvas.height;
+            rfCtx.clearRect(0, 0, w, h);
+
+            if (rfPoints.length >= 2) {
+                rfPlaceholder.classList.add('hidden');
+
+                const numTrees = 5;
+                const trees = [];
+
+                for (let t = 0; t < numTrees; t++) {
+                    const sample = [];
+                    for (let s = 0; s < rfPoints.length; s++) {
+                        const rIdx = Math.floor(Math.random() * rfPoints.length);
+                        sample.push(rfPoints[rIdx]);
+                    }
+
+                    const splitType = Math.random() > 0.5 ? 'x' : 'y';
+                    const randomPt = sample[Math.floor(Math.random() * sample.length)];
+                    const splitValue = splitType === 'x' ? randomPt.x : randomPt.y;
+
+                    const left = sample.filter(p => splitType === 'x' ? p.x < splitValue : p.y < splitValue);
+                    const right = sample.filter(p => splitType === 'x' ? p.x >= splitValue : p.y >= splitValue);
+
+                    const left0 = left.filter(p => p.label === 0).length;
+                    const left1 = left.length - left0;
+                    const right0 = right.filter(p => p.label === 0).length;
+                    const right1 = right.length - right0;
+
+                    trees.push({
+                        type: splitType,
+                        value: splitValue,
+                        leftLabel: left1 >= left0 ? 1 : 0,
+                        rightLabel: right1 >= right0 ? 1 : 0
+                    });
+                }
+
+                // Render background using majority voting of trees
+                const step = 8;
+                for (let x = 0; x < w; x += step) {
+                    for (let y = 0; y < h; y += step) {
+                        let vote1 = 0;
+                        let vote0 = 0;
+
+                        trees.forEach(t => {
+                            const val = t.type === 'x' ? x : y;
+                            if (val < t.value) {
+                                if (t.leftLabel === 1) vote1++; else vote0++;
+                            } else {
+                                if (t.rightLabel === 1) vote1++; else vote0++;
+                            }
+                        });
+
+                        const prob1 = vote1 / numTrees;
+                        rfCtx.fillStyle = `rgba(${Math.floor(168*prob1 + 249*(1-prob1))}, ${Math.floor(85*prob1 + 115*(1-prob1))}, ${Math.floor(247*prob1 + 22*(1-prob1))}, 0.12)`;
+                        rfCtx.fillRect(x, y, step, step);
+                    }
+                }
+
+                // Draw decision boundaries of the 5 trees
+                rfCtx.strokeStyle = "rgba(16, 185, 129, 0.35)"; 
+                rfCtx.lineWidth = 1.5;
+                trees.forEach(t => {
+                    rfCtx.beginPath();
+                    if (t.type === 'x') {
+                        rfCtx.moveTo(t.value, 0); rfCtx.lineTo(t.value, h);
+                    } else {
+                        rfCtx.moveTo(0, t.value); rfCtx.lineTo(w, t.value);
+                    }
+                    rfCtx.stroke();
+                });
+
+                document.getElementById('rfStatus').innerText = "集成投票完成";
+                document.getElementById('rfStatus').style.color = "#34d399";
+            } else {
+                rfPlaceholder.classList.remove('hidden');
+                document.getElementById('rfStatus').innerText = "等待數據點";
+                document.getElementById('rfStatus').style.color = "#94a3b8";
+            }
+
+            // Draw grid
+            rfCtx.strokeStyle = "rgba(30, 41, 59, 0.4)";
+            rfCtx.lineWidth = 1;
+            for(let x=40; x<w; x+=40) { rfCtx.beginPath(); rfCtx.moveTo(x,0); rfCtx.lineTo(x,h); rfCtx.stroke(); }
+            for(let y=40; y<h; y+=40) { rfCtx.beginPath(); rfCtx.moveTo(0,y); rfCtx.lineTo(w,y); rfCtx.stroke(); }
+
+            // Draw points
+            rfPoints.forEach(p => {
+                rfCtx.beginPath(); rfCtx.arc(p.x, p.y, 6, 0, Math.PI*2);
+                rfCtx.fillStyle = p.label === 1 ? "#a855f7" : "#f97316";
+                rfCtx.fill();
+            });
+        }
+
+        rfCanvas.onclick = (e) => {
+            const rect = rfCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (rfCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (rfCanvas.height / rect.height);
+            rfPoints.push({ x, y, label: rfClass });
+            rfDraw();
+        };
+
+        function rfReset() { rfPoints = []; rfDraw(); }
+        rfDraw();
+
+
+        // ==========================================
+        // SVM Sandbox Logic
+        // ==========================================
+        const svmCanvas = document.getElementById('svmCanvas');
+        const svmCtx = svmCanvas.getContext('2d');
+        const svmPlaceholder = document.getElementById('svmPlaceholder');
+        let svmClass = 1;
+        let svmPoints = [
+            { x: 120, y: 100, label: 0 }, { x: 150, y: 160, label: 0 }, { x: 100, y: 220, label: 0 },
+            { x: 380, y: 100, label: 1 }, { x: 350, y: 180, label: 1 }, { x: 400, y: 250, label: 1 }
+        ];
+
+        function svmSetClass(c) {
+            svmClass = c;
+            const btn0 = document.getElementById('svmBtn0');
+            const btn1 = document.getElementById('svmBtn1');
+            if (c === 0) {
+                btn0.className = "px-2.5 py-1 bg-orange-500/20 text-orange-400 border border-orange-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5";
+                btn1.className = "px-2.5 py-1 bg-slate-850 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800";
+            } else {
+                btn0.className = "px-2.5 py-1 bg-slate-850 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800";
+                btn1.className = "px-2.5 py-1 bg-purple-500/20 text-purple-400 border border-purple-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5";
+            }
+        }
+
+        function svmDraw() {
+            const w = svmCanvas.width;
+            const h = svmCanvas.height;
+            svmCtx.clearRect(0, 0, w, h);
+
+            let w0 = 0, w1 = 0, b = 0;
+            const scaleX = w / 2, scaleY = h / 2;
+            let numSVs = 0;
+            let svmMargin = 0;
+
+            if (svmPoints.length >= 2) {
+                svmPlaceholder.classList.add('hidden');
+
+                const mathPts = svmPoints.map(p => ({
+                    x: (p.x - w/2) / scaleX,
+                    y: (h/2 - p.y) / scaleY,
+                    label: p.label === 0 ? -1 : 1
+                }));
+
+                const lr = 0.05, C = 10, epochs = 1000;
+                for (let ep = 0; ep < epochs; ep++) {
+                    let dw0 = w0; 
+                    let dw1 = w1;
+                    let db = 0;
+
+                    mathPts.forEach(p => {
+                        const val = p.label * (w0 * p.x + w1 * p.y + b);
+                        if (val < 1) {
+                            dw0 -= C * p.label * p.x;
+                            dw1 -= C * p.label * p.y;
+                            db -= C * p.label;
+                        }
+                    });
+
+                    w0 -= lr * (dw0 / mathPts.length);
+                    w1 -= lr * (dw1 / mathPts.length);
+                    b -= lr * (db / mathPts.length);
+                }
+
+                mathPts.forEach(p => {
+                    const val = p.label * (w0 * p.x + w1 * p.y + b);
+                    if (val <= 1.1) {
+                        numSVs++;
+                    }
+                });
+
+                const wNorm = Math.sqrt(w0*w0 + w1*w1);
+                svmMargin = wNorm > 0.001 ? 2 / wNorm : 0;
+
+                document.getElementById('svmSVCount').innerText = `${numSVs} 個`;
+                document.getElementById('svmMargin').innerText = svmMargin.toFixed(3);
+
+                const step = 5;
+                for (let x = 0; x < w; x += step) {
+                    for (let y = 0; y < h; y += step) {
+                        const mx = (x + step/2 - w/2) / scaleX;
+                        const my = (h/2 - (y + step/2)) / scaleY;
+                        const score = w0 * mx + w1 * my + b;
+                        
+                        let fillVal = 0.5 + score * 0.5;
+                        fillVal = Math.max(0, Math.min(1, fillVal));
+
+                        svmCtx.fillStyle = `rgba(${Math.floor(168*fillVal + 249*(1-fillVal))}, ${Math.floor(85*fillVal + 115*(1-fillVal))}, ${Math.floor(247*fillVal + 22*(1-fillVal))}, 0.10)`;
+                        svmCtx.fillRect(x, y, step, step);
+                    }
+                }
+
+                if (Math.abs(w1) > 0.001) {
+                    svmCtx.strokeStyle = "#10b981";
+                    svmCtx.lineWidth = 2.5;
+                    svmCtx.beginPath();
+                    let my1 = -(w0 * (-1) + b) / w1;
+                    let my2 = -(w0 * 1 + b) / w1;
+                    svmCtx.moveTo(0, h/2 - my1*scaleY);
+                    svmCtx.lineTo(w, h/2 - my2*scaleY);
+                    svmCtx.stroke();
+
+                    svmCtx.strokeStyle = "rgba(168, 85, 247, 0.6)"; 
+                    svmCtx.setLineDash([4, 4]);
+                    svmCtx.lineWidth = 1.5;
+                    svmCtx.beginPath();
+                    my1 = -(w0 * (-1) + b - 1) / w1;
+                    my2 = -(w0 * 1 + b - 1) / w1;
+                    svmCtx.moveTo(0, h/2 - my1*scaleY);
+                    svmCtx.lineTo(w, h/2 - my2*scaleY);
+                    svmCtx.stroke();
+
+                    svmCtx.strokeStyle = "rgba(249, 115, 22, 0.6)"; 
+                    svmCtx.beginPath();
+                    my1 = -(w0 * (-1) + b + 1) / w1;
+                    my2 = -(w0 * 1 + b + 1) / w1;
+                    svmCtx.moveTo(0, h/2 - my1*scaleY);
+                    svmCtx.lineTo(w, h/2 - my2*scaleY);
+                    svmCtx.stroke();
+                    svmCtx.setLineDash([]);
+                }
+            } else {
+                svmPlaceholder.classList.remove('hidden');
+                document.getElementById('svmSVCount').innerText = "0 個";
+                document.getElementById('svmMargin').innerText = "0.000";
+            }
+
+            svmCtx.strokeStyle = "rgba(30, 41, 59, 0.4)";
+            svmCtx.lineWidth = 1;
+            for(let x=40; x<w; x+=40) { svmCtx.beginPath(); svmCtx.moveTo(x,0); svmCtx.lineTo(x,h); svmCtx.stroke(); }
+            for(let y=40; y<h; y+=40) { svmCtx.beginPath(); svmCtx.moveTo(0,y); svmCtx.lineTo(w,y); svmCtx.stroke(); }
+
+            svmPoints.forEach((p, idx) => {
+                svmCtx.beginPath(); 
+                const mathPt = {
+                    x: (p.x - w/2) / scaleX,
+                    y: (h/2 - p.y) / scaleY,
+                    label: p.label === 0 ? -1 : 1
+                };
+                const val = mathPt.label * (w0 * mathPt.x + w1 * mathPt.y + b);
+                
+                if (svmPoints.length >= 2 && val <= 1.1) {
+                    svmCtx.strokeStyle = "#ffffff";
+                    svmCtx.lineWidth = 1.5;
+                    svmCtx.arc(p.x, p.y, 11, 0, Math.PI*2);
+                    svmCtx.stroke();
+                    svmCtx.beginPath();
+                }
+
+                svmCtx.arc(p.x, p.y, 6, 0, Math.PI*2);
+                svmCtx.fillStyle = p.label === 1 ? "#a855f7" : "#f97316";
+                svmCtx.fill();
+            });
+        }
+
+        svmCanvas.onclick = (e) => {
+            const rect = svmCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (svmCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (svmCanvas.height / rect.height);
+            svmPoints.push({ x, y, label: svmClass });
+            svmDraw();
+        };
+
+        function svmReset() { svmPoints = []; svmDraw(); }
+        svmDraw();
+
+
+        // ==========================================
+        // Naive Bayes Sandbox Logic
+        // ==========================================
+        const nbCanvas = document.getElementById('nbCanvas');
+        const nbCtx = nbCanvas.getContext('2d');
+        const nbPlaceholder = document.getElementById('nbPlaceholder');
+        let nbClass = 1;
+        let nbPoints = [
+            { x: 120, y: 100, label: 0 }, { x: 150, y: 160, label: 0 }, { x: 100, y: 220, label: 0 },
+            { x: 380, y: 100, label: 1 }, { x: 350, y: 180, label: 1 }, { x: 400, y: 250, label: 1 }
+        ];
+
+        function nbSetClass(c) {
+            nbClass = c;
+            const btn0 = document.getElementById('nbBtn0');
+            const btn1 = document.getElementById('nbBtn1');
+            if (c === 0) {
+                btn0.className = "px-2.5 py-1 bg-orange-500/20 text-orange-400 border border-orange-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5";
+                btn1.className = "px-2.5 py-1 bg-slate-850 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800";
+            } else {
+                btn0.className = "px-2.5 py-1 bg-slate-850 text-slate-400 border border-transparent rounded-lg text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-800";
+                btn1.className = "px-2.5 py-1 bg-purple-500/20 text-purple-400 border border-purple-500 rounded-lg text-xs font-bold transition flex items-center gap-1.5";
+            }
+        }
+
+        function nbDraw() {
+            const w = nbCanvas.width;
+            const h = nbCanvas.height;
+            nbCtx.clearRect(0, 0, w, h);
+
+            if (nbPoints.length >= 2) {
+                nbPlaceholder.classList.add('hidden');
+
+                const c0 = nbPoints.filter(p => p.label === 0);
+                const c1 = nbPoints.filter(p => p.label === 1);
+
+                const getStats = (arr) => {
+                    if (arr.length === 0) return { meanX: 0, meanY: 0, varX: 1, varY: 1 };
+                    const sumX = arr.reduce((acc, p) => acc + p.x, 0);
+                    const sumY = arr.reduce((acc, p) => acc + p.y, 0);
+                    const mx = sumX / arr.length;
+                    const my = sumY / arr.length;
+                    let vx = arr.reduce((acc, p) => acc + Math.pow(p.x - mx, 2), 0) / arr.length;
+                    let vy = arr.reduce((acc, p) => acc + Math.pow(p.y - my, 2), 0) / arr.length;
+                    vx = Math.max(100, vx);
+                    vy = Math.max(100, vy);
+                    return { meanX: mx, meanY: my, varX: vx, varY: vy };
+                };
+
+                const stats0 = getStats(c0);
+                const stats1 = getStats(c1);
+
+                const p0_prior = c0.length / nbPoints.length;
+                const p1_prior = 1 - p0_prior;
+
+                const getGaussianPdf = (val, mean, variance) => {
+                    return (1 / Math.sqrt(2 * Math.PI * variance)) * Math.exp(-Math.pow(val - mean, 2) / (2 * variance));
+                };
+
+                const step = 5;
+                for (let x = 0; x < w; x += step) {
+                    for (let y = 0; y < h; y += step) {
+                        let score0 = p0_prior;
+                        let score1 = p1_prior;
+
+                        if (c0.length > 0) {
+                            score0 *= getGaussianPdf(x, stats0.meanX, stats0.varX) * getGaussianPdf(y, stats0.meanY, stats0.varY);
+                        } else { score0 = 0; }
+
+                        if (c1.length > 0) {
+                            score1 *= getGaussianPdf(x, stats1.meanX, stats1.varX) * getGaussianPdf(y, stats1.meanY, stats1.varY);
+                        } else { score1 = 0; }
+
+                        const total = score0 + score1;
+                        const prob1 = total > 0 ? score1 / total : 0.5;
+
+                        nbCtx.fillStyle = `rgba(${Math.floor(168*prob1 + 249*(1-prob1))}, ${Math.floor(85*prob1 + 115*(1-prob1))}, ${Math.floor(247*prob1 + 22*(1-prob1))}, 0.10)`;
+                        nbCtx.fillRect(x, y, step, step);
+                    }
+                }
+            } else {
+                nbPlaceholder.classList.remove('hidden');
+            }
+
+            nbCtx.strokeStyle = "rgba(30, 41, 59, 0.4)";
+            nbCtx.lineWidth = 1;
+            for(let x=40; x<w; x+=40) { nbCtx.beginPath(); nbCtx.moveTo(x,0); nbCtx.lineTo(x,h); nbCtx.stroke(); }
+            for(let y=40; y<h; y+=40) { nbCtx.beginPath(); nbCtx.moveTo(0,y); nbCtx.lineTo(w,y); nbCtx.stroke(); }
+
+            nbPoints.forEach(p => {
+                nbCtx.beginPath(); nbCtx.arc(p.x, p.y, 6, 0, Math.PI*2);
+                nbCtx.fillStyle = p.label === 1 ? "#a855f7" : "#f97316";
+                nbCtx.fill();
+            });
+        }
+
+        nbCanvas.onclick = (e) => {
+            const rect = nbCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (nbCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (nbCanvas.height / rect.height);
+            nbPoints.push({ x, y, label: nbClass });
+            nbDraw();
+        };
+
+        function nbReset() { nbPoints = []; nbDraw(); }
+        nbDraw();
+
+
+        // ==========================================
+        // KNN Sandbox Logic
+        // ==========================================
+        const knnCanvas = document.getElementById('knnCanvas');
+        const knnCtx = knnCanvas.getContext('2d');
+        let knnK = 3;
+        let knnClass = 0;
+        let knnQuery = { x: 250, y: 160 };
+        let knnPoints = [
+            { x: 120, y: 100, label: 0 }, { x: 150, y: 130, label: 0 }, { x: 100, y: 160, label: 0 },
+            { x: 380, y: 220, label: 1 }, { x: 350, y: 260, label: 1 }, { x: 400, y: 240, label: 1 },
+            { x: 250, y: 280, label: 2 }, { x: 220, y: 290, label: 2 }, { x: 280, y: 260, label: 2 }
+        ];
+
+        function knnSetClass(c) {
+            knnClass = c;
+            [0, 1, 2].forEach(idx => {
+                const btn = document.getElementById(`knnBtn${idx}`);
+                if (idx === c) {
+                    btn.className = "w-6 h-6 rounded-full border-2 border-white scale-110 shadow-lg";
+                } else {
+                    btn.className = "w-6 h-6 rounded-full border border-transparent opacity-60 hover:opacity-100";
+                }
+            });
+        }
+
+        function knnChangeK(val) {
+            knnK = parseInt(val);
+            document.getElementById('knnKValueText').innerText = val;
+            knnDraw();
+        }
+
+        function knnDraw() {
+            const w = knnCanvas.width;
+            const h = knnCanvas.height;
+            knnCtx.clearRect(0, 0, w, h);
+
+            // Draw Grid
+            knnCtx.strokeStyle = "#1e293b";
+            knnCtx.lineWidth = 1;
+            for(let x=40; x<w; x+=40) { knnCtx.beginPath(); knnCtx.moveTo(x,0); knnCtx.lineTo(x,h); knnCtx.stroke(); }
+            for(let y=40; y<h; y+=40) { knnCtx.beginPath(); knnCtx.moveTo(0,y); knnCtx.lineTo(w,y); knnCtx.stroke(); }
+
+            const colors = ["#60a5fa", "#f97316", "#a855f7"];
+            const labels = ["類別 A (藍)", "類別 B (橘)", "類別 C (紫)"];
+
+            let prediction = null;
+            let votes = { 0: 0, 1: 0, 2: 0 };
+
+            if(knnPoints.length > 0) {
+                const dists = knnPoints.map(p => ({
+                    point: p,
+                    dist: Math.sqrt(Math.pow(p.x - knnQuery.x, 2) + Math.pow(p.y - knnQuery.y, 2))
+                }));
+                dists.sort((a, b) => a.dist - b.dist);
+                const kNeighbors = dists.slice(0, Math.min(knnK, knnPoints.length));
+
+                kNeighbors.forEach(n => {
+                    votes[n.point.label]++;
+
+                    knnCtx.strokeStyle = "rgba(148, 163, 184, 0.6)";
+                    knnCtx.setLineDash([4, 4]);
+                    knnCtx.beginPath(); knnCtx.moveTo(knnQuery.x, knnQuery.y); knnCtx.lineTo(n.point.x, n.point.y); knnCtx.stroke();
+                    knnCtx.setLineDash([]);
+
+                    knnCtx.strokeStyle = colors[n.point.label];
+                    knnCtx.lineWidth = 2;
+                    knnCtx.beginPath(); knnCtx.arc(n.point.x, n.point.y, 12, 0, Math.PI*2); knnCtx.stroke();
+                });
+
+                let max = -1, winner = 0;
+                Object.keys(votes).forEach(k => {
+                    if (votes[k] > max) { max = votes[k]; winner = parseInt(k); }
+                });
+                prediction = winner;
+                document.getElementById('knnVotes').innerText = `藍色: ${votes[0]}票, 橘色: ${votes[1]}票, 紫色: ${votes[2]}票`;
+                document.getElementById('knnPrediction').innerText = labels[prediction];
+                document.getElementById('knnPrediction').style.color = colors[prediction];
+            } else {
+                document.getElementById('knnVotes').innerText = `藍色: 0票, 橘色: 0票, 紫色: 0票`;
+                document.getElementById('knnPrediction').innerText = "未知";
+                document.getElementById('knnPrediction').style.color = "#94a3b8";
+            }
+
+            knnPoints.forEach(p => {
+                knnCtx.beginPath(); knnCtx.arc(p.x, p.y, 6, 0, Math.PI*2);
+                knnCtx.fillStyle = colors[p.label];
+                knnCtx.fill();
+            });
+
+            knnCtx.beginPath(); knnCtx.arc(knnQuery.x, knnQuery.y, 9, 0, Math.PI*2);
+            knnCtx.fillStyle = prediction !== null ? colors[prediction] : "#ffffff";
+            knnCtx.fill();
+            knnCtx.strokeStyle = "#ffffff";
+            knnCtx.lineWidth = 2;
+            knnCtx.beginPath(); knnCtx.arc(knnQuery.x, knnQuery.y, 9, 0, Math.PI*2); knnCtx.stroke();
+        }
+
+        knnCanvas.onclick = (e) => {
+            const rect = knnCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (knnCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (knnCanvas.height / rect.height);
+
+            if (e.shiftKey) {
+                knnQuery = { x, y };
+            } else {
+                knnPoints.push({ x, y, label: knnClass });
+            }
+            knnDraw();
+        };
+
+        knnCanvas.onmousemove = (e) => {
+            if (e.buttons === 1 && e.shiftKey) {
+                const rect = knnCanvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) * (knnCanvas.width / rect.width);
+                const y = (e.clientY - rect.top) * (knnCanvas.height / rect.height);
+                knnQuery = { x, y };
+                knnDraw();
+            }
+        };
+
+        function knnReset() { knnPoints = []; knnDraw(); }
+        knnDraw();
+
+        // ==========================================
+        // KMeans Sandbox Logic
+        // ==========================================
+        const kmCanvas = document.getElementById('kmCanvas');
+        const kmCtx = kmCanvas.getContext('2d');
+        const kmColors = ["#ef4444", "#3b82f6", "#10b981", "#eab308", "#ec4899"];
+        let kmK = 3;
+        let kmStepCount = 0;
+        let kmConverged = false;
+        let kmPoints = [
+            { x: 120, y: 100, cluster: -1 }, { x: 140, y: 120, cluster: -1 }, { x: 110, y: 150, cluster: -1 },
+            { x: 380, y: 220, cluster: -1 }, { x: 390, y: 250, cluster: -1 }, { x: 360, y: 230, cluster: -1 },
+            { x: 250, y: 280, cluster: -1 }, { x: 230, y: 290, cluster: -1 }, { x: 270, y: 270, cluster: -1 }
+        ];
+        let kmCentroids = [];
+
+        function kmChangeK(val) {
+            kmK = parseInt(val);
+            document.getElementById('kmKValueText').innerText = val;
+            kmCentroids = [];
+            kmStepCount = 0;
+            kmConverged = false;
+            kmPoints = kmPoints.map(p => ({ ...p, cluster: -1 }));
+            kmDraw();
+        }
+
+        function kmInitCentroids() {
+            if (kmPoints.length === 0) return;
+            kmCentroids = [];
+            for(let i=0; i<kmK; i++) {
+                const rIdx = Math.floor(Math.random() * kmPoints.length);
+                kmCentroids.push({
+                    x: kmPoints[rIdx].x + (Math.random() - 0.5) * 15,
+                    y: kmPoints[rIdx].y + (Math.random() - 0.5) * 15,
+                    color: kmColors[i]
+                });
+            }
+            kmPoints = kmPoints.map(p => ({ ...p, cluster: -1 }));
+            kmStepCount = 0;
+            kmConverged = false;
+            document.getElementById('kmStatusText').innerText = "中心點已初始化";
+            document.getElementById('kmStatusText').style.color = "#f59e0b";
+            kmDraw();
+        }
+
+        function kmStep() {
+            if (kmCentroids.length === 0) { kmInitCentroids(); return; }
+
+            let changedAssignment = false;
+            kmPoints = kmPoints.map(p => {
+                let minD = Infinity, nearest = -1;
+                kmCentroids.forEach((c, idx) => {
+                    const d = Math.sqrt(Math.pow(p.x - c.x, 2) + Math.pow(p.y - c.y, 2));
+                    if (d < minD) { minD = d; nearest = idx; }
+                });
+                if (p.cluster !== nearest) changedAssignment = true;
+                return { ...p, cluster: nearest };
+            });
+
+            let movedCentroid = false;
+            kmCentroids = kmCentroids.map((c, idx) => {
+                const clusterPts = kmPoints.filter(p => p.cluster === idx);
+                if (clusterPts.length === 0) return c;
+                const sumX = clusterPts.reduce((acc, p) => acc + p.x, 0);
+                const sumY = clusterPts.reduce((acc, p) => acc + p.y, 0);
+                const avgX = sumX / clusterPts.length;
+                const avgY = sumY / clusterPts.length;
+                if (Math.abs(c.x - avgX) > 0.5 || Math.abs(c.y - avgY) > 0.5) movedCentroid = true;
+                return { ...c, x: avgX, y: avgY };
+            });
+
+            kmStepCount++;
+            document.getElementById('kmStepText').innerText = `第 ${kmStepCount} 次`;
+
+            if (!movedCentroid && kmStepCount > 1) {
+                kmConverged = true;
+                document.getElementById('kmStatusText').innerText = "已收斂 (Converged)";
+                document.getElementById('kmStatusText').style.color = "#3b82f6";
+            } else {
+                document.getElementById('kmStatusText').innerText = "中心點更新中";
+                document.getElementById('kmStatusText').style.color = "#f59e0b";
+            }
+            kmDraw();
+        }
+
+        function kmRun() {
+            if (kmCentroids.length === 0) kmInitCentroids();
+            let limit = 0;
+            while(!kmConverged && limit < 30) {
+                kmStep();
+                limit++;
+            }
+        }
+
+        function kmDraw() {
+            const w = kmCanvas.width;
+            const h = kmCanvas.height;
+            kmCtx.clearRect(0, 0, w, h);
+
+            // Draw Grid
+            kmCtx.strokeStyle = "#1e293b";
+            kmCtx.lineWidth = 1;
+            for(let x=40; x<w; x+=40) { kmCtx.beginPath(); kmCtx.moveTo(x,0); kmCtx.lineTo(x,h); kmCtx.stroke(); }
+            for(let y=40; y<h; y+=40) { kmCtx.beginPath(); kmCtx.moveTo(0,y); kmCtx.lineTo(w,y); kmCtx.stroke(); }
+
+            kmPoints.forEach(p => {
+                if (p.cluster !== -1 && kmCentroids[p.cluster]) {
+                    const c = kmCentroids[p.cluster];
+                    kmCtx.strokeStyle = c.color + "22";
+                    kmCtx.beginPath(); kmCtx.moveTo(p.x, p.y); kmCtx.lineTo(c.x, c.y); kmCtx.stroke();
+                }
+            });
+
+            kmPoints.forEach(p => {
+                kmCtx.beginPath(); kmCtx.arc(p.x, p.y, 6, 0, Math.PI*2);
+                kmCtx.fillStyle = p.cluster !== -1 ? kmCentroids[p.cluster].color : "#cbd5e1";
+                kmCtx.fill();
+            });
+
+            kmCentroids.forEach(c => {
+                kmCtx.strokeStyle = "#ffffff";
+                kmCtx.lineWidth = 2;
+                kmCtx.fillStyle = c.color;
+                kmCtx.beginPath();
+                kmCtx.moveTo(c.x, c.y - 10);
+                kmCtx.lineTo(c.x + 8, c.y);
+                kmCtx.lineTo(c.x, c.y + 10);
+                kmCtx.lineTo(c.x - 8, c.y);
+                kmCtx.closePath();
+                kmCtx.fill(); kmCtx.stroke();
+            });
+        }
+
+        kmCanvas.onclick = (e) => {
+            const rect = kmCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (kmCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (kmCanvas.height / rect.height);
+            kmPoints.push({ x, y, cluster: -1 });
+            kmConverged = false;
+            kmDraw();
+        };
+
+        function kmReset() { kmPoints = []; kmCentroids = []; kmStepCount = 0; kmConverged = false; kmDraw(); }
+        kmDraw();
+
+        // ==========================================
+        // PCA Sandbox Logic
+        // ==========================================
+        const pcaCanvas = document.getElementById('pcaCanvas');
+        const pcaCtx = pcaCanvas.getContext('2d');
+        let pcaPoints = [
+            { x: 150, y: 220 }, { x: 180, y: 200 }, { x: 210, y: 170 }, { x: 250, y: 150 },
+            { x: 280, y: 130 }, { x: 310, y: 110 }, { x: 340, y: 90 }, { x: 160, y: 230 }, { x: 330, y: 100 }
+        ];
+
+        function pcaDraw() {
+            const w = pcaCanvas.width;
+            const h = pcaCanvas.height;
+            pcaCtx.clearRect(0, 0, w, h);
+
+            // Draw Grid
+            pcaCtx.strokeStyle = "#1e293b";
+            pcaCtx.lineWidth = 1;
+            for(let x=40; x<w; x+=40) { pcaCtx.beginPath(); pcaCtx.moveTo(x,0); pcaCtx.lineTo(x,h); pcaCtx.stroke(); }
+            for(let y=40; y<h; y+=40) { pcaCtx.beginPath(); pcaCtx.moveTo(0,y); pcaCtx.lineTo(w,y); pcaCtx.stroke(); }
+
+            if (pcaPoints.length >= 3) {
+                const n = pcaPoints.length;
+                let sumX = 0, sumY = 0;
+                pcaPoints.forEach(p => { sumX += p.x; sumY += p.y; });
+                const meanX = sumX / n;
+                const meanY = sumY / n;
+
+                let varX = 0, varY = 0, covXY = 0;
+                pcaPoints.forEach(p => {
+                    const dx = p.x - meanX;
+                    const dy = p.y - meanY;
+                    varX += dx * dx;
+                    varY += dy * dy;
+                    covXY += dx * dy;
+                });
+                varX /= n; varY /= n; covXY /= n;
+
+                const tr = varX + varY;
+                const det = varX * varY - covXY * covXY;
+                const desc = tr * tr - 4 * det;
+
+                if (desc >= 0) {
+                    const l1 = (tr + Math.sqrt(desc)) / 2;
+                    const l2 = (tr - Math.sqrt(desc)) / 2;
+
+                    const totalVal = l1 + l2;
+                    document.getElementById('pcaPC1Info').innerText = totalVarPct(l1, totalVal);
+                    document.getElementById('pcaPC2Info').innerText = totalVarPct(l2, totalVal);
+
+                    let v1 = [1, 0];
+                    if (Math.abs(covXY) > 1e-4) {
+                        const len = Math.sqrt(1 + Math.pow((l1 - varX)/covXY, 2));
+                        v1 = [1/len, ((l1 - varX)/covXY)/len];
+                    } else if (varY > varX) {
+                        v1 = [0, 1];
+                    }
+                    const v2 = [-v1[1], v1[0]];
+
+                    pcaPoints.forEach(p => {
+                        const dx = p.x - meanX;
+                        const dy = p.y - meanY;
+                        const proj = dx*v1[0] + dy*v1[1];
+                        pcaCtx.strokeStyle = "rgba(100, 116, 139, 0.4)";
+                        pcaCtx.setLineDash([3, 3]);
+                        pcaCtx.beginPath();
+                        pcaCtx.moveTo(p.x, p.y);
+                        pcaCtx.lineTo(meanX + proj*v1[0], meanY + proj*v1[1]);
+                        pcaCtx.stroke();
+                        pcaCtx.setLineDash([]);
+                    });
+
+                    pcaCtx.fillStyle = "#ffffff";
+                    pcaCtx.beginPath(); pcaCtx.arc(meanX, meanY, 5, 0, Math.PI*2); pcaCtx.fill();
+
+                    const arrowScale = 2.5;
+                    const p1x = meanX + v1[0] * Math.sqrt(l1) * arrowScale;
+                    const p1y = meanY + v1[1] * Math.sqrt(l1) * arrowScale;
+                    pcaCtx.strokeStyle = "#ef4444";
+                    pcaCtx.lineWidth = 3;
+                    pcaCtx.beginPath(); pcaCtx.moveTo(meanX, meanY); pcaCtx.lineTo(p1x, p1y); pcaCtx.stroke();
+
+                    const p2x = meanX + v2[0] * Math.sqrt(l2) * arrowScale;
+                    const p2y = meanY + v2[1] * Math.sqrt(l2) * arrowScale;
+                    pcaCtx.strokeStyle = "#3b82f6";
+                    pcaCtx.lineWidth = 2;
+                    pcaCtx.beginPath(); pcaCtx.moveTo(meanX, meanY); pcaCtx.lineTo(p2x, p2y); pcaCtx.stroke();
+                }
+            } else {
+                document.getElementById('pcaPC1Info').innerText = "0.0%";
+                document.getElementById('pcaPC2Info').innerText = "0.0%";
+            }
+
+            pcaCtx.fillStyle = "#e2e8f0";
+            pcaPoints.forEach(p => {
+                pcaCtx.beginPath(); pcaCtx.arc(p.x, p.y, 5, 0, Math.PI*2); pcaCtx.fill();
+            });
+        }
+
+        function totalVarPct(l, tot) {
+            return tot > 0 ? `${((l/tot)*100).toFixed(1)}%` : "0.0%";
+        }
+
+        pcaCanvas.onclick = (e) => {
+            const rect = pcaCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (pcaCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (pcaCanvas.height / rect.height);
+            pcaPoints.push({ x, y });
+            pcaDraw();
+        };
+
+        function pcaReset() { pcaPoints = []; pcaDraw(); }
+        pcaDraw();
+
+        // ==========================================
+        // Face API Webcam Implementation
+        // ==========================================
+        let faceapiActive = false;
+        let faceapiInterval = null;
+        const faceapiVideo = document.getElementById('faceapiVideo');
+        const faceapiCanvas = document.getElementById('faceapiCanvas');
+        const faceapiControls = document.getElementById('faceapiControls');
+        const faceapiStatus = document.getElementById('faceapiStatus');
+        const faceapiResult = document.getElementById('faceapiResult');
+        const faceapiIcon = document.getElementById('faceapiIcon');
+        const faceapiProbabilities = document.getElementById('faceapiProbabilities');
+
+        const emotions = [
+            { key: "neutral", label: "專注 / 平常心", color: "bg-slate-400" },
+            { key: "happy", label: "滿意 / 開心", color: "bg-emerald-500" },
+            { key: "sad", label: "困惑 / 思考", color: "bg-blue-500" },
+            { key: "surprised", label: "驚訝 / 頓悟", color: "bg-amber-500" },
+            { key: "angry", label: "挫折 / 緊繃", color: "bg-rose-500" }
+        ];
+
+        function renderEmotionBars(exprs = {}) {
+            faceapiProbabilities.innerHTML = '';
+            emotions.forEach(e => {
+                const val = exprs[e.key] || 0;
+                const div = document.createElement('div');
+                div.className = "space-y-1";
+                div.innerHTML = `
+                    <div class="flex justify-between text-xs font-medium">
+                        <span class="text-slate-300">${e.label}</span>
+                        <span class="text-slate-500 font-mono">${(val*100).toFixed(0)}%</span>
+                    </div>
+                    <div class="h-1.5 w-full bg-slate-850 rounded-full overflow-hidden">
+                        <div class="h-full ${e.color} transition-all duration-150 rounded-full" style="width: ${val*100}%"></div>
+                    </div>
+                `;
+                faceapiProbabilities.appendChild(div);
+            });
+        }
+        renderEmotionBars();
+
+        async function faceapiToggleCamera() {
+            if (faceapiActive) {
+                if (faceapiVideo.srcObject) {
+                    const stream = faceapiVideo.srcObject;
+                    stream.getTracks().forEach(t => t.stop());
+                    faceapiVideo.srcObject = null;
+                }
+                if (faceapiInterval) clearInterval(faceapiInterval);
+                faceapiActive = false;
+                faceapiResult.innerText = "相機未開啟";
+                faceapiControls.classList.remove('hidden');
+                faceapiIcon.setAttribute('data-lucide', 'camera-off');
+                faceapiStatus.innerText = "開啟相機體驗情緒感知的「動態適應學習模式」";
+                lucide.createIcons();
+                renderEmotionBars();
+            } else {
+                try {
+                    faceapiStatus.innerText = "正在下載 AI 深度學習模型 (這可能需要數秒時間)...";
+                    faceapiIcon.setAttribute('data-lucide', 'loader-2');
+                    faceapiIcon.classList.add('animate-spin');
+                    lucide.createIcons();
+
+                    const weightsUrl = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/';
+                    await faceapi.nets.tinyFaceDetector.loadFromUri(weightsUrl);
+                    await faceapi.nets.faceLandmark68Net.loadFromUri(weightsUrl);
+                    await faceapi.nets.faceExpressionNet.loadFromUri(weightsUrl);
+
+                    faceapiStatus.innerText = "正在取得相機權限...";
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: 320, height: 240, frameRate: { ideal: 15 } },
+                        audio: false
+                    });
+                    faceapiVideo.srcObject = stream;
+                    faceapiVideo.play();
+                    
+                    faceapiActive = true;
+                    faceapiControls.classList.add('hidden');
+                    faceapiIcon.classList.remove('animate-spin');
+
+                    const displaySize = { width: 320, height: 240 };
+                    faceapi.matchDimensions(faceapiCanvas, displaySize);
+
+                    faceapiInterval = setInterval(async () => {
+                        if (faceapiVideo.paused || faceapiVideo.ended || !faceapiActive) return;
+                        try {
+                            const detection = await faceapi.detectSingleFace(
+                                faceapiVideo, 
+                                new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.5 })
+                            ).withFaceLandmarks().withFaceExpressions();
+
+                            if (detection) {
+                                const ctx = faceapiCanvas.getContext('2d');
+                                ctx.clearRect(0, 0, faceapiCanvas.width, faceapiCanvas.height);
+                                
+                                const resized = faceapi.resizeResults(detection, displaySize);
+                                faceapi.draw.drawDetections(faceapiCanvas, resized);
+                                faceapi.draw.drawFaceLandmarks(faceapiCanvas, resized);
+
+                                const exprs = detection.expressions;
+                                renderEmotionBars(exprs);
+
+                                let maxVal = 0, dominant = 'neutral';
+                                Object.keys(exprs).forEach(k => {
+                                    if (exprs[k] > maxVal) { maxVal = exprs[k]; dominant = k; }
+                                });
+
+                                const emotionsName = {
+                                    neutral: "平常心 / 專注 😐",
+                                    happy: "滿意 / 獲得靈感 😊",
+                                    sad: "困惑 / 思考中 😟",
+                                    angry: "挫折 / 生氣 😡",
+                                    fearful: "擔憂 😨",
+                                    disgusted: "反感 🤢",
+                                    surprised: "驚訝 / 頓悟 😮"
+                                };
+
+                                faceapiResult.innerText = `${emotionsName[dominant]} (${(maxVal*100).toFixed(0)}%)`;
+
+                                const ev = new CustomEvent('faceapi-emotion', {
+                                    detail: { emotion: dominant, score: maxVal, expressions: exprs }
+                                });
+                                window.dispatchEvent(ev);
+                            }
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    }, 200);
+
+                } catch (err) {
+                    console.error(err);
+                    faceapiIcon.setAttribute('data-lucide', 'camera-off');
+                    faceapiIcon.classList.remove('animate-spin');
+                    faceapiStatus.innerText = "無法載入相機，請確認已核准相機權限且鏡頭正常連接。";
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        // ==========================================
+        // AI Adaptive Learning Assistant Logic
+        // ==========================================
+        const analogies = {
+            intro: { title: "機器學習三大範式", text: "這就像教小狗：『監督式』是你丟飛盤告訴牠『這是飛盤』；『非監督式』是把一堆玩具丟給牠，讓牠自己去把球分一堆、骨頭分一堆；『強化學習』則是做對了給骨頭，做錯了發戰，讓牠在嘗試中學會最聰明的做法！" },
+            algo1: { title: "線性迴歸 (Linear)", text: "這就像去菜市場買蘋果，1顆蘋果10元，買越多元就越貴。線性迴歸就是在這中間點與點之間畫出一條最直的公式線，幫你預測買 20 顆蘋果大概要花多少錢！" },
+            algo2: { title: "邏輯迴歸 (Logistic)", text: "這就像是銀行的『防詐騙警報』，它的輸出只有兩種：『是詐騙 (1)』或『正常交易 (0)』。它把所有刷卡特徵化為分數，並用 Sigmoid 壓縮在 0 到 1 之間，代表是詐騙的機率。" },
+            algo3: { title: "決策樹 (Decision)", text: "這就像做心理測驗：第一關『年滿18歲？』是 ➡️ 第二關『有駕照？』是 ➡️ 可以合法開車。這就是一連串『是與否』的條件分支篩選！" },
+            algo4: { title: "隨機森林 (Random Forest)", text: "這就像多數決！如果只有一個醫生（決策樹）可能會診斷錯誤（過擬合），但如果請 100 位醫生各自診斷並進行多數決投票，集體智慧的判斷就會比單一醫生準確很多！" },
+            algo5: { title: "支援向量機 (SVM)", text: "這就像在兩軍交戰時畫出一條『楚河漢界』。而且這條邊界線必須距離兩邊最前線的士兵（支援向量）都盡可能地遠，安全距離（Margin）最大，兩國才最不容易起衝突！" },
+            algo6: { title: "K-最近鄰 (KNN)", text: "俗話說『物以類聚』。新搬來的鄰居是什麼人，只要看他家周圍最近的 3 個（K=3）鄰居是做什麼的。如果 2 個是工程師，1 個是醫生，那麼他大概也是工程師！" },
+            algo7: { title: "單純貝氏 (Naive Bayes)", text: "這就像是一個『垃圾郵件過濾器』。它單純地假設信件中出現的詞彙（例如『中獎』、『免費』）都是完全獨立無關的，然後把這些詞同時在垃圾信出現的機率乘起來，快速判斷是不是垃圾信！" },
+            algo8: { title: "K-Means 分群", text: "這就像班上要分組報告。大家隨機選出 3 個組長（中心點），其他人自動靠攏到距離自己最近的組長身邊。接著組長再往組員的中間移動，大家反覆調整，直到分出最完美的 3 大組！" },
+            algo9: { title: "主成分分析 (PCA)", text: "這就像幫 3D 的雕像拍一張 2D 的照片。雖然少了一個維度，但只要角度選得好，還是能完全看出雕像的樣子。PCA 就是幫你找出那個『最能保留立體特徵的拍照角度』！" },
+            algo10: { title: "類神經網路 (Deep)", text: "這就像是把幾百個邏輯迴歸像樂高積木一樣疊成很多層！低層學習線條，中層學習形狀，高層學習人臉（就像此時此刻 Face API 正在努力辨識你的表情一樣）！" },
+            matrix: { title: "演算法綜合矩陣", text: "這就像是你出門時的工具箱：釘釘子用鐵鎚（線性迴歸），鎖螺絲用螺絲起子（決策樹）。沒有最強的工具，只有最適合當前資料任務的演算法！" }
+        };
+
+        const quizzes = {
+            intro: { question: "K-Means 客戶分群屬於以下哪一種機器學習範式？", options: ["監督式學習", "非監督式學習", "強化學習"], answerIdx: 1, explanation: "K-Means 分群不需要歷史標籤（標準答案），而是由演算法自主探索資料點的距離結構進行分群，因此屬於『非監督式學習』。" },
+            algo1: { question: "線性迴歸主要用來解決以下哪一種預測任務？", options: ["預測連續型數值", "預測二元類別", "將資料分成未知群體"], answerIdx: 0, explanation: "線性迴歸是用來預測連續變數（如房價、溫度、良率）的迴歸任務。分類任務通常使用邏輯迴歸或決策樹。" },
+            algo2: { question: "邏輯迴歸中，常用來將輸出數值壓縮到 0 與 1 之間的函數是？", options: ["ReLU 函數", "Sigmoid 函數", "Tanh 函數"], answerIdx: 1, explanation: "Sigmoid 函數（S型曲線）能將任何實數輸入壓縮映射到 [0, 1] 區間，正好代表分類機率。" },
+            algo3: { question: "決策樹演算法在選擇分割特徵時，主要基於以下哪種概念？", options: ["計算距離", "最小化不純度 (Gini Index)", "尋找最大邊際"], answerIdx: 1, explanation: "決策樹藉由計算基尼係數 (Gini) 或訊息熵 (Entropy) 的降低程度（訊息增益），尋找能讓子節點數據最純淨的特徵進行切割。" },
+            algo4: { question: "隨機森林藉由建立多棵獨立決策樹進行多數決，主要解決了決策樹的什麼缺點？", options: ["計算速度太慢", "容易過擬合 (Overfitting) 死背資料", "無法處理非線性資料"], answerIdx: 1, explanation: "單棵決策樹很容易生長過深，從而完美死背訓練集（過擬合）。隨機森林透過隨機隨機抽樣，大幅降低了模型的變異數並防止過擬合。" },
+            algo5: { question: "支援向量機 (SVM) 尋找的最佳超平面，是基於以下哪個指標的最大化？", options: ["分類正確率", "邊際間距 (Margin)", "梯度下降斜率"], answerIdx: 1, explanation: "SVM 的核心目標是極大化決策邊界到最近樣本點（支援向量）的『邊際距離 (Margin)』，以取得最強的模型泛化能力。" },
+            algo6: { question: "如果 KNN 的 K 值設定得極小 (例如 K=1)，模型會偏向如何？", options: ["極容易受到局部噪點干擾，導致模型過於複雜且不穩定", "模型非常平滑穩定，對雜訊不敏感", "模型退化為線性分類"], answerIdx: 0, explanation: "當 K=1 時，模型僅看最近的一個點。如果該點是異常雜訊，就會直接被錯誤分類，因此模型會非常敏感且不穩定。" },
+            algo7: { question: "單純貝氏演算法中的『單純 (Naive)』是指什麼假設？", options: ["假設所有特徵特徵都是無用的", "假設所有特徵在給定類別下皆互相獨立、互不關聯", "假設數據呈完美的線性分布"], answerIdx: 1, explanation: "『單純』指強烈假設所有屬性特徵彼此獨立無關。雖然在現實中極少成立，但能大幅簡化機率乘積計算，且在垃圾郵件分類等任務上表現優異。" },
+            algo8: { question: "K-Means 分群中，K 值的決定代表了什麼？", options: ["迭代的次數", "最終要分出的群體個數", "計算距離時的鄰居個數"], answerIdx: 1, explanation: "K-Means 中的 K 代表最終希望將所有樣本聚類分成的群組總數，需要使用者在初始時手動設定。" },
+            algo9: { question: "PCA (主成分分析) 進行特徵降維時，核心是尋找投影後擁有最大什麼的軸向？", options: ["平均數 (Mean)", "變異數 (Variance, 資訊保留量)", "斜率 (Slope)"], answerIdx: 1, explanation: "PCA 旨在尋找投影後變異數（分散程度）最大的方向，因為變異數越大，代表保留的原始資訊特徵越豐富。" },
+            algo10: { question: "類神經網路 (Deep Learning) 之所以強大，主要因為它能透過多層堆疊自動完成什麼？", options: ["資料清理", "特徵提取與特徵工程", "資料庫備份"], answerIdx: 1, explanation: "深度學習能透過層層網路的組合，從小特徵（線條）自動拼湊成大特徵（眼睛、臉部），無須人類專家手動設計特徵欄位，此稱為表徵學習。" },
+            matrix: { question: "機器學習實務上選擇演算法時，最核心的黃金法則是什麼？", options: ["一律使用最複雜的深度學習", "簡單好解釋且效果足夠的優先 (沒有免費午餐定理)", "挑選名字聽起來最酷的"], answerIdx: 1, explanation: "根據『沒有免費午餐定理』，沒有任何一個演算法能在所有問題上都表現最好。一般實務上偏好簡單好解釋、運算快且效果能滿足業務目標的模型。" }
+        };
+
+        const aiWidget = document.getElementById('ai-assistant-widget');
+        let emotionQueue = [];
+        let assistantActive = false;
+        let assistantStatus = 'focused'; 
+        let quizAnswered = false;
+
+        window.addEventListener('faceapi-emotion', (e) => {
+            const { emotion, score } = e.detail;
+            emotionQueue.push(emotion);
+            if (emotionQueue.length > 6) emotionQueue.shift();
+
+            const confusions = emotionQueue.filter(em => em === 'sad' || em === 'angry' || em === 'fearful').length;
+            const confidence = emotionQueue.filter(em => em === 'happy' || em === 'surprised').length;
+
+            if (confusions >= 2 && assistantStatus !== 'confused' && !assistantActive) {
+                assistantStatus = 'confused';
+                triggerAssistant('analogy');
+            } else if (confidence >= 2 && assistantStatus !== 'confident' && !assistantActive) {
+                assistantStatus = 'confident';
+                triggerAssistant('quiz');
+            }
+        });
+
+        function triggerAssistant(type) {
+            assistantActive = true;
+            quizAnswered = false;
+            aiWidget.innerHTML = '';
+            aiWidget.classList.remove('hidden');
+
+            const gradient = type === 'analogy' ? 'from-cyan-500 to-blue-500' : 'from-emerald-500 to-teal-500';
+            const iconName = type === 'analogy' ? 'sparkles' : 'help-circle';
+            const iconColor = type === 'analogy' ? 'text-cyan-400 bg-cyan-500/10' : 'text-emerald-400 bg-emerald-500/10';
+            const title = type === 'analogy' ? '💡 AI 助教的生活化比喻' : '❓ AI 助教的小小挑戰';
+
+            const card = document.createElement('div');
+            card.className = "bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-5 shadow-2xl relative overflow-hidden animate-slide-up";
+            card.innerHTML = `
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}"></div>
+                <div class="flex items-start gap-3">
+                    <div class="p-2 rounded-xl flex items-center justify-center shrink-0 ${iconColor}">
+                        <i data-lucide="${iconName}" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1 space-y-2">
+                        <h5 class="text-white font-bold text-sm tracking-wide">${title}</h5>
+                        <div id="ai-body-content"></div>
+                        <div class="flex justify-end gap-2 pt-2" id="ai-controls-panel"></div>
+                    </div>
+                </div>
+            `;
+            aiWidget.appendChild(card);
+            lucide.createIcons();
+
+            const bodyContent = document.getElementById('ai-body-content');
+            const controlsPanel = document.getElementById('ai-controls-panel');
+
+            if (type === 'analogy') {
+                const item = analogies[activeSection] || analogies['intro'];
+                bodyContent.innerHTML = `
+                    <div class="space-y-2">
+                        <p class="text-slate-250 text-xs font-semibold">${item.title}</p>
+                        <p class="text-slate-355 text-[11px] leading-relaxed">${item.text}</p>
+                    </div>
+                `;
+                controlsPanel.innerHTML = `
+                    <button onclick="triggerAssistant('quiz')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] rounded-lg transition">挑戰測驗</button>
+                    <button onclick="closeAssistant()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] font-bold rounded-lg transition">關閉</button>
+                `;
+            } else {
+                const item = quizzes[activeSection] || quizzes['intro'];
+                bodyContent.innerHTML = `
+                    <div class="space-y-3">
+                        <p class="text-slate-200 text-xs font-semibold leading-relaxed">${item.question}</p>
+                        <div class="space-y-1.5" id="quiz-options-list"></div>
+                        <div id="quiz-explanation-box" class="bg-slate-950/60 p-2.5 rounded-lg border border-slate-855 hidden"></div>
+                    </div>
+                `;
+                const optionsList = document.getElementById('quiz-options-list');
+                item.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left py-2 px-3 rounded-lg text-xs transition duration-150 bg-slate-950 border border-slate-800 hover:bg-slate-850 text-slate-300 flex items-center justify-between";
+                    btn.innerHTML = `<span>${opt}</span><span class="icon-placeholder shrink-0 w-4 h-4 flex items-center justify-center"></span>`;
+                    btn.onclick = () => answerQuiz(idx, item, btn);
+                    optionsList.appendChild(btn);
+                });
+
+                controlsPanel.innerHTML = `
+                    <button onclick="closeAssistant()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] font-bold rounded-lg transition">關閉</button>
+                `;
+            }
+        }
+
+        function answerQuiz(idx, item, btnElement) {
+            if (quizAnswered) return;
+            quizAnswered = true;
+
+            const list = document.getElementById('quiz-options-list');
+            const btns = list.querySelectorAll('button');
+            const correctIdx = item.answerIdx;
+
+            btns.forEach((btn, bIdx) => {
+                btn.disabled = true;
+                const iconPlaceholder = btn.querySelector('.icon-placeholder');
+                if (bIdx === correctIdx) {
+                    btn.className = "w-full text-left py-2 px-3 rounded-lg text-xs transition duration-150 bg-emerald-500/20 border-emerald-500 text-emerald-400 font-bold flex items-center justify-between";
+                    iconPlaceholder.innerHTML = `<i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i>`;
+                } else if (bIdx === idx) {
+                    btn.className = "w-full text-left py-2 px-3 rounded-lg text-xs transition duration-150 bg-rose-500/20 border-rose-500 text-rose-400 font-bold flex items-center justify-between";
+                    iconPlaceholder.innerHTML = `<i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-400"></i>`;
+                } else {
+                    btn.className = "w-full text-left py-2 px-3 rounded-lg text-xs transition duration-150 bg-slate-950 border border-slate-800 text-slate-500 opacity-60 flex items-center justify-between";
+                }
+            });
+            lucide.createIcons();
+
+            const expBox = document.getElementById('quiz-explanation-box');
+            expBox.innerHTML = `<p class="text-[10px] text-slate-450 leading-relaxed"><strong class="text-slate-300 font-bold">解析：</strong>${item.explanation}</p>`;
+            expBox.classList.remove('hidden');
+
+            if (idx === correctIdx) {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.8 } });
+            }
+        }
+
+        function closeAssistant() {
+            aiWidget.classList.add('hidden');
+            assistantActive = false;
+            assistantStatus = 'focused';
+        }
+
+        // ==========================================
+        // Chatbot Assistant Logic
+        // ==========================================
+        let chatbotOpen = false;
+        let apiKey = localStorage.getItem('gemini_api_key') || '';
+        
+        // Load API Key to input on load
+        setTimeout(() => {
+            const keyInput = document.getElementById('chatbot-api-key-input');
+            if (keyInput) keyInput.value = apiKey;
+        }, 500);
+
+        function toggleChatbot() {
+            const win = document.getElementById('chatbot-window');
+            chatbotOpen = !chatbotOpen;
+            if (chatbotOpen) {
+                win.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                win.classList.add('opacity-100', 'translate-y-0');
+            } else {
+                win.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                win.classList.remove('opacity-100', 'translate-y-0');
+            }
+        }
+
+        function toggleApiKeySettings() {
+            const settings = document.getElementById('chatbot-settings');
+            settings.classList.toggle('hidden');
+        }
+
+        function saveApiKey() {
+            const keyInput = document.getElementById('chatbot-api-key-input');
+            apiKey = keyInput.value.trim();
+            localStorage.setItem('gemini_api_key', apiKey);
+            alert(apiKey ? 'Gemini API 金鑰儲存成功！' : 'API 金鑰已清除，將使用本機問答引擎。');
+            document.getElementById('chatbot-settings').classList.add('hidden');
+        }
+
+        function sendQuickQuestion(question) {
+            const input = document.getElementById('chatbot-input');
+            input.value = question;
+            submitChatMessage();
+        }
+
+        function handleChatSubmit(e) {
+            if (e.key === 'Enter') {
+                submitChatMessage();
+            }
+        }
+
+        function submitChatMessage() {
+            const input = document.getElementById('chatbot-input');
+            const question = input.value.trim();
+            if (!question) return;
+
+            // Clear input
+            input.value = '';
+
+            // Render user message
+            renderChatMessage(question, 'user');
+
+            // Show typing indicator
+            const messagesContainer = document.getElementById('chatbot-messages');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'chatbot-typing';
+            typingDiv.className = 'flex items-start gap-2.5';
+            typingDiv.innerHTML = `
+                <div class="bg-indigo-600/10 text-indigo-400 p-1.5 rounded-lg shrink-0">
+                    <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i>
+                </div>
+                <div class="bg-slate-850 border border-slate-800/80 text-slate-400 px-3 py-2 rounded-2xl rounded-tl-none font-mono">
+                    思考中...
+                </div>
+            `;
+            messagesContainer.appendChild(typingDiv);
+            lucide.createIcons();
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Get answer (local or API)
+            setTimeout(async () => {
+                let answer = '';
+                if (apiKey) {
+                    try {
+                        answer = await fetchGeminiResponse(question);
+                    } catch (err) {
+                        console.error(err);
+                        answer = `❌ **連線錯誤**：無法呼叫 Gemini API。請確認您的 API 金鑰是否有效且網路連線正常。\n\n*系統已自動切換回本機問答模式。*\n\n` + getLocalResponse(question);
+                    }
+                } else {
+                    answer = getLocalResponse(question);
+                }
+
+                // Remove typing indicator
+                const typing = document.getElementById('chatbot-typing');
+                if (typing) typing.remove();
+
+                // Render bot response
+                renderChatMessage(answer, 'bot');
+            }, 500);
+        }
+
+        function renderChatMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatbot-messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex items-start gap-2.5 ${sender === 'user' ? 'flex-row-reverse' : ''}`;
+            
+            if (sender === 'user') {
+                msgDiv.innerHTML = `
+                    <div class="bg-indigo-600 text-white p-1.5 rounded-lg shrink-0">
+                        <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <div class="bg-indigo-600/10 border border-indigo-500/20 text-slate-100 px-3 py-2 rounded-2xl rounded-tr-none max-w-[80%] leading-relaxed break-words">
+                        ${text}
+                    </div>
+                `;
+            } else {
+                msgDiv.innerHTML = `
+                    <div class="bg-indigo-600/10 text-indigo-400 p-1.5 rounded-lg shrink-0">
+                        <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <div class="bg-slate-850 border border-slate-800/80 text-slate-100 px-3 py-2 rounded-2xl rounded-tl-none max-w-[80%] leading-relaxed markdown-body">
+                        ${parseMarkdown(text)}
+                    </div>
+                `;
+            }
+            messagesContainer.appendChild(msgDiv);
+            lucide.createIcons();
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        const localAnswers = {
+            "svm": `### 🛡️ 支援向量機 (SVM) 核心精華\n\n**支援向量機 (Support Vector Machine, SVM)** 的目標是在特徵空間中尋找一個**最大安全邊際 (Margin) 的決策邊界（超平面）**來區分類別。\n\n* **支援向量 (Support Vectors)**：最接近決策邊界的那幾個樣本點，正是這幾個點「支撐」起這條邊界線。如果移除其他點，邊界不會變；但如果移動支援向量，邊界就會改變！\n* **最大間距 (Max Margin)**：邊界到最近的支援向量的距離要最大化。這代表模型擁有最高的穩定度與泛化能力。\n* **核技巧 (Kernel Trick)**：若資料在低維空間混雜在一起，SVM 可以使用核函數 (如 RBF、Polynomial) 將資料映射到高維空間，在更高維度實現完美的線性切分！`,
+            "樹": `### 🌿 決策樹 (Decision Tree) 核心精華\n\n**決策樹**是一種「樹狀結構」的分類與迴歸方法，結構完全透明，是最經典的**「白箱」演算法**。\n\n* **不純度 (Impurities)**：決策樹會依據特徵數值，將資料分成左右兩邊。選擇特徵時，主要基於**基尼係數 (Gini Index)** 或 **訊息熵 (Entropy)** 的降低程度。\n* **Gini 係數計算**：$Gini(D) = 1 - \\sum p_i^2$。當 Gini 越接近 0，代表該節點的資料越純（都是同一類）；當 Gini 等於 0.5 時，代表兩種類別各佔一半，最不純。\n* **剪枝 (Pruning)**：決策樹容易長得太深，完美死記訓練集，導致過擬合 (Overfitting)。實務上需透過限制深度或剪枝來限制樹的生長。`,
+            "隨機森林": `### 🌲 隨機森林 (Random Forest) 核心精華\n\n**隨機森林**是經典的**集成學習 (Ensemble Learning)** 方法，它透過「集體智慧」來解決單棵決策樹容易過擬合的問題。\n\n* **自助抽樣 (Bootstrap Aggregation / Bagging)**：隨機森林會從原始資料中，重複隨機抽取樣本（放回抽樣）來訓練多棵獨立的決策樹。\n* **特徵隨機選擇**：在每次分支時，只隨機挑選一部分特徵進行評估，避免單一強特徵主導了所有樹，增加樹與樹之間的差異性。\n* **多數決投票 (Voting)**：新資料進來時，由森林中所有的決策樹各自預測，最後以**多數決 (Classification)** 或 **平均數 (Regression)** 決定最終答案。`,
+            "貝氏": `### ✉️ 單純貝氏 (Naive Bayes) 核心精華\n\n**單純貝氏**是基於**貝氏定理**的機率分類器，由於其假設特徵之間「單純獨立」，因此計算速度快到不可思議。\n\n* **貝氏定理**：$P(C|X) = \\frac{P(X|C) \\cdot P(C)}{P(X)}$。即在看到特徵 $X$ 後，推測它屬於類別 $C$ 的後驗機率。\n* **單純假設 (Naive Assumption)**：強烈假設各特徵之間「彼此獨立、互不影響」。例如信件中出現「中獎」與「免費」是獨立的。雖然在現實中極少成立，但在垃圾郵件過濾、文本分類上效果卻驚人地好。\n* **高斯貝氏 (Gaussian NB)**：當特徵是連續變數（如網格座標）時，我們假設特徵呈常態分佈，計算均值與變異數來計算機率。`,
+            "過擬合": `### ⚠️ 什麼是過擬合 (Overfitting)？\n\n**過擬合 (Overfitting)** 是機器學習中最常見的難題，指模型在**訓練集表現極佳，但在未見過的測試集上表現極差**的現象。\n\n* **原因**：模型學得「太努力」了，連訓練資料中的「雜訊 (Noise)」、「死背的特徵」都一起背了下來。\n* **視覺特徵**：在沙盒畫面上，決策邊界如果顯得非常破碎、扭曲，繞過每一個雜點，這通常就是過擬合的徵兆。\n* **解決方案**：\n  1. 增加訓練數據量。\n  2. **正規化 (Regularization)**：懲罰過於複雜的權重（如 SVM 的 C 參數、線性迴歸的 Ridge/Lasso）。\n  3. **限制模型複雜度**：例如限制決策樹的最大深度。\n  4. **集成學習**：例如隨機森林。`,
+            "線性迴歸": `### 📊 線性迴歸 (Linear Regression) 核心精華\n\n**線性迴歸**假設特徵與預測目標之間存在連續的線性映射關係，尋找最佳擬合直線。\n\n* **最小平方法 (OLS)**：透過最小化殘差平方和（預測值與實際值的誤差平方），來決定趨勢線的斜率與截距。\n* **決定係數 $R^2$**：介於 0 到 1 之間。$R^2$ 越接近 1，表示模型解釋資料變異的能力越強。`,
+            "邏輯迴歸": `### 🛑 邏輯迴歸 (Logistic Regression) 核心精華\n\n雖然叫迴歸，但**邏輯迴歸**是用於**二元分類**的。它將線性方程式的連續輸出映射至 [0, 1] 的機率範圍。\n\n* **Sigmoid 函數**：$P(Y=1|X) = \\frac{1}{1 + e^{-z}}$，將任何實數壓縮成機率。\n* **交叉熵損失 (Cross-Entropy Loss)**：做為分類的代價函數，透過梯度下降法 (Gradient Descent) 迭代尋找最佳權重。`,
+            "knn": `### 📍 K-最近鄰 (KNN) 核心精華\n\n**KNN** 是一種基於「物以類聚」的**懶惰學習 (Lazy Learner)** 演算法。\n\n* **運作機制**：新樣本進來時，不需事先訓練，而是直接計算與所有訓練樣本的**歐氏距離**，挑選最近的 $K$ 個鄰居，以多數決決定新樣本的分類。\n* **$K$ 值的影響**：$K$ 太小（如 $K=1$）極易受局部噪點干擾，導致模型過擬合；$K$ 太大則容易使邊界過於平滑，導致欠擬合。`,
+            "kmeans": `### 🧲 K-Means 分群 核心精華\n\n**K-Means** 是一種**非監督式學習**演算法，用來將無標籤的數據自動凝聚為 $K$ 個群體。\n\n* **運作機制**：\n  1. 隨機指定 $K$ 個群心。\n  2. **分配步驟**：將每個點歸入距離最近的群心。\n  3. **更新步驟**：重新計算每個群體中所有點的平均值做為新群心。\n  4. 重複分配與更新，直到群心不再移動（收斂）。`,
+            "pca": `### 📉 主成分分析 (PCA) 核心精華\n\n**PCA** 是一種最常用的**線性降維與特徵提取**演算法。\n\n* **運作機制**：藉由正交轉換，將多維相關特徵投影到一組新的「主成分 (PC)」上。\n* **保留變異數**：第一主成分 (PC1) 沿著資料變異數最大（最分散、保留最多原始資訊）的軸向；第二主成分 (PC2) 則與 PC1 正交且變異數次大。`,
+            "神經網路": `### 🧠 類神經網路 / 深度學習 核心精華\n\n**類神經網路**模擬生物大腦的突觸結構，是深度學習的骨幹。\n\n* **多層架構**：包含輸入層、多個隱藏層 (Hidden Layers) 與輸出層。每層由多個神經元組成，各自乘上權重並經過非線性激活函數 (如 ReLU, Sigmoid) 轉換。\n* **反向傳播 (Backpropagation)**：計算預測與實際標籤的損失，將誤差從輸出層往回傳遞以修正權重參數。`,
+            "助教": `您好！我是您的 AI 學習助教。我有以下功能：\n1. 隨時透過視訊相機監測您的讀書專注度與困惑表情。\n2. 當您露出困惑表情時，我會主動提供生活化的比喻（例如 SVM 的楚河漢界、K-Means 的選組長比喻）。\n3. 當您學得順手時，我會出考題來挑戰您！\n4. 您可以在這裡打字向我發問任何機器學習演算法的問題！`,
+            "hello": `您好！很高興為您服務。我是您的 AI 機器學習導師。您可以問我關於十大演算法的任何問題，例如：『什麼是決策樹的基尼係數？』、『SVM 的邊際是什麼？』，或者直接點擊上方的小標籤快速提問！`,
+            "hi": `您好！很高興為您服務。我是您的 AI 機器學習導師。您可以問我關於十大演算法的任何問題，例如：『什麼是決策樹的基尼係數？』、『SVM 的邊際是什麼？』，或者直接點擊上方的小標籤快速提問！`
+        };
+
+        function getLocalResponse(question) {
+            const q = question.toLowerCase();
+            const rules = [
+                { keys: ["svm", "向量機", "margin", "邊界", "楚河漢界", "超平面"], tag: "svm" },
+                { keys: ["隨機森林", "random forest", "森林", "stump"], tag: "隨機森林" },
+                { keys: ["決策樹", "gini", "基尼", "不純", "樹"], tag: "樹" },
+                { keys: ["貝氏", "bayes", "獨立", "垃圾郵件"], tag: "貝氏" },
+                { keys: ["過擬合", "overfit", "死背"], tag: "過擬合" },
+                { keys: ["線性迴歸", "linear", "最小平方", "趨勢線"], tag: "線性迴歸" },
+                { keys: ["邏輯迴歸", "logistic", "sigmoid", "二分"], tag: "邏輯迴歸" },
+                { keys: ["knn", "最近鄰", "距離", "鄰居"], tag: "knn" },
+                { keys: ["kmeans", "分群", "群心"], tag: "kmeans" },
+                { keys: ["pca", "降維", "主成分", "協方差"], tag: "pca" },
+                { keys: ["神經網路", "深度學習", "神經元", "人臉", "表情"], tag: "神經網路" },
+                { keys: ["助教", "功能", "你好", "哈囉", "誰", "hi", "hello"], tag: "助教" }
+            ];
+
+            let matchedTag = "";
+            for (const rule of rules) {
+                if (rule.keys.some(k => q.includes(k))) {
+                    matchedTag = rule.tag;
+                    break;
+                }
+            }
+
+            return localAnswers[matchedTag] || `我收到您的提問了！目前我沒有在我的本地知識庫中找到與這項提問精確符合的演算法說明。\n\n💡 **您可以嘗試提問包含這些關鍵字的問題：**\n* 決策樹、隨機森林、SVM、單純貝氏、KNN、線性迴歸、邏輯迴歸、KMeans、PCA、神經網路。\n* 或詢問關於 **過擬合 (Overfitting)** 等概念。\n\n*(如果您想要不受限制的任意 AI 聊天，可以點擊右上角 ⚙️ 設定並貼上您的 **Gemini API Key**！)*`;
+        }
+
+        async function fetchGeminiResponse(question) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const sysInstruction = "You are a helpful, encouraging, and highly knowledgeable AI Machine Learning Tutor for NCHU AI Training program. Explain machine learning algorithms in a friendly, dynamic way, using Chinese (zh-Hant). Provide short code blocks or clear analogies if asked. Keep responses concise and clean so they fit nicely in a small chat window.";
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: `${sysInstruction}\n\nUser Question: ${question}` }]
+                    }]
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('API Response Error');
+            }
+
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        function parseMarkdown(text) {
+            let html = text;
+            // Code blocks
+            html = html.replace(/\`\`\`(.*?)\n([\s\S]*?)\`\`\`/g, '<pre class="bg-slate-950 p-2.5 rounded-lg my-1.5 overflow-x-auto font-mono text-[10px] text-slate-300 border border-slate-800">$2</pre>');
+            // Inline code
+            html = html.replace(/\`([^`\n]+)\`/g, '<code class="bg-slate-950 px-1 py-0.5 rounded font-mono text-[10px] text-pink-400">$1</code>');
+            // Headers
+            html = html.replace(/^### (.*$)/gim, '<h4 class="text-white font-bold text-xs mt-2 mb-1">$1</h4>');
+            html = html.replace(/^## (.*$)/gim, '<h3 class="text-white font-bold text-sm mt-3 mb-1.5">$1</h3>');
+            html = html.replace(/^# (.*$)/gim, '<h2 class="text-white font-bold text-base mt-4 mb-2">$1</h2>');
+            // Bold
+            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="text-indigo-400 font-bold">$1</strong>');
+            // Bullet points
+            html = html.replace(/^\* (.*$)/gim, '<li class="ml-3 list-disc text-slate-300 my-0.5">$1</li>');
+            html = html.replace(/^- (.*$)/gim, '<li class="ml-3 list-disc text-slate-300 my-0.5">$1</li>');
+            // Newlines
+            html = html.replace(/\n/g, '<br>');
+            return html;
+        }
+    </script>
+</body>
+</html>

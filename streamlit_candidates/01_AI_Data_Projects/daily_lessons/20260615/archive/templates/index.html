@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston Housing ML Regression Studio</title>
+    <meta name="description" content="An interactive ML dashboard for Boston Housing regression and dynamic model comparison.">
+    <!-- Google Fonts: Outfit and Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Plotly CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="main-header">
+            <div class="header-content">
+                <div class="logo-area">
+                    <span class="pulse-dot"></span>
+                    <h1>Boston Housing ML Studio</h1>
+                </div>
+                <p class="subtitle">CRISP-DM Phase 5: Dynamic Regression Dashboard & Real-Time Predictor</p>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <main class="dashboard-grid">
+            
+            <!-- LEFT PANEL: CONTROLS & PREDICTOR -->
+            <section class="panel left-panel glass">
+                <div class="panel-header">
+                    <h2><span class="icon">⚙️</span>模型參數設定</h2>
+                </div>
+                
+                <form id="train-form" class="control-form">
+                    <div class="form-group">
+                        <label for="algorithm-select">回歸演算法 (Algorithm)</label>
+                        <select id="algorithm-select" name="algorithm">
+                            <option value="LinearRegression">Linear Regression</option>
+                            <option value="Ridge" selected>Ridge Regression</option>
+                            <option value="Lasso">Lasso Regression</option>
+                            <option value="ElasticNet">ElasticNet Regression</option>
+                            <option value="DecisionTree">Decision Tree</option>
+                            <option value="RandomForest">Random Forest</option>
+                            <option value="GradientBoosting">Gradient Boosting</option>
+                            <option value="AdaBoost">AdaBoost</option>
+                            <option value="SVR">Support Vector Regression (SVR)</option>
+                            <option value="XGBoost">XGBoost Regressor</option>
+                            <option value="KNeighbors">K-Nearest Neighbors</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="k-features-select">特徵選取數量 (K Features via Mutual Info)</label>
+                        <select id="k-features-select" name="k_features">
+                            <option value="1">1 特徵</option>
+                            <option value="2">2 特徵</option>
+                            <option value="3">3 特徵</option>
+                            <option value="4">4 特徵</option>
+                            <option value="5">5 特徵</option>
+                            <option value="6">6 特徵</option>
+                            <option value="7">7 特徵</option>
+                            <option value="8">8 特徵</option>
+                            <option value="9">9 特徵</option>
+                            <option value="10" selected>10 特徵</option>
+                        </select>
+                    </div>
+
+                    <!-- Dynamic hyperparameter controls -->
+                    <div class="form-group" id="alpha-group">
+                        <label for="alpha-input">正規化強度 Alpha (Regularization)</label>
+                        <input type="number" id="alpha-input" name="alpha" value="0.001" min="0.0001" max="100.0" step="0.001">
+                    </div>
+
+                    <div class="form-group hidden" id="depth-group">
+                        <label for="depth-select">最大樹深度 (Max Depth)</label>
+                        <select id="depth-select" name="max_depth">
+                            <option value="None" selected>無限制 (None)</option>
+                            <option value="3">3</option>
+                            <option value="5">5</option>
+                            <option value="8">8</option>
+                            <option value="12">12</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="test-size-range">測試集比例 (Test Split Size)</label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="test-size-range" name="test_size" min="0.1" max="0.4" step="0.05" value="0.2">
+                            <span id="test-size-val">20%</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-train" class="btn btn-primary">
+                        <span class="btn-text">訓練模型與評估</span>
+                        <span class="loader hidden"></span>
+                    </button>
+                </form>
+
+                <hr class="divider">
+
+                <div class="panel-header">
+                    <h2><span class="icon">🔮</span>房屋價值即時估算</h2>
+                </div>
+                <div class="predictor-section">
+                    <p class="predictor-desc">拖動下方房屋特徵滑桿，即時計算預估房價：</p>
+                    <div id="sliders-container" class="sliders-grid">
+                        <!-- Loaded dynamically via JS -->
+                    </div>
+                    <div class="prediction-card">
+                        <div class="pred-label">預估房價 (MEDV 中位數)</div>
+                        <div class="pred-value-container">
+                            <span class="pred-currency">$</span>
+                            <span id="predicted-price">--.--</span>
+                            <span class="pred-unit">k (千美元)</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: METRICS & VISUALIZATIONS -->
+            <section class="panel-group right-panel-group">
+                
+                <!-- TOP CARD METRICS -->
+                <div class="metrics-row">
+                    <div class="metric-card glass glow-blue">
+                        <div class="metric-info">
+                            <span class="metric-title">測試集 RMSE (Root MSE)</span>
+                            <div id="test-rmse" class="metric-value">--.--</div>
+                        </div>
+                        <div class="metric-icon">📉</div>
+                    </div>
+                    <div class="metric-card glass glow-purple">
+                        <div class="metric-info">
+                            <span class="metric-title">測試集 R² Score (決定係數)</span>
+                            <div id="test-r2" class="metric-value">--.--</div>
+                        </div>
+                        <div class="metric-icon">📈</div>
+                    </div>
+                    <div class="metric-card glass glow-green">
+                        <div class="metric-info">
+                            <span class="metric-title">訓練集 RMSE / R²</span>
+                            <div id="train-metrics" class="metric-value">--.-- / --.--</div>
+                        </div>
+                        <div class="metric-icon">🧪</div>
+                    </div>
+                </div>
+
+                <!-- SELECTED FEATURES DISPLAY -->
+                <div class="selected-features-box glass">
+                    <span class="box-label">當前模型選用特徵：</span>
+                    <div id="feature-tags" class="tags-container">
+                        <!-- Loaded dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- PLOTS CONTAINER -->
+                <div class="charts-card glass">
+                    <div class="chart-tabs">
+                        <button class="tab-btn active" onclick="switchTab(event, 'chart-predictions')">預測值 vs 實際值</button>
+                        <button class="tab-btn" onclick="switchTab(event, 'chart-importance')">特徵重要性 (Importance)</button>
+                        <button class="tab-btn" onclick="switchTab(event, 'chart-comparison')">多模型特徵數量評估 (Log MSE)</button>
+                    </div>
+
+                    <div class="tabs-content">
+                        <div id="chart-predictions" class="tab-pane active-pane">
+                            <div id="plot-scatter" class="plotly-chart"></div>
+                        </div>
+                        <div id="chart-importance" class="tab-pane">
+                            <div id="plot-importance" class="plotly-chart"></div>
+                        </div>
+                        <div id="chart-comparison" class="tab-pane">
+                            <div id="plot-comparison" class="plotly-chart"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p>Boston Housing Regression Dashboard - Developed with 💙 using Python & Vanilla JS</p>
+        </footer>
+    </div>
+
+    <!-- Script imports -->
+    <script src="/static/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineBot - Scraped Movie Search & AI Assistant</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Styling -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  
+  <!-- Webpage Wrapper -->
+  <div class="app-container">
+    
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo">
+        <i class="fa-solid fa-film neon-icon"></i>
+        <h1>Cine<span>Bot</span></h1>
+      </div>
+      
+      <div class="header-right">
+        <!-- Language Switcher -->
+        <button id="langToggleBtn" class="lang-btn" title="切換語言 / Switch Language">
+          <i class="fa-solid fa-globe"></i>
+          <span id="langBtnText">EN</span>
+        </button>
+        
+        <!-- Search Input Container -->
+        <div class="search-wrapper">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="movieSearch" placeholder="搜尋電影名稱、上映地區或關鍵字..." autocomplete="off">
+          <button id="clearSearchBtn" class="clear-btn" style="display: none;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Genre Filter Tabs -->
+    <nav class="filter-bar" id="filterBar">
+      <button class="filter-tab active" data-genre="" id="tabAll">所有類型</button>
+      <button class="filter-tab" data-genre="劇情" id="tabDrama">劇情 (Drama)</button>
+      <button class="filter-tab" data-genre="愛情" id="tabRomance">愛情 (Romance)</button>
+      <button class="filter-tab" data-genre="喜劇" id="tabComedy">喜劇 (Comedy)</button>
+      <button class="filter-tab" data-genre="動作" id="tabAction">動作 (Action)</button>
+      <button class="filter-tab" data-genre="犯罪" id="tabCrime">犯罪 (Crime)</button>
+      <button class="filter-tab" data-genre="科幻" id="tabSciFi">科幻 (Sci-Fi)</button>
+      <button class="filter-tab" data-genre="動畫" id="tabAnimation">動畫 (Animation)</button>
+      <button class="filter-tab" data-genre="冒險" id="tabAdventure">冒險 (Adventure)</button>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+      <div class="results-stats">
+        <span id="moviesCount">Showing 0 movies</span>
+      </div>
+      
+      <!-- Movie Cards Grid -->
+      <div class="movie-grid" id="movieGrid">
+        <!-- Dynamically injected cards -->
+        <div class="loading-spinner">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> Loading Movies...
+        </div>
+      </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>&copy; 2026 CineBot - Scraped Movie Catalog & AI RAG Bot</p>
+    </footer>
+
+  </div>
+
+  <!-- Movie Detail Modal -->
+  <div class="modal-overlay" id="detailModal" style="display: none;">
+    <div class="modal-content">
+      <button class="close-modal-btn" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-body" id="modalBody">
+        <!-- Dynamically injected details -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Chatbot Floating Toggle Button -->
+  <button class="chatbot-toggle-btn" id="chatToggleBtn">
+    <i class="fa-solid fa-comments"></i>
+    <span class="pulse-ring"></span>
+  </button>
+
+  <!-- Chatbot Sidebar/Widget -->
+  <div class="chat-widget" id="chatWidget" style="display: none;">
+    
+    <!-- Chat Header -->
+    <div class="chat-header">
+      <div class="chat-title">
+        <i class="fa-solid fa-robot"></i>
+        <div>
+          <h3>CineBot Assistant</h3>
+          <span class="status-indicator online">Online (100 Movies Context)</span>
+        </div>
+      </div>
+      <div class="chat-header-actions">
+        <button id="chatSettingsBtn" title="LLM Settings"><i class="fa-solid fa-cog"></i></button>
+        <button id="closeChatBtn" title="Close"><i class="fa-solid fa-minus"></i></button>
+      </div>
+    </div>
+
+    <!-- Chat Settings Drawer -->
+    <div class="settings-drawer" id="settingsDrawer" style="display: none;">
+      <div class="drawer-header">
+        <h4 id="drawerHeaderTitle"><i class="fa-solid fa-sliders"></i> LLM 模型設定</h4>
+        <button id="closeSettingsBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="drawer-body">
+        <!-- LLM Provider Select -->
+        <div class="input-group">
+          <label for="providerSelect" id="providerSelectLabel">LLM 供應商</label>
+          <select id="providerSelect">
+            <option value="gemini">Gemini API</option>
+            <option value="ollama">Local LLM (Ollama)</option>
+            <option value="openai_compatible">Local LLM (OpenAI Compatible)</option>
+            <option value="local_search">本地離線搜尋 (Offline Search)</option>
+          </select>
+        </div>
+
+        <!-- API Key Group -->
+        <div class="input-group" id="apiKeyGroup">
+          <label for="apiKeyInput" id="apiKeyLabel">Gemini API Key</label>
+          <div class="password-wrapper">
+            <input type="password" id="apiKeyInput" placeholder="AIzaSy...">
+            <button id="toggleApiKeyVisibility" class="visibility-toggle"><i class="fa-solid fa-eye"></i></button>
+          </div>
+          <span class="help-text" id="apiKeyHelpText">您的金鑰儲存在瀏覽器本地，直接傳送給 API 伺服器。</span>
+        </div>
+
+        <!-- API Base Group -->
+        <div class="input-group" id="apiBaseGroup" style="display: none;">
+          <label for="apiBaseInput" id="apiBaseLabel">API Base URL</label>
+          <input type="text" id="apiBaseInput" placeholder="http://localhost:11434">
+        </div>
+
+        <!-- Model Name Group -->
+        <div class="input-group" id="modelGroup">
+          <label for="modelInput" id="modelLabel">模型名稱 (Model Name)</label>
+          <input type="text" id="modelInput" placeholder="gemini-1.5-flash" list="modelOptions">
+          <datalist id="modelOptions">
+            <option value="gemini-1.5-flash"></option>
+            <option value="gemini-1.5-pro"></option>
+            <option value="gemini-2.0-flash-exp"></option>
+            <option value="llama3"></option>
+            <option value="gemma2"></option>
+            <option value="mistral"></option>
+          </datalist>
+        </div>
+
+        <button class="btn btn-save" id="saveSettingsBtn">儲存設定</button>
+        <button class="btn btn-clear-key" id="clearKeyBtn">清除設定</button>
+        
+        <div class="key-status-banner success" id="keyStatusBanner" style="display: none;">
+          <i class="fa-solid fa-circle-check"></i> <span id="statusConfiguredText">已配置 LLM 連線</span>
+        </div>
+        <div class="key-status-banner warning" id="noKeyBanner">
+          <i class="fa-solid fa-triangle-exclamation"></i> <span id="statusOfflineText">使用本地離線搜尋引擎</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Chat Messages Thread -->
+    <div class="chat-messages" id="chatMessages">
+      <div class="message system-msg">
+        Welcome to CineBot! Ask me anything about the top 100 movies in our database (e.g. ratings, durations, release dates, or genres).
+      </div>
+      <div class="message bot-msg">
+        Hello! I'm CineBot. I can help you search, filter, and recommend movies from our scraped list. 
+        <br><br>
+        <em>Tip: Click the gear icon at the top of the chat panel to add your Gemini API Key for smart conversational answers powered by Gemini 1.5 Flash. Otherwise, I will use a local keyword search engine.</em>
+      </div>
+    </div>
+
+    <!-- Chat Input Form -->
+    <div class="chat-input-area">
+      <div class="chat-input-container">
+        <textarea id="chatInput" placeholder="Ask about movies..." rows="1" autocomplete="off"></textarea>
+        <button id="sendChatBtn"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript App Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
