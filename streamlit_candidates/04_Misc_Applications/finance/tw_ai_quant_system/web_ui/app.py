@@ -69,5 +69,4 @@ def main():
     with col3:
         st.metric(label="🍎 大盤買菜指數", value="22,150", delta="-1.5%", delta_color="inverse")
 
-if __name__ == "__main__":
-    main()
+main()

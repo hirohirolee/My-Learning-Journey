@@ -5,6 +5,7 @@ plotly
 matplotlib
 seaborn
 requests
+httpx
 python-dotenv
 openpyxl
 python-docx
@@ -17,3 +18,7 @@ ta
 scikit-learn
 streamlit_folium
 folium
+pydantic
+fastapi
+uvicorn
+flask
