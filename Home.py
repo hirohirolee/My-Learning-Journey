@@ -155,4 +155,5 @@ with st.sidebar:
 
 # Navigation Routing
 pg = st.navigation(category_map, position="sidebar")
+sys.modules.pop('config', None)
 pg.run()

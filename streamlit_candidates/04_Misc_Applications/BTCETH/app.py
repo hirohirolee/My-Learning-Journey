@@ -1,4 +1,5 @@
 import os, sys
+sys.modules.pop('config', None)
 _btc_dir = os.path.dirname(os.path.abspath(__file__))
 if _btc_dir not in sys.path:
     sys.path.insert(0, _btc_dir)

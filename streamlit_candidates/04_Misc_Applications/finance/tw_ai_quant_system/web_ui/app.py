@@ -3,6 +3,7 @@ import os
 import sys
 from pathlib import Path
 
+sys.modules.pop('config', None)
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config import UI_PAGE_TITLE, UI_PAGE_ICON, UI_LAYOUT
 

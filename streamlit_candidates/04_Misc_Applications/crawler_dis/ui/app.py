@@ -5,6 +5,7 @@ import time
 import pandas as pd
 import streamlit as st
 
+sys.modules.pop('config', None)
 # Ensure project root is in path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
