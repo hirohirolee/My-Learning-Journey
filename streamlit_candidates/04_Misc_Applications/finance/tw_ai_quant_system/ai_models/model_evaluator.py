@@ -2,7 +2,7 @@ import streamlit as st
 st.title('model_evaluator.py - 自動化展示')
 st.info('這是從原專案腳本自動包裝產生的互動式介面。')
 
-﻿import sys
+import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score

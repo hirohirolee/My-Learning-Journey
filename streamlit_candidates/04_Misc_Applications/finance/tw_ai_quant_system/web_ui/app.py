@@ -3,8 +3,7 @@ import os
 import sys
 from pathlib import Path
 
-# 確保可以載入上一層的 config 與其他後端模組
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config import UI_PAGE_TITLE, UI_PAGE_ICON, UI_LAYOUT
 
 # 1. 設定 Streamlit 頁面全局配置 (必須是第一個 st 指令)

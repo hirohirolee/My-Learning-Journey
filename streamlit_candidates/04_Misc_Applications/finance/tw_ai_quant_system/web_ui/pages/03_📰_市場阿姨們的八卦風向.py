@@ -6,11 +6,15 @@ from datetime import datetime, timedelta
 import sys
 import os
 
-# 將後端模組加入路徑
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+_quant_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _quant_root not in sys.path:
+    sys.path.insert(0, _quant_root)
+
 from data_pipeline.gossip_crawler import GossipCrawler
 from data_pipeline.nlp_sentiment import NLPSentimentAnalyzer
-from config import OPENAI_API_KEY, USE_OLLAMA
+import config
+OPENAI_API_KEY = getattr(config, 'OPENAI_API_KEY', '')
+USE_OLLAMA = getattr(config, 'USE_OLLAMA', False)
 
 st.set_page_config(page_title="市場阿姨們的八卦風向", layout="wide")
 

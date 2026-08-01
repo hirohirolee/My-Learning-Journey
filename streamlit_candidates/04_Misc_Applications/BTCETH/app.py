@@ -1,3 +1,8 @@
+import os, sys
+_btc_dir = os.path.dirname(os.path.abspath(__file__))
+if _btc_dir not in sys.path:
+    sys.path.insert(0, _btc_dir)
+
 import streamlit as st
 from config import settings
 from utils.logger import configure_logger
