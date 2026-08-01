@@ -1,0 +1,375 @@
+/* 
+ * v2_executive_theme - AI Studio Styles
+ * Style: High-tech Glassmorphism & Terminal
+ */
+
+body.studio-page {
+    /* Slightly darker/cooler background for the studio */
+    background: radial-gradient(circle at center, #0B1936 0%, #03060E 100%);
+    background-attachment: fixed;
+}
+
+/* Studio Header Typography */
+.studio-header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+    position: relative;
+}
+
+.studio-header::before {
+    content: '>_';
+    display: block;
+    font-size: 2rem;
+    color: var(--color-accent-cyan);
+    font-family: monospace;
+    opacity: 0.5;
+    margin-bottom: var(--spacing-sm);
+}
+
+.studio-header h1 {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #FFFFFF, var(--color-accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Filter Bar Buttons */
+.filter-btn {
+    background: rgba(15, 23, 42, 0.6);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 0.5rem 1.1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(8px);
+}
+
+.filter-btn:hover {
+    color: #38bdf8;
+    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #0284c7, #38bdf8);
+    color: #ffffff;
+    border-color: #38bdf8;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+/* Glassmorphism Cards */
+.ai-studio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.studio-card {
+    background: rgba(10, 20, 40, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(6, 182, 212, 0.15);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: transform var(--transition-smooth), border-color var(--transition-smooth), box-shadow var(--transition-smooth);
+}
+
+.studio-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+.studio-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(6, 182, 212, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(6, 182, 212, 0.1);
+}
+
+.studio-card h3 {
+    color: var(--color-text-main);
+    font-size: 1.15rem;
+    margin-bottom: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+    line-height: 1.4;
+}
+
+.card-icon-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+    border-radius: 8px;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    margin-right: 10px;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+}
+
+.card-title-text {
+    flex: 1;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.action-icon-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(56, 189, 248, 0.1);
+    color: #38bdf8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 0.4rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.action-icon-link:hover {
+    background: #38bdf8;
+    color: #0f172a !important;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+.studio-card .card-desc {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.business-impact {
+    border-left: 3px solid var(--color-accent-gold);
+    background: rgba(217, 119, 6, 0.05);
+    padding: 8px 12px;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text-main);
+    font-size: 0.85rem;
+}
+
+.studio-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto;
+    margin-bottom: var(--spacing-md);
+}
+
+.tech-badge {
+    background: rgba(148, 163, 184, 0.1);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-family: monospace;
+}
+
+.studio-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.action-btn-main {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    color: #ffffff !important;
+    padding: 0.45rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.action-btn-main:hover {
+    background: linear-gradient(135deg, #b45309, #d97706);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+}
+
+.action-icon {
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    transition: color 0.2s ease;
+}
+
+.action-icon:hover {
+    color: #38bdf8;
+}
+
+/* Glassmorphism Streamlit Modal System */
+.modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+}
+
+.modal-container {
+    background: #0f172a;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px;
+    width: 95%;
+    max-width: 1400px;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.15);
+    overflow: hidden;
+    transition: width 0.3s ease;
+}
+
+.modal-container.device-tablet {
+    max-width: 800px;
+}
+
+.modal-container.device-mobile {
+    max-width: 420px;
+}
+
+.modal-header {
+    background: #1e293b;
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-icon {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 1.2rem;
+}
+
+.modal-title-group h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #f8fafc;
+}
+
+.modal-subtitle {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.modal-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.device-toggle {
+    display: flex;
+    background: #0f172a;
+    padding: 3px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.device-btn {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.device-btn:hover {
+    color: #f8fafc;
+}
+
+.device-btn.active {
+    background: #38bdf8;
+    color: #0f172a;
+}
+
+.modal-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #cbd5e1;
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex; justify-content: center; align-items: center;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.modal-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.modal-btn.close-btn:hover {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+.modal-body {
+    flex: 1;
+    position: relative;
+    background: #090d16;
+}
+
+.modal-loader {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #090d16;
+    color: #38bdf8;
+    z-index: 5;
+}
+
+.modal-loader i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+#streamlit-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
