@@ -116,7 +116,6 @@ yijing_app = make_page("streamlit_candidates/04_Misc_Applications/CHING_YiJing/a
 mosaic_app = make_page("streamlit_candidates/04_Misc_Applications/Mosaic/ImageDe.py", title="圖像馬賽克與防護處理", icon="🖼️", url_path="mosaic-image-de")
 royal_app = make_page("streamlit_candidates/04_Misc_Applications/Royalgame/main.py", title="皇家遊戲輔助工具", icon="👑", url_path="royal-game-tool")
 game_bj = make_page("streamlit_candidates/04_Misc_Applications/15games/blackjack.py", title="21 點撲克牌遊戲 (Blackjack)", icon="🃏", url_path="game-blackjack")
-game_pacman = make_page("streamlit_candidates/04_Misc_Applications/15games/pacman.py", title="小精靈迷宮 (Pacman)", icon="👾", url_path="game-pacman")
 game_ttt = make_page("streamlit_candidates/04_Misc_Applications/15games/tictactoe.py", title="井字棋 (Tic-Tac-Toe)", icon="❌", url_path="game-tictactoe")
 
 # =====================================================================
@@ -139,7 +138,7 @@ category_map = {
         resilience_legacy, lotto_app, btceth_app, crawler_app, sports_app
     ],
     "🎮 生活趣味與遊戲專案": [
-        yijing_app, mosaic_app, royal_app, game_bj, game_pacman, game_ttt
+        yijing_app, mosaic_app, royal_app, game_bj, game_ttt
     ]
 }
 
