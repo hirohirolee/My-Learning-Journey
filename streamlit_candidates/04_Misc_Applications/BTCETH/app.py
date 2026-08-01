@@ -9,14 +9,42 @@ for k in list(sys.modules.keys()):
         sys.modules.pop(k, None)
 
 import streamlit as st
-from config import settings
-from utils.logger import configure_logger
-from utils.formatter import format_currency, format_duration
-from core.bitcoin_api import bitcoin_api
-from ui.metrics import inject_custom_css
-from ui.sidebar import render_sidebar
-from ui.dashboard import render_dashboard
-from loguru import logger
+
+try:
+    from config import settings
+except ImportError:
+    settings = None
+
+try:
+    from utils.logger import configure_logger
+except Exception:
+    def configure_logger(debug: bool = False) -> None:
+        pass
+
+try:
+    from utils.formatter import format_currency, format_duration
+except Exception:
+    def format_currency(val): return f"${val:,.2f}" if isinstance(val, (int, float)) else str(val)
+    def format_duration(val): return f"{val}s"
+
+try:
+    from core.bitcoin_api import bitcoin_api
+except Exception:
+    bitcoin_api = None
+
+try:
+    from ui.metrics import inject_custom_css
+    from ui.sidebar import render_sidebar
+    from ui.dashboard import render_dashboard
+except Exception:
+    pass
+
+try:
+    from loguru import logger
+except Exception:
+    import logging
+    logger = logging.getLogger("BTCETH")
+
 import time
 
 def main() -> None:

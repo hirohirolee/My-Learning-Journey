@@ -42,15 +42,18 @@ def configure_logger(debug: bool = False) -> None:
     )
 
     # 註冊日誌文件輸出（帶自動滾動與封存）
-    logger.add(
-        settings.LOG_FILE_PATH,
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
-        level=log_level,
-        rotation="10 MB",
-        retention="1 week",
-        compression="zip",
-        encoding="utf-8"
-    )
+    try:
+        logger.add(
+            settings.LOG_FILE_PATH,
+            format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
+            level=log_level,
+            rotation="10 MB",
+            retention="1 week",
+            compression="zip",
+            encoding="utf-8"
+        )
+    except Exception:
+        pass
 
     logger.info(f"日誌系統初始化完成。日誌等級: {log_level}, 存檔路徑: {settings.LOG_FILE_PATH}")
 
