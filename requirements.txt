@@ -28,5 +28,3 @@ torch
 torchvision
 ultralytics
 opencv-python-headless
-langchain
-langchain-groq
