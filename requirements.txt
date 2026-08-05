@@ -20,6 +20,7 @@ scikit-learn
 streamlit_folium
 folium
 pydantic
+starlette<0.38.0
 fastapi
 uvicorn
 flask
