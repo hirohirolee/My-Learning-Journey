@@ -1,5 +1,5 @@
 import streamlit as st
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 import os
 
@@ -7,7 +7,7 @@ import os
 st.set_page_config(page_title="BizAgent 商務出差特務", page_icon="💼", layout="centered")
 
 st.title("💼 BizAgent 商務出差與行程管理特務")
-st.markdown("本系統模擬一個自主 AI Agent，接收出差需求並在背景調用模擬工具，為您產出專業的出差準備計畫。(採用本地端 Ollama 模型)")
+st.markdown("本系統模擬一個自主 AI Agent，接收出差需求並在背景調用模擬工具，為您產出專業的出差準備計畫。(採用雲端免費 Groq 服務)")
 
 # ==========================================
 # 系統提示詞 (System Prompt) 定義區
@@ -65,7 +65,8 @@ SYSTEM_PROMPT = """
 # ==========================================
 with st.sidebar:
     st.header("⚙️ 模型設定")
-    model_name = st.text_input("Ollama 模型名稱", value="llama3", help="確保您已經在終端機執行過 ollama run 該模型")
+    groq_api_key = st.text_input("🔑 Groq API Key", type="password", help="請至 https://console.groq.com/keys 免費獲取")
+    model_name = st.selectbox("模型名稱", ["llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768"], index=0)
     temperature = st.slider("創意程度 (Temperature)", min_value=0.0, max_value=1.0, value=0.7, step=0.1)
     
     if st.button("🗑️ 清除對話紀錄", use_container_width=True):
@@ -94,10 +95,14 @@ if prompt := st.chat_input("請輸入您的出差需求..."):
 
     # 2. 呼叫 LLM 生成回應
     with st.chat_message("assistant"):
+        if not groq_api_key:
+            st.warning("⚠️ 請先在左側邊欄輸入您的 Groq API Key！")
+            st.stop()
+            
         with st.spinner("BizAgent 正在解析意圖，並模擬調用工具庫中..."):
             try:
                 # 建立模型物件
-                llm = ChatOllama(model=model_name, temperature=temperature)
+                llm = ChatGroq(model=model_name, temperature=temperature, groq_api_key=groq_api_key)
                 
                 # 組合對話歷史 (包含 System Prompt)
                 langchain_messages = [SystemMessage(content=SYSTEM_PROMPT)]
@@ -117,4 +122,4 @@ if prompt := st.chat_input("請輸入您的出差需求..."):
                 
             except Exception as e:
                 st.error(f"⚠️ 發生錯誤：{e}")
-                st.info("請確認：\n1. 您的 Ollama 軟體正在背景運行。\n2. 已經下載了指定的模型 (例如在終端機輸入 `ollama run llama3`)。")
+                st.info("請確認：\n1. 您的 API Key 是否正確輸入。\n2. 網路連線是否正常。")

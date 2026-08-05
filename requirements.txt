@@ -30,6 +30,8 @@ ultralytics
 opencv-python-headless
 langchain
 langchain-community
-langchain-ollama
+langchain-groq
+langchain-huggingface
+sentence-transformers
 chromadb
 tiktoken

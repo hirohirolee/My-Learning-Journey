@@ -13,6 +13,7 @@ st.markdown("本系統展示如何結合**規則引擎**與 **RAG (檢索增強�
 
 with st.sidebar:
     st.header("⚙️ 系統控制面板")
+    groq_api_key = st.text_input("🔑 Groq API Key", type="password", help="請至 https://console.groq.com/keys 免費獲取")
     if st.button("🔄 重新生成測試數據", use_container_width=True):
         with st.spinner("正在生成廠區測試數據與法規條文..."):
             mock_data_generator.generate_factory_data()
@@ -49,7 +50,9 @@ with tab1:
 with tab2:
     st.header("自動合規性分析與預警")
     if st.button("🚀 執行 AI 異常分析與報告生成", type="primary"):
-        if not os.path.exists("factory_data.csv"):
+        if not groq_api_key:
+            st.warning("⚠️ 請先在左側邊欄輸入您的 Groq API Key！")
+        elif not os.path.exists("factory_data.csv"):
             st.error("找不到測試數據！請先點擊左側面板生成數據。")
         else:
             with st.status("AI 系統分析中...", expanded=True) as status:
@@ -66,8 +69,8 @@ with tab2:
                     st.write("📚 正在初始化 RAG 向量知識庫 (HuggingFace Embeddings)...")
                     vectorstore = compliance_agent.setup_rag_system()
                     
-                    st.write("🧠 正在呼叫本地 LLM (Ollama) 推理並撰寫報告...")
-                    report = compliance_agent.generate_compliance_report(anomalies_json, vectorstore)
+                    st.write("🧠 正在呼叫雲端 LLM (Groq API) 推理並撰寫報告...")
+                    report = compliance_agent.generate_compliance_report(anomalies_json, vectorstore, groq_api_key)
                     
                     status.update(label="報告生成完成！", state="complete", expanded=False)
                     

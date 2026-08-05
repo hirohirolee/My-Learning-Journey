@@ -2,7 +2,7 @@ import os
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
@@ -44,7 +44,7 @@ def setup_rag_system(txt_path="iso_14064_1_rules.txt"):
         print(f"[錯誤] 建立向量資料庫時發生例外：{e}")
         return None
 
-def generate_compliance_report(anomalies_json, vectorstore):
+def generate_compliance_report(anomalies_json, vectorstore, groq_api_key):
     """接收異常 JSON，檢索最相關的法規條文，並透過 LLM 生成顧問報表"""
     print("[*] 啟動 AI 顧問代理人進行風險評估與報告生成...")
     
@@ -52,8 +52,8 @@ def generate_compliance_report(anomalies_json, vectorstore):
         # 建立檢索器，設定檢索前 2 筆最相關條塊
         retriever = vectorstore.as_retriever(search_kwargs={"k": 2})
         
-        # 初始化 LLM 模型 (使用本地端 Ollama，模型可替換為 llama3、gemma 等)
-        llm = ChatOllama(model="llama3", temperature=0.1)
+        # 初始化 LLM 模型 (使用雲端 Groq Llama3)
+        llm = ChatGroq(model="llama3-70b-8192", temperature=0.1, groq_api_key=groq_api_key)
         
         # 建立系統 Prompt 樣板
         system_prompt = (
