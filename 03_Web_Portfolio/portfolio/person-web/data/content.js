@@ -32,6 +32,18 @@ const contentData = {
   ],
   "aiStudioProjects": [
     {
+      "id": "ai-cat-dog-orc",
+      "title": "YOLO 貓狗 AI 辨識與數量統計 Web 系統",
+      "category": "ai",
+      "description": "基於 YOLOv11x 與 EfficientNet_V2 SOTA 模型的影像辨識。即時上傳圖像，支援高置信度物件邊界框繪製、物種精準分類與自動數量統計。",
+      "icon": "fa-cat",
+      "businessImpact": "展示高階邊緣運算與電腦視覺能力，提供智慧工廠、智慧安防與智慧零售之自動化視覺檢測雛形。",
+      "techStack": ["YOLOv11x", "PyTorch", "Computer Vision", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/ai-cat-dog-orc"
+      }
+    },
+    {
       "id": "flappy-dqn",
       "title": "Flappy Bird DQN 強化學習 AI",
       "category": "ai",
