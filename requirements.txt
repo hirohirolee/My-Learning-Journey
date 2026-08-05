@@ -22,3 +22,7 @@ pydantic
 fastapi
 uvicorn
 flask
+ultralytics
+torch
+torchvision
+opencv-python

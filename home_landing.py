@@ -49,8 +49,8 @@ c1, c2 = st.columns(2)
 with c1:
     st.markdown("""
     <div class="category-box">
-    <h4>🤖 1. AI 與數據機器學習專案 (Daily Lessons)</h4>
-    包含 Top 10 機器學習模型演算法、波士頓/加州房價回歸預測、3D SVM 核技巧視覺化、Puter.js AI 圖像生成、影視劇迷分析器與 CWA 氣象 AI 預報。
+    <h4>🤖 1. AI 與數據機器學習專案 (AI Studio)</h4>
+    包含 YOLO 貓狗 AI 辨識與數量統計系統 (SOTA 雙階段三神經網絡 Ensemble)、Top 10 機器學習模型演算法、波士頓/加州房價回歸預測、3D SVM 核技巧視覺化、Puter.js AI 圖像生成、影視劇迷分析器與 CWA 氣象 AI 預報。
     </div>
     
     <div class="category-box">
