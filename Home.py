@@ -1,7 +1,17 @@
 import sys
 import os
+import subprocess
 import streamlit as st
 
+# 0. STREAMLIT CLOUD HOTFIX: Force uninstall 'opencv-python' to allow 'opencv-python-headless' to work without libGL/libgthread dependencies
+try:
+    if "STREAMLIT_RUNTIME_ENV" in os.environ or os.path.exists("/mount/src"):
+        # We are on Streamlit Cloud
+        result = subprocess.run([sys.executable, "-m", "pip", "show", "opencv-python"], capture_output=True, text=True)
+        if result.returncode == 0:
+            subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "opencv-python"])
+except Exception as e:
+    pass
 # 1. Set top-level page config ONCE at the start of Home.py
 st.set_page_config(
     page_title="My Learning Journey | 全方位專案作品集",
