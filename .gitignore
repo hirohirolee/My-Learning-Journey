@@ -18,3 +18,5 @@ SHRIMP/
 .venv/
 venv/
 *.json
+*.pt
+
