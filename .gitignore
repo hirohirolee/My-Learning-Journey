@@ -18,5 +18,7 @@ SHRIMP/
 .venv/
 venv/
 *.json
+!vercel.json
 *.pt
+
 

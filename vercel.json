@@ -1,0 +1,28 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/03_Web_Portfolio/v2_executive_theme/index.html"
+    },
+    {
+      "source": "/ai-studio.html",
+      "destination": "/03_Web_Portfolio/v2_executive_theme/ai-studio.html"
+    },
+    {
+      "source": "/css/(.*)",
+      "destination": "/03_Web_Portfolio/v2_executive_theme/css/$1"
+    },
+    {
+      "source": "/js/(.*)",
+      "destination": "/03_Web_Portfolio/v2_executive_theme/js/$1"
+    },
+    {
+      "source": "/data/(.*)",
+      "destination": "/03_Web_Portfolio/v2_executive_theme/data/$1"
+    },
+    {
+      "source": "/assets/(.*)",
+      "destination": "/03_Web_Portfolio/v2_executive_theme/assets/$1"
+    }
+  ]
+}
