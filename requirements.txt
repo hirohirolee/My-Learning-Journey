@@ -25,4 +25,4 @@ flask
 ultralytics
 torch
 torchvision
-opencv-python
+opencv-python-headless
