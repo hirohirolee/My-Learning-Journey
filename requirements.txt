@@ -1,3 +1,4 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
 streamlit>=1.31.0
 pandas
 numpy
@@ -22,7 +23,7 @@ pydantic
 fastapi
 uvicorn
 flask
-ultralytics
 torch
 torchvision
+ultralytics
 opencv-python-headless
