@@ -114,37 +114,30 @@
         <section class="section" id="contact">
             <div class="container">
                 <header class="section-header anim-target" data-anim="fade-in">
-                    <h2 class="text-gold">聯絡我 & 線上諮詢</h2>
-                    <p>安排一場專屬的合規與 AI 導入策略對話，探索企業轉型的下一步。</p>
+                    <h2 class="text-gold">聯絡我 (Contact Me)</h2>
+                    <p>若有任何專案合作、演講邀約或 AI 數位轉型諮詢需求，歡迎填寫下表與我聯絡。</p>
                 </header>
                 
-                <div class="contact-grid anim-target" data-anim="slide-up">
-                    <!-- Left: Contact Form -->
-                    <div class="contact-card">
-                        <h3>傳送訊息</h3>
-                        <p>若有任何專案合作或演講邀約，請留下您的資訊，我將盡快回覆。</p>
-                        <form onsubmit="event.preventDefault(); alert('感謝您的來信！(此為示範功能)');">
+                <div class="anim-target" data-anim="slide-up" style="max-width: 680px; margin: 0 auto;">
+                    <div class="contact-card" style="box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12);">
+                        <h3 style="text-align: center; font-size: 1.5rem; margin-bottom: 0.5rem;">✉️ 傳送訊息</h3>
+                        <p style="text-align: center; margin-bottom: 2rem;">請留下您的聯絡資訊與訊息內容，我將儘快親自與您回覆。</p>
+                        <form id="contact-form" action="https://formspree.io/f/meajqezo" method="POST">
                             <div class="form-group">
-                                <input type="text" class="form-control" placeholder="您的姓名" required>
+                                <label style="display:block; margin-bottom: 6px; font-weight: 500; color: var(--color-text-main);">您的姓名</label>
+                                <input type="text" name="name" class="form-control" placeholder="請輸入您的姓名或稱呼" required>
                             </div>
                             <div class="form-group">
-                                <input type="email" class="form-control" placeholder="企業 Email" required>
+                                <label style="display:block; margin-bottom: 6px; font-weight: 500; color: var(--color-text-main);">企業 Email</label>
+                                <input type="email" name="email" class="form-control" placeholder="例如: name@company.com" required>
                             </div>
                             <div class="form-group">
-                                <textarea class="form-control" rows="4" placeholder="訊息內容..." required></textarea>
+                                <label style="display:block; margin-bottom: 6px; font-weight: 500; color: var(--color-text-main);">訊息與諮詢內容</label>
+                                <textarea name="message" class="form-control" rows="5" placeholder="請簡述您的專案需求或合作構想..." required></textarea>
                             </div>
-                            <button type="submit" class="btn-primary">發送訊息</button>
+                            <button type="submit" id="contact-submit-btn" class="btn-primary" style="width: 100%; padding: 14px; font-size: 1.05rem;">⚡ 發送訊息</button>
+                            <div id="contact-status" style="margin-top: 14px; text-align: center; font-weight: 500; font-size: 0.95rem;"></div>
                         </form>
-                    </div>
-                    
-                    <!-- Right: Booking Integration -->
-                    <div class="contact-card">
-                        <h3>安排線上諮詢 (Schedule a Consultation)</h3>
-                        <p>選擇適合您的時段，讓我們針對您的業務痛點進行 30 分鐘的初步討論。</p>
-                        <!-- Calendly Placeholder -->
-                        <div class="calendly-placeholder">
-                            <span>[ Calendly Widget / iframe 預留區塊 ]</span>
-                        </div>
                     </div>
                 </div>
             </div>

@@ -5,6 +5,10 @@
       "destination": "/03_Web_Portfolio/v2_executive_theme/index.html"
     },
     {
+      "source": "/index.html",
+      "destination": "/03_Web_Portfolio/v2_executive_theme/index.html"
+    },
+    {
       "source": "/ai-studio.html",
       "destination": "/03_Web_Portfolio/v2_executive_theme/ai-studio.html"
     },
