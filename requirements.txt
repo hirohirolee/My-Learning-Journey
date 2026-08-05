@@ -28,3 +28,8 @@ torch
 torchvision
 ultralytics
 opencv-python-headless
+langchain
+langchain-community
+langchain-ollama
+chromadb
+tiktoken
