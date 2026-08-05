@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Models & Large Weights
+*.pt
+*.pth
+*.onnx
+
+# Data & Runs
+runs/
+custom_dataset/
+my_roboflow_data/
