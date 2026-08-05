@@ -123,17 +123,18 @@
                     <div class="contact-card">
                         <h3>傳送訊息</h3>
                         <p>若有任何專案合作或演講邀約，請留下您的資訊，我將盡快回覆。</p>
-                        <form onsubmit="event.preventDefault(); alert('感謝您的來信！(此為示範功能)');">
+                        <form id="contact-form" action="https://formspree.io/f/meajqezo" method="POST">
                             <div class="form-group">
-                                <input type="text" class="form-control" placeholder="您的姓名" required>
+                                <input type="text" name="name" class="form-control" placeholder="您的姓名" required>
                             </div>
                             <div class="form-group">
-                                <input type="email" class="form-control" placeholder="企業 Email" required>
+                                <input type="email" name="email" class="form-control" placeholder="企業 Email" required>
                             </div>
                             <div class="form-group">
-                                <textarea class="form-control" rows="4" placeholder="訊息內容..." required></textarea>
+                                <textarea name="message" class="form-control" rows="4" placeholder="訊息內容..." required></textarea>
                             </div>
-                            <button type="submit" class="btn-primary">發送訊息</button>
+                            <button type="submit" id="contact-submit-btn" class="btn-primary">發送訊息</button>
+                            <div id="contact-status" style="margin-top: 14px; font-weight: 500; font-size: 0.95rem;"></div>
                         </form>
                     </div>
                     

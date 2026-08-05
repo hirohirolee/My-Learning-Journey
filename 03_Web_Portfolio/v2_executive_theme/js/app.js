@@ -26,6 +26,7 @@ function fetchDataAndRender() {
             renderMediaKit(data.mediaKit);
         }
         
+        initContactForm();
         triggerAnimations();
         
     } catch (error) {
@@ -290,3 +291,62 @@ function triggerAnimations() {
         observer.observe(el);
     });
 }
+
+function initContactForm() {
+    const form = document.getElementById('contact-form');
+    if (!form) return;
+    
+    const status = document.getElementById('contact-status');
+    const btn = document.getElementById('contact-submit-btn');
+    
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const data = new FormData(event.target);
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = '發送中...';
+        }
+        if (status) {
+            status.style.color = '#76e4f7';
+            status.innerHTML = '⏳ 訊息發送中，請稍候...';
+        }
+        
+        try {
+            const response = await fetch(event.target.action, {
+                method: form.method,
+                body: data,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            if (response.ok) {
+                if (status) {
+                    status.style.color = '#68D391';
+                    status.innerHTML = '✅ 訊息已成功發送！感謝您的來信，我將儘快與您聯絡。';
+                }
+                form.reset();
+            } else {
+                const resData = await response.json();
+                if (status) {
+                    status.style.color = '#FC8181';
+                    if (resData && Object.prototype.hasOwnProperty.call(resData, 'errors')) {
+                        status.innerHTML = '❌ ' + resData["errors"].map(error => error["message"]).join(", ");
+                    } else {
+                        status.innerHTML = '❌ 發送失敗，請確認填寫內容後再試一次。';
+                    }
+                }
+            }
+        } catch (error) {
+            if (status) {
+                status.style.color = '#FC8181';
+                status.innerHTML = '❌ 網路連線問題，請稍後再試。';
+            }
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = '發送訊息';
+            }
+        }
+    });
+}
+
