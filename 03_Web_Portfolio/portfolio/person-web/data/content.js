@@ -32,13 +32,25 @@ const contentData = {
   ],
   "aiStudioProjects": [
     {
+      "id": "ai-iso-rag-agent",
+      "title": "廠區數據與 ISO 合規 RAG AI 代理",
+      "category": "resilience",
+      "description": "結合規則引擎與 RAG 檢索增強生成，自動針對廠區異常能耗查閱 ISO 規範並生成顧問報告。(基於本地端 HuggingFace + Ollama 模型)",
+      "icon": "fa-industry",
+      "businessImpact": "自動化合規性分析與異常預警，降低稽核風險與人工成本。",
+      "techStack": ["RAG", "LangChain", "HuggingFace", "Ollama", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/ai-iso-rag-agent"
+      }
+    },
+    {
       "id": "ai-cat-dog-orc",
       "title": "YOLO 貓狗 AI 辨識與數量統計 Web 系統",
       "category": "ai",
-      "description": "基於 YOLOv11x 與 EfficientNet_V2 SOTA 模型的影像辨識。即時上傳圖像，支援高置信度物件邊界框繪製、物種精準分類與自動數量統計。",
-      "icon": "fa-cat",
-      "businessImpact": "展示高階邊緣運算與電腦視覺能力，提供智慧工廠、智慧安防與智慧零售之自動化視覺檢測雛形。",
-      "techStack": ["YOLOv11x", "PyTorch", "Computer Vision", "Streamlit"],
+      "description": "基於 YOLOv11x + ResNet50 + EfficientNetV2-S 三神經網絡 Ensemble SOTA 技術。支援二階段標註校驗、36/64 密集宮格切分、即時數量統計與乾淨原圖模式。",
+      "icon": "fa-dog",
+      "businessImpact": "展示前沿電腦視覺 (Computer Vision) 與多模型 Ensemble 投票架構在複雜密集影像中的極致精準辨識力。",
+      "techStack": ["YOLOv11x", "ResNet50", "EfficientNetV2", "PyTorch", "Streamlit"],
       "links": {
         "liveDemo": "https://hiro-journey.streamlit.app/ai-cat-dog-orc"
       }
