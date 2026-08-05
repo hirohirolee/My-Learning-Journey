@@ -32,6 +32,18 @@ const contentData = {
   ],
   "aiStudioProjects": [
     {
+      "id": "ai-cat-dog-orc",
+      "title": "YOLO 貓狗 AI 辨識與數量統計 Web 系統",
+      "category": "ai",
+      "description": "基於 YOLOv11x + ResNet50 + EfficientNetV2-S 三神經網絡 Ensemble SOTA 技術。支援二階段標註校驗、36/64 密集宮格切分、即時數量統計與乾淨原圖模式。",
+      "icon": "fa-dog",
+      "businessImpact": "展示前沿電腦視覺 (Computer Vision) 與多模型 Ensemble 投票架構在複雜密集影像中的極致精準辨識力。",
+      "techStack": ["YOLOv11x", "ResNet50", "EfficientNetV2", "PyTorch", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/ai-cat-dog-orc"
+      }
+    },
+    {
       "id": "flappy-dqn",
       "title": "Flappy Bird DQN 強化學習 AI",
       "category": "ai",
