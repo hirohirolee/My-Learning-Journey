@@ -261,7 +261,7 @@ const contentData = {
       },
       {
         "title": "完整講者簡歷 (PDF)",
-        "file": "#",
+        "file": "assets/Hiro_Lee_Resume.pdf",
         "icon": "fa-file-pdf"
       }
     ]
