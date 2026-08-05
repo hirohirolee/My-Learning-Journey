@@ -34,15 +34,15 @@ st.divider()
 # Overview Statistics / Metrics
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    st.metric(label="專案類別", value="5 大分類", delta="完整架構")
+    st.metric(label="專案類別", value="5 大主題", delta="完整架構")
 with col2:
-    st.metric(label="展示頁面", value="28 個功能頁", delta="全數 0 錯誤")
+    st.metric(label="展示頁面", value="27 個功能頁", delta="全數 0 錯誤")
 with col3:
     st.metric(label="技術堆疊", value="Python / ML / AI", delta="Streamlit Native")
 with col4:
     st.metric(label="導覽體驗", value="下拉選單 + 自動換列", delta="全字體無遮擋")
 
-st.markdown("### 🌟 5 大主題專案地圖")
+st.markdown("### 🌟 主題專案地圖")
 
 c1, c2 = st.columns(2)
 

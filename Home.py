@@ -116,10 +116,7 @@ lotto_app = make_page("streamlit_candidates/04_Misc_Applications/lotto/app.py", 
 crawler_app = make_page("streamlit_candidates/04_Misc_Applications/crawler_dis/ui/app.py", title="跨論壇討論區爬蟲系統", icon="🕷️", url_path="forum-crawler-ui")
 sports_app = make_page("streamlit_candidates/04_Misc_Applications/Sports Analysis/main.py", title="體育賽事數據分析", icon="⚽", url_path="sports-analysis-engine")
 
-# 6. Web Portfolio Applications
-executive_portfolio = make_page("streamlit_candidates/03_Web_Portfolio/v2_executive_theme/app.py", title="高階商務顧問個人品牌網站", icon="👔", url_path="v2-executive-portfolio")
-
-# 7. Life & Mini Games Applications
+# 6. Life & Mini Games Applications
 yijing_app = make_page("streamlit_candidates/04_Misc_Applications/CHING_YiJing/app.py", title="大白話易經卦象占卜", icon="🔮", url_path="yijing-divination")
 mosaic_app = make_page("streamlit_candidates/04_Misc_Applications/Mosaic/ImageDe.py", title="圖像馬賽克與防護處理", icon="🖼️", url_path="mosaic-image-de")
 royal_app = make_page("streamlit_candidates/04_Misc_Applications/Royalgame/main.py", title="皇家遊戲輔助工具", icon="👑", url_path="royal-game-tool")
@@ -144,9 +141,6 @@ category_map = {
     ],
     "🛡️ 數位韌性與大數據應用": [
         resilience_legacy, lotto_app, btceth_app, crawler_app, sports_app
-    ],
-    "👔 個人品牌與高階商務網站": [
-        executive_portfolio
     ],
     "🎮 生活趣味與遊戲專案": [
         yijing_app, mosaic_app, royal_app, game_bj, game_ttt
