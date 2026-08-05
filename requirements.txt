@@ -31,7 +31,6 @@ opencv-python-headless
 langchain
 langchain-community
 langchain-groq
-langchain-huggingface
-sentence-transformers
+
 chromadb
 tiktoken

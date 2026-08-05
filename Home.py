@@ -124,7 +124,7 @@ quant_eval = make_page("streamlit_candidates/04_Misc_Applications/finance/tw_ai_
 
 # 5. Digital Resilience & Big Data Applications
 resilience_legacy = make_page("streamlit_candidates/04_Misc_Applications/Digital_Resilience_Dashboard/app_legacy.py", title="製造業 AI 決策系統 (Legacy)", icon="⚙️", url_path="digital-resilience-legacy")
-ai_rag_app = make_page("04_Misc_Applications/AI+RAG/app.py", title="廠區數據與 ISO 合規 AI 代理", icon="🏭", url_path="ai-iso-rag-agent")
+# ai_rag_app = make_page("04_Misc_Applications/AI+RAG/app.py", title="廠區數據與 ISO 合規 AI 代理", icon="🏭", url_path="ai-iso-rag-agent")
 btceth_app = make_page("streamlit_candidates/04_Misc_Applications/BTCETH/app.py", title="BTC/ETH 區塊鏈分析儀表板", icon="🪙", url_path="btc-eth-analytics")
 lotto_app = make_page("streamlit_candidates/04_Misc_Applications/lotto/app.py", title="樂透大數據分析器", icon="🎰", url_path="lotto-analyzer")
 crawler_app = make_page("streamlit_candidates/04_Misc_Applications/crawler_dis/ui/app.py", title="跨論壇討論區爬蟲系統", icon="🕷️", url_path="forum-crawler-ui")
@@ -154,7 +154,7 @@ category_map = {
         quant_main, quant_apple, quant_time, quant_eval
     ],
     "🛡️ 數位韌性與大數據應用": [
-        resilience_legacy, ai_rag_app, lotto_app, btceth_app, crawler_app, sports_app
+        resilience_legacy, lotto_app, btceth_app, crawler_app, sports_app
     ],
     "🎮 生活趣味與遊戲專案": [
         yijing_app, mosaic_app, royal_app, game_bj, game_ttt
