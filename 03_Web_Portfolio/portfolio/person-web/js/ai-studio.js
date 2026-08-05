@@ -55,7 +55,13 @@ function renderAiStudio(projects) {
             tagsHtml += `</div>`;
         }
         
-        const demoUrl = project.links && project.links.liveDemo ? project.links.liveDemo : '#';
+        let demoUrl = project.links && project.links.liveDemo ? project.links.liveDemo : '#';
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            if (demoUrl.includes('streamlit.app/')) {
+                const path = demoUrl.split('streamlit.app/')[1] || '';
+                demoUrl = `http://localhost:8501/${path}`;
+            }
+        }
         const iconClass = project.icon || 'fa-code';
         const iconBoxHtml = `<span class="card-icon-box"><i class="fa-solid ${iconClass}"></i></span>`;
         const titleTextHtml = `<span class="card-title-text">${project.title}</span>`;
