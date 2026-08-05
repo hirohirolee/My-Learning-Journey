@@ -32,6 +32,18 @@ const contentData = {
   ],
   "aiStudioProjects": [
     {
+      "id": "ai-iso-rag-agent",
+      "title": "廠區數據與 ISO 合規 RAG AI 代理",
+      "category": "resilience",
+      "description": "結合規則引擎與 RAG 檢索增強生成，自動針對廠區異常能耗查閱 ISO 規範並生成顧問報告。(基於本地端 HuggingFace + Ollama 模型)",
+      "icon": "fa-industry",
+      "businessImpact": "自動化合規性分析與異常預警，降低稽核風險與人工成本。",
+      "techStack": ["RAG", "LangChain", "HuggingFace", "Ollama", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/ai-iso-rag-agent"
+      }
+    },
+    {
       "id": "ai-cat-dog-orc",
       "title": "YOLO 貓狗 AI 辨識與數量統計 Web 系統",
       "category": "ai",
