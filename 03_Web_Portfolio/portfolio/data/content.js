@@ -32,6 +32,18 @@ const contentData = {
   ],
   "aiStudioProjects": [
     {
+      "id": "biz-agent",
+      "title": "BizAgent 跨國商務出差 AI 特務",
+      "category": "ai",
+      "description": "基於本地端 LLM 打造的自主 AI Agent，能模擬呼叫多個工具 (天氣、預算、行程清單 API)，將出差需求轉化為結構化的專業商務簡報。",
+      "icon": "fa-suitcase",
+      "businessImpact": "自動化差旅規劃流程，節省秘書與行政人員 80% 的行程安排與報帳估算時間。",
+      "techStack": ["Agentic Workflow", "LangChain", "Ollama", "Tool Calling", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/biz-agent"
+      }
+    },
+    {
       "id": "ai-iso-rag-agent",
       "title": "廠區數據與 ISO 合規 RAG AI 代理",
       "category": "resilience",

@@ -79,6 +79,7 @@ candidate_paths = [
     os.path.join(CANDIDATE_ROOT, "04_Misc_Applications", "ORC"),
     os.path.join(BASE_DIR, "04_Misc_Applications", "ORC"),
     os.path.join(BASE_DIR, "04_Misc_Applications", "AI+RAG"),
+    os.path.join(BASE_DIR, "04_Misc_Applications", "miclaw"),
 ]
 
 for p in candidate_paths:
@@ -109,6 +110,7 @@ ai_california = make_page("streamlit_candidates/01_AI_Data_Projects/daily_lesson
 ai_svm = make_page("streamlit_candidates/01_AI_Data_Projects/daily_lessons/20260618/SVM_app.py", title="3D SVM 核技巧視覺化", icon="🔮", url_path="ai-3d-svm")
 ai_drama = make_page("streamlit_candidates/01_AI_Data_Projects/daily_lessons/20260630/streamlit_app.py", title="影視劇迷分析器", icon="🎬", url_path="ai-drama-analyzer")
 ai_weather = make_page("streamlit_candidates/01_AI_Data_Projects/daily_lessons/20260702/app.py", title="CWA 氣象與 AI 預報", icon="☀️", url_path="ai-cwa-weather")
+biz_agent_app = make_page("04_Misc_Applications/miclaw/app.py", title="BizAgent 商務出差特務", icon="💼", url_path="biz-agent")
 
 # 3. ESG Sustainability
 esg_main = make_page("streamlit_candidates/02_ESG_Sustainability/ESG_Reporting_System/esgreport.py", title="ESG 企業永續報告生成系統", icon="🌱", url_path="esg-reporting-system")
@@ -143,7 +145,7 @@ category_map = {
     "🏠 主頁總覽": [home_page],
     "🤖 AI 與數據學習專案": [
         ai_orc, ai_flappy, ai_t2i, ai_linear, ai_top10, ai_startup,
-        ai_boston, ai_california, ai_svm, ai_drama, ai_weather
+        ai_boston, ai_california, ai_svm, ai_drama, ai_weather, biz_agent_app
     ],
     "🌿 ESG 企業永續專案": [
         esg_main, esg_legacy
