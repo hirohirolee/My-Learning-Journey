@@ -23,6 +23,16 @@
     display: block;
 }
 
+@media (max-width: 768px) {
+    .hero {
+        padding-top: 140px; /* larger offset for wrapped header on mobile */
+    }
+    
+    .hero-title {
+        font-size: 0.9rem;
+    }
+}
+
 /* Certifications (Badges) */
 .certifications-list {
     display: flex;

@@ -56,6 +56,32 @@
     color: var(--color-accent-cyan);
 }
 
+@media (max-width: 768px) {
+    .site-header {
+        padding: 12px 0;
+    }
+    
+    .site-header .container {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .nav-links {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px 16px;
+    }
+    
+    .nav-links a {
+        font-size: 0.9rem;
+    }
+    
+    .logo {
+        font-size: 1.15rem;
+    }
+}
+
 /* Sections */
 .section {
     padding: var(--spacing-2xl) 0;
