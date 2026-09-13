@@ -6,13 +6,35 @@ const contentData = {
     "yearsOfExperience": 19
   },
   "certifications": [
-    "PMP 國際專案管理師",
-    "ISO 27001 資安主導稽核員",
-    "ISO 14064-1 溫室氣體盤查主導稽核員",
-    "ISO 14067 產品碳足跡 (Product Carbon Footprint) 主導稽核員",
-    "ISO 9001 品質管理系統主導稽核員",
-    "Microsoft Power BI 數據分析專業證書",
-    "MCSE / MCP 微軟認證系統工程師"
+    {
+      "category": "國際管理系統與主導稽核員",
+      "items": [
+        "PMP 國際專案管理師 (Project Management Professional)",
+        "ISO 27001 資訊安全管理系統 (ISMS) 主導稽核員",
+        "ISO 14064-1 溫室氣體盤查主導稽核員",
+        "ISO 14067 產品碳足跡 (Product Carbon Footprint) 主導稽核員",
+        "ISO 9001 品質管理系統主導稽核員",
+        "賓州大學 ESG 關鍵要素與法規遵循合規管理證書",
+        "永續報告書編撰與實務操作專班結業 (掌握 GRI 準則應用)"
+      ]
+    },
+    {
+      "category": "數據分析與人工智慧 (AI & Data Analytics)",
+      "items": [
+        "中興大學 AI 應用與資料分析認證 (涵蓋 Python、機器/深度學習、Vibe coding、雲端實務)",
+        "Microsoft Power BI 數據分析專業證書",
+        "Google Data Analytics 數據分析證書",
+        "Google AI Essentials / PwC 數據分析與簡報技巧"
+      ]
+    },
+    {
+      "category": "資訊與資安合規 (IT & Compliance)",
+      "items": [
+        "「資安駭客攻防實作」培訓",
+        "Google Cybersecurity 網路安全證書",
+        "MCSE 微軟認證系統工程師 / MCP 微軟認證專業人員"
+      ]
+    }
   ],
   "services": [
     {
@@ -246,8 +268,8 @@ const contentData = {
   ],
   "mediaKit": {
     "bios": {
-      "short": "Hiro Lee 是一位擁有 19 年跨國營運經驗的企業講師與專案治理專家。具備 PMP、ISO 27001、ISO 14064-1、ISO 14067 等認證，致力於引領企業 AI 賦能與永續合規。",
-      "long": "Hiro Lee 結合中央密西根大學資管碩士與跨國高階幕僚背景，擁有 19 年以上的專案治理與營運管理實戰經驗。專精於企業數位轉型、資安合規 (ISO 27001) 與永續碳盤查及產品碳足跡 (ISO 14064-1 / ISO 14067)。曾主導過多次跨國醫療器材與製造業之大型專案，擅長以數據驅動決策，將國際標準轉化為企業營運優勢，是企業邁向智慧化與綠色永續的最佳戰略夥伴。"
+      "short": "Hiro Lee 是一位擁有 19 年跨國營運經驗的企業講師與專案治理專家。具備 PMP 國際專案管理師、ISO 27001 / 14064-1 / 14067 / 9001 等多項主導稽核員、Google Cybersecurity 與微軟 MCSE 等專業認證，致力於引領企業 AI 賦能、數據決策與永續合規。",
+      "long": "Hiro Lee 結合中央密西根大學資管碩士與跨國高階幕僚背景，擁有 19 年以上的專案治理與營運管理實戰經驗。專精於國際管理系統稽核（PMP、ISO 27001、ISO 14064-1、ISO 14067、ISO 9001）、企業數位轉型與資安合規（Google Cybersecurity、MCSE/MCP）及 AI 數據決策（中興大學 AI 應用認證、Power BI、Google Data Analytics）。曾主導過多次跨國醫療器材與製造業之大型專案，擅長以數據驅動決策，將國際標準轉化為企業營運優勢，是企業邁向智慧化與綠色永續的最佳戰略夥伴。"
     },
     "equipment": [
       "HDMI 投影設備 (自備 Mac，需 Type-C 轉接)",

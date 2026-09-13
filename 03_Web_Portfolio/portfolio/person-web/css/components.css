@@ -68,14 +68,37 @@
 
 
 /* ─── Certifications / Credentials ─── */
-/* White paper: text tags, not colored badges */
+/* White paper: text tags with category grouping */
+.certifications-container {
+    margin-top: var(--spacing-xl);
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.cert-category-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cert-category-title {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: var(--fw-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-gold);
+    display: block;
+    line-height: 1.4;
+}
+
 .certifications-list {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: var(--spacing-xl);
-    border-top: 1px solid var(--color-border);
-    padding-top: var(--spacing-md);
 }
 
 .cert-badge {
@@ -83,7 +106,7 @@
     font-size: 0.6rem;
     font-weight: var(--fw-regular);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     color: var(--color-text-subtle);
     border: 1px solid var(--color-border);
     padding: 5px 10px;
@@ -91,6 +114,13 @@
     background: transparent;
     display: inline-flex;
     align-items: center;
+    line-height: 1.4;
+    transition: border-color var(--transition-smooth), color var(--transition-smooth);
+}
+
+.cert-badge:hover {
+    color: var(--color-text-main);
+    border-color: var(--color-border-strong);
 }
 
 /* No decorative dot — the mono text is the marker */
@@ -977,15 +1007,27 @@ textarea.form-control:focus {
     }
 
     /* ─── Certifications: scroll-wrap on mobile ─── */
-    .certifications-list {
+    .certifications-container {
         margin-top: 1.5rem;
         padding-top: 1rem;
+        gap: 1.25rem;
+    }
+
+    .cert-category-title {
+        font-size: 0.55rem;
+        letter-spacing: 0.12em;
+    }
+
+    .certifications-list {
+        margin-top: 0;
+        padding-top: 0;
         gap: 6px;
     }
 
     .cert-badge {
-        font-size: 0.55rem;
+        font-size: 0.54rem;
         padding: 4px 8px;
+        line-height: 1.4;
     }
 
     /* ─── Services: single column with auto-number ─── */

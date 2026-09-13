@@ -246,12 +246,28 @@ function renderCertifications(certs) {
     const container = document.getElementById('certifications-container');
     if (!container || !certs) return;
     
-    let html = `<div class="certifications-list anim-target" data-anim="fade-in" style="animation-delay: 0.2s">`;
-    certs.forEach(cert => {
-        html += `<span class="cert-badge">${cert}</span>`;
-    });
-    html += `</div>`;
+    let html = `<div class="certifications-container anim-target" data-anim="fade-in" style="animation-delay: 0.2s">`;
     
+    if (Array.isArray(certs) && certs.length > 0 && typeof certs[0] === 'object' && certs[0].category) {
+        certs.forEach(cat => {
+            html += `
+                <div class="cert-category-group">
+                    <span class="cert-category-title">${cat.category}</span>
+                    <div class="certifications-list">
+                        ${cat.items.map(cert => `<span class="cert-badge">${cert}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+        });
+    } else if (Array.isArray(certs)) {
+        html += `<div class="certifications-list">`;
+        certs.forEach(cert => {
+            html += `<span class="cert-badge">${cert}</span>`;
+        });
+        html += `</div>`;
+    }
+    
+    html += `</div>`;
     container.innerHTML = html;
 }
 
