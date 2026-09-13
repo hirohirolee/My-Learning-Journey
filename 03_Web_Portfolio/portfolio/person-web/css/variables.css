@@ -1,53 +1,80 @@
 /* 
- * v2_executive_theme - Variables 
- * Style: Modern Authoritative Minimalism
+ * v2_executive_theme - Variables
+ * Style: McKinsey Insights / Pentagram / Monocle — Think Tank White Paper
+ * High-contrast warm newsprint, single authority accent, monospace data labels
  */
 
- :root {
-    /* Color Palette - Deep, Authoritative, High Contrast */
-    --color-bg-main: #050B14;       /* Deep Navy Blue */
-    --color-bg-surface: #0A1428;    /* Lighter Navy for cards/sections */
-    --color-bg-surface-hover: #0F1C36;
-    
-    --color-text-main: #FFFFFF;     /* High contrast white */
-    --color-text-muted: #94A3B8;    /* Slate Gray for secondary text */
-    
-    --color-accent-cyan: #06B6D4;   /* Electric Cyan for data/tech feel */
-    --color-accent-gold: #C5A880;   /* Muted Gold for premium/trust feel */
-    
-    --color-border: rgba(255, 255, 255, 0.1);
-    
-    /* Typography */
-    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    
+:root {
+    /* ─── Color Palette: Warm Newsprint ─── */
+    --color-bg-main:          #F7F6F2;  /* Warm newsprint — not cold white */
+    --color-bg-surface:       #EFEDE7;  /* Slightly deeper warm for alternates */
+    --color-bg-accent:        #E5E3DC;  /* Used for form textarea, subtle zones */
+
+    /* Text: high-contrast deep charcoal — not pure black, not cool */
+    --color-text-main:        #1A1A1A;  /* Deep charcoal */
+    --color-text-muted:       #52525B;  /* Zinc-600 — body copy secondary */
+    --color-text-subtle:      #A1A1AA;  /* Zinc-400 — metadata, timestamps */
+
+    /* Single authority accent: deep navy — think tank, McKinsey Blue */
+    --color-accent:           #1E3A5F;  /* Deep navy — authoritative, not neon */
+    --color-accent-hover:     #152D4A;
+    --color-accent-subtle:    rgba(30, 58, 95, 0.06);
+
+    /* Warm amber — retained only for labels/gold moments, darkened for legibility */
+    --color-gold:             #92400E;  /* Amber-800 */
+
+    /* Borders: warm hairlines — the primary structural element */
+    --color-border:           #D4D0C8;  /* Warm neutral hairline */
+    --color-border-strong:    #B0AC9E;  /* Stronger divider for emphasis */
+
+    /* ─── Typography ─── */
+    --font-display:  'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    --font-primary:  'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    /* Monospace: for data labels, chapter numbers, metrics — no extra font needed */
+    --font-mono:     'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+
+    /* ─── Layout: Asymmetric Two-Column Grid ─── */
+    /* The defining structural element: narrow label col + wide content col */
+    --col-label:  clamp(130px, 16vw, 200px);
+    --col-gap:    clamp(1.5rem, 4vw, 3.5rem);
+
     /* Font Weights */
-    --fw-light: 300;
-    --fw-regular: 400;
-    --fw-medium: 500;
+    --fw-light:    300;
+    --fw-regular:  400;
+    --fw-medium:   500;
     --fw-semibold: 600;
-    --fw-bold: 700;
-    
-    /* Spacing */
-    --spacing-xs: 0.5rem;
-    --spacing-sm: 1rem;
-    --spacing-md: 1.5rem;
-    --spacing-lg: 2.5rem;
-    --spacing-xl: 4rem;
-    --spacing-2xl: 6rem;
-    
-    /* Border Radius */
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    
-    /* Transitions */
-    --transition-smooth: 0.4s ease-out;
+    --fw-bold:     700;
+
+    /* ─── Spacing ─── */
+    --spacing-xs:      0.5rem;
+    --spacing-sm:      1rem;
+    --spacing-md:      1.5rem;
+    --spacing-lg:      2.5rem;
+    --spacing-xl:      4.5rem;
+    --spacing-2xl:     7rem;     /* Very generous — think tank breathing room */
+    --spacing-section: 7rem;
+
+    /* ─── Border Radius ─── */
+    /* Think tank / white paper: essentially no rounding */
+    --radius-sm: 2px;
+    --radius-md: 2px;
+    --radius-lg: 3px;
+
+    /* ─── Transitions ─── */
+    --transition-fast:   0.12s ease;
+    --transition-smooth: 0.18s ease-out;
 }
 
 @media (max-width: 768px) {
     :root {
-        --spacing-2xl: 4rem;
-        --spacing-xl: 2.5rem;
-        --spacing-lg: 1.5rem;
+        /* DO NOT override --col-label here — grid collapse is handled */
+        /* explicitly in component/layout CSS via grid-template-columns: 1fr */
+        --spacing-section: 3.5rem;   /* py-14 equivalent — compact but rhythmic */
+        --spacing-2xl:     3rem;
+        --spacing-xl:      2rem;
+        --spacing-lg:      1.25rem;
+        --spacing-md:      1rem;
+        --col-gap:         0;        /* Gap unused when stacked — avoids orphan spacing */
     }
 }
+

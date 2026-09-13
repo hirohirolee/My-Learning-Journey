@@ -62,6 +62,7 @@ function renderAiStudio(projects) {
                 demoUrl = `http://localhost:8501/${path}`;
             }
         }
+        
         const iconClass = project.icon || 'fa-code';
         const iconBoxHtml = `<span class="card-icon-box"><i class="fa-solid ${iconClass}"></i></span>`;
         const titleTextHtml = `<span class="card-title-text">${project.title}</span>`;
@@ -70,7 +71,7 @@ function renderAiStudio(projects) {
         if (demoUrl !== '#') {
             linksHtml += `
                 <a href="${demoUrl}" target="_blank" rel="noopener noreferrer" class="action-icon-link" title="前往開啟專案">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i> 前往專案
+                    <i class="fa-solid fa-rocket"></i> 前往開啟專案
                 </a>
             `;
         }

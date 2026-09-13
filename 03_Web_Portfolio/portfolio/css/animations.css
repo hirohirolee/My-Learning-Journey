@@ -1,21 +1,18 @@
 /* 
  * v2_executive_theme - Animations
- * Strict adherence to rules: Only fade-in and slide-up. No bounce or spin.
+ * Editorial: Subtle, fast, purposeful. No dramatic theatre.
+ * Fade only — slide is restrained (8px, not 14-20px).
  */
 
- @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
 @keyframes slideUpFade {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(8px);  /* Editorial: barely perceptible lift */
     }
     to {
         opacity: 1;
@@ -24,14 +21,15 @@
 }
 
 .animate-fade-in {
-    animation: fadeIn 0.8s ease-out forwards;
+    animation: fadeIn 0.45s ease-out forwards;
 }
 
 .animate-slide-up {
-    animation: slideUpFade 0.8s ease-out forwards;
+    /* Ease-out: enters quickly, settles softly */
+    animation: slideUpFade 0.45s ease-out forwards;
 }
 
-/* Utilities for staggered animations via JS */
+/* Wait in invisible state before IntersectionObserver fires */
 .anim-target {
     opacity: 0;
 }

@@ -10,17 +10,17 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/variables.css?v=2.1">
-    <link rel="stylesheet" href="css/base.css?v=2.1">
-    <link rel="stylesheet" href="css/layout.css?v=2.1">
-    <link rel="stylesheet" href="css/components.css?v=2.1">
-    <link rel="stylesheet" href="css/animations.css?v=2.1">
+    <link rel="stylesheet" href="css/variables.css?v=3.0">
+    <link rel="stylesheet" href="css/base.css?v=3.0">
+    <link rel="stylesheet" href="css/layout.css?v=3.0">
+    <link rel="stylesheet" href="css/components.css?v=3.0">
+    <link rel="stylesheet" href="css/animations.css?v=3.0">
 </head>
 <body>
     
@@ -58,8 +58,9 @@
         <section class="section" id="experience" style="background-color: var(--color-bg-surface);">
             <div class="container">
                 <header class="section-header anim-target" data-anim="fade-in">
-                    <h2 class="text-gold">專業經歷 (Experience)</h2>
-                    <p>近 20 年跨國營運與數位轉型實戰，引領企業突破瓶頸、創造指數型成長。</p>
+                    <span class="label label-warm">01 / Professional Experience</span>
+                    <h2>專業經歷</h2>
+                    <p>近 20 年跨國營運與數位轉型，協助企業建立可量化的合規優勢。</p>
                 </header>
                 
                 <div id="experience-container">
@@ -72,8 +73,9 @@
         <section class="section" id="services" style="background-color: var(--color-bg-main);">
             <div class="container">
                 <header class="section-header anim-target" data-anim="fade-in">
-                    <h2 class="text-cyan">核心服務與專業領域</h2>
-                    <p>針對現代企業面臨的 AI 轉型、資安風險與 ESG 永續挑戰，提供系統化的解決方案。</p>
+                    <span class="label">02 / Core Services</span>
+                    <h2>核心服務與專業領域</h2>
+                    <p>針對現代企業的 AI 轉型、資安風險與 ESG 永續挑戰，提供系統化解決方案。</p>
                 </header>
                 
                 <div id="services-container">
@@ -86,7 +88,8 @@
         <section class="section" id="case-studies" style="background-color: var(--color-bg-surface);">
             <div class="container">
                 <header class="section-header anim-target" data-anim="fade-in">
-                    <h2 class="text-cyan">專案實績 (Impact & Case Studies)</h2>
+                    <span class="label">03 / Selected Impact</span>
+                    <h2>專案實績</h2>
                     <p>以 STAR 框架解構大型專案，展現可量化的商業價值與合規成果。</p>
                 </header>
                 
@@ -100,8 +103,9 @@
         <section class="section" id="media-kit" style="background-color: var(--color-bg-main);">
             <div class="container">
                 <header class="section-header anim-target" data-anim="fade-in">
-                    <h2 class="text-gold">講者素材 (Speaker / Media Kit)</h2>
-                    <p>專為企業內訓與公開演講準備的公關素材，為您的專案節省寶貴的溝通時間。</p>
+                    <span class="label label-warm">04 / Speaker Kit</span>
+                    <h2>講者素材</h2>
+                    <p>專為企業內訓與公開演講準備的公關素材，節省前期溝通成本。</p>
                 </header>
                 
                 <div id="media-kit-container">
@@ -114,31 +118,32 @@
         <section class="section" id="contact">
             <div class="container">
                 <header class="section-header anim-target" data-anim="fade-in">
-                    <h2 class="text-gold">聯絡我 (Contact Me)</h2>
-                    <p>若有任何專案合作、演講邀約或 AI 數位轉型諮詢需求，歡迎填寫下表與我聯絡。</p>
+                    <span class="label label-warm">05 / Contact</span>
+                    <h2>聯絡我</h2>
+                    <p>專案合作、演講邀約或 AI 數位轉型諮詢，歡迎填寫下表。</p>
                 </header>
                 
-                <div class="anim-target" data-anim="slide-up" style="max-width: 680px; margin: 0 auto;">
-                    <div class="contact-card" style="box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12);">
-                        <h3 style="text-align: center; font-size: 1.5rem; margin-bottom: 0.5rem;">✉️ 傳送訊息</h3>
-                        <p style="text-align: center; margin-bottom: 2rem;">請留下您的聯絡資訊與訊息內容，我將儘快親自與您回覆。</p>
+                <div class="anim-target" data-anim="slide-up" style="max-width: 560px;">
+                    <div class="contact-card">
+                        <h3>傳送訊息</h3>
+                        <p>請留下聯絡資訊與訊息內容，我將親自回覆。</p>
                         <form id="contact-form" action="https://formspree.io/f/meajqezo" method="POST">
                             <!-- 隱藏蜜罐欄位 (Honeypot Bot 防護) -->
                             <input type="text" name="_gotcha" style="display:none !important;" tabindex="-1" autocomplete="off">
                             <div class="form-group">
-                                <label style="display:block; margin-bottom: 6px; font-weight: 500; color: var(--color-text-main);">您的姓名</label>
+                                <label style="display:block; margin-bottom: 6px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-subtle);">姓名</label>
                                 <input type="text" name="name" class="form-control" placeholder="請輸入您的姓名或稱呼" required>
                             </div>
                             <div class="form-group">
-                                <label style="display:block; margin-bottom: 6px; font-weight: 500; color: var(--color-text-main);">企業 Email</label>
-                                <input type="email" name="email" class="form-control" placeholder="例如: name@company.com" required>
+                                <label style="display:block; margin-bottom: 6px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-subtle);">企業 Email</label>
+                                <input type="email" name="email" class="form-control" placeholder="name@company.com" required>
                             </div>
                             <div class="form-group">
-                                <label style="display:block; margin-bottom: 6px; font-weight: 500; color: var(--color-text-main);">訊息與諮詢內容</label>
-                                <textarea name="message" class="form-control" rows="5" placeholder="請簡述您的專案需求或合作構想..." required></textarea>
+                                <label style="display:block; margin-bottom: 8px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-subtle);">訊息內容</label>
+                                <textarea name="message" class="form-control" rows="5" placeholder="請簡述您的需求或合作構想…" required></textarea>
                             </div>
-                            <button type="submit" id="contact-submit-btn" class="btn-primary" style="width: 100%; padding: 14px; font-size: 1.05rem;">⚡ 發送訊息</button>
-                            <div id="contact-status" style="margin-top: 14px; text-align: center; font-weight: 500; font-size: 0.95rem;"></div>
+                            <button type="submit" id="contact-submit-btn" class="btn-primary" style="width: 100%; padding: 13px;">發送訊息</button>
+                            <div id="contact-status" class="form-status"></div>
                         </form>
                     </div>
                 </div>
@@ -155,8 +160,8 @@
     </footer>
 
     <!-- Application Logic -->
-    <script src="data/content.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/cookie-consent.js"></script>
+    <script src="data/content.js?v=3.0"></script>
+    <script src="js/app.js?v=3.0"></script>
+    <script src="js/cookie-consent.js?v=3.0"></script>
 </body>
 </html>

@@ -10,17 +10,17 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/variables.css?v=2.1">
-    <link rel="stylesheet" href="css/base.css?v=2.1">
-    <link rel="stylesheet" href="css/layout.css?v=2.1">
-    <link rel="stylesheet" href="css/ai-studio.css?v=2.1">
-    <link rel="stylesheet" href="css/animations.css?v=2.1">
+    <link rel="stylesheet" href="css/variables.css?v=3.0">
+    <link rel="stylesheet" href="css/base.css?v=3.0">
+    <link rel="stylesheet" href="css/layout.css?v=3.0">
+    <link rel="stylesheet" href="css/ai-studio.css?v=3.0">
+    <link rel="stylesheet" href="css/animations.css?v=3.0">
 </head>
 <body class="studio-page">
     
@@ -40,16 +40,17 @@
     </header>
 
     <!-- Main Content Area -->
-    <main style="padding-top: 120px; padding-bottom: 80px; min-height: 100vh;">
+    <main>
         <div class="container">
             
             <header class="studio-header anim-target" data-anim="fade-in">
+                <span class="label">06 / Interactive Lab</span>
                 <h1>AI Innovation Studio</h1>
-                <p>探索由無伺服器架構與 Streamlit 全站數據科學構建的互動式實戰作品。</p>
+                <p>探索由無伺服器架構與 Streamlit 構建的互動式實戰作品。</p>
             </header>
 
             <!-- Category Filter Bar -->
-            <div class="filter-bar anim-target" data-anim="fade-in" style="display:flex; justify-content:center; gap:0.8rem; margin-bottom:2.5rem; flex-wrap:wrap;">
+            <div class="filter-bar filter-bar-wrapper anim-target" data-anim="fade-in">
                 <button class="filter-btn active" data-filter="all"><i class="fa-solid fa-layer-group"></i> 全部專案</button>
                 <button class="filter-btn" data-filter="ai"><i class="fa-solid fa-brain"></i> AI & 機器學習</button>
                 <button class="filter-btn" data-filter="esg"><i class="fa-solid fa-leaf"></i> ESG 永續數據</button>
@@ -74,8 +75,8 @@
     </footer>
 
     <!-- Application Logic -->
-    <script src="data/content.js"></script>
-    <script src="js/ai-studio.js"></script>
-    <script src="js/cookie-consent.js"></script>
+    <script src="data/content.js?v=3.0"></script>
+    <script src="js/ai-studio.js?v=3.0"></script>
+    <script src="js/cookie-consent.js?v=3.0"></script>
 </body>
 </html>
