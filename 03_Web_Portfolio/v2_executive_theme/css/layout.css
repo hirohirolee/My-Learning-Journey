@@ -1,24 +1,27 @@
 /* 
- * v2_executive_theme - Layout 
+ * v2_executive_theme - Layout
+ * Style: McKinsey/Pentagram Think Tank
+ * Core: Asymmetric two-column grid throughout. Warm newsprint header. 
  */
 
- .container {
+.container {
     width: 100%;
-    max-width: 1140px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 0 var(--spacing-md);
+    padding: 0 var(--spacing-lg);
 }
 
-/* Header */
+/* ─── Header: Clean Masthead ─── */
+/* McKinsey / think tank: warm newsprint header, precise hairline, no glass */
 .site-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    padding: var(--spacing-md) 0;
-    background-color: rgba(5, 11, 20, 0.9);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    padding: 1.1rem 0;
+    background-color: rgba(247, 246, 242, 0.97);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     border-bottom: 1px solid var(--color-border);
     z-index: 100;
 }
@@ -29,74 +32,233 @@
     align-items: center;
 }
 
+/* Logo: mono wordmark — think tank masthead style */
 .logo {
-    font-size: 1.25rem;
-    font-weight: var(--fw-bold);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: var(--fw-regular);
     color: var(--color-text-main);
-    letter-spacing: 1px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
 }
 
 .logo span {
-    color: var(--color-accent-gold);
+    color: var(--color-gold);
 }
 
 .nav-links {
     display: flex;
-    gap: var(--spacing-md);
+    gap: var(--spacing-lg);
 }
 
 .nav-links a {
-    color: var(--color-text-muted);
-    font-weight: var(--fw-medium);
-    font-size: 0.95rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: var(--fw-regular);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
     transition: color var(--transition-smooth);
+    position: relative;
 }
 
-.nav-links a:hover, .nav-links a.active {
-    color: var(--color-accent-cyan);
+.nav-links a:hover {
+    color: var(--color-text-main);
 }
 
-@media (max-width: 768px) {
-    .site-header {
-        padding: 12px 0;
-    }
-    
-    .site-header .container {
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .nav-links {
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 12px 16px;
-    }
-    
-    .nav-links a {
-        font-size: 0.9rem;
-    }
-    
-    .logo {
-        font-size: 1.15rem;
-    }
+/* Active: rule underline — not a color pop */
+.nav-links a.active {
+    color: var(--color-text-main);
 }
 
-/* Sections */
+.nav-links a.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--color-text-main);
+}
+
+/* ─── Sections: Generous White Paper Rhythm ─── */
 .section {
-    padding: var(--spacing-2xl) 0;
+    padding: var(--spacing-section) 0;
 }
 
+/* ─── Section Header: Asymmetric Two-Column ─── */
+/* Left (narrow): mono chapter label
+   Right (wide): display serif headline + prose description */
 .section-header {
+    display: grid;
+    grid-template-columns: var(--col-label) 1fr;
+    gap: 0 var(--col-gap);
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
-    max-width: 700px;
+    align-items: start;
 }
 
-/* Footer */
+/* The .label span goes in column 1 */
+.section-header .label {
+    padding-top: 8px;  /* Align baseline with h2 cap height */
+}
+
+/* h2 and p both sit in column 2 */
+.section-header h2 {
+    grid-column: 2;
+    margin-bottom: 0.75rem;
+}
+
+.section-header p {
+    grid-column: 2;
+    font-size: 1rem;
+    line-height: 1.75;
+    margin-bottom: 0;
+    max-width: 62ch;
+}
+
+/* ─── Footer ─── */
 .site-footer {
     padding: var(--spacing-xl) 0;
     border-top: 1px solid var(--color-border);
-    text-align: center;
-    color: var(--color-text-muted);
-    font-size: 0.875rem;
+    text-align: left;
+    background-color: var(--color-bg-main);
+}
+
+.site-footer p {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-text-subtle);
+    max-width: none;
+    margin: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   TABLET RESPONSIVE  (769px – 1024px)
+   ═══════════════════════════════════════════════ */
+@media (min-width: 769px) and (max-width: 1024px) {
+    :root {
+        --col-label: 140px;
+        --col-gap:   2rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════
+   MOBILE RWD  (≤ 768px)
+   ═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+    /* ─── Container: disciplined horizontal padding (px-6 equivalent) ─── */
+    .container {
+        padding: 0 1.5rem;  /* 24px — generous but disciplined */
+    }
+
+    /* ─── Header: Logo-left + Contact-only on right ─── */
+    /* No hamburger. No drawer. No glassmorphism. Pure text. */
+    .site-header {
+        padding: 0.85rem 0;
+    }
+
+    .site-header .container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0;
+    }
+
+    /* Hide ALL nav links except the last one (Contact) on mobile */
+    .nav-links a:not(:last-child) {
+        display: none;
+    }
+
+    .nav-links {
+        gap: 0;
+    }
+
+    /* The sole remaining Contact link: styled as a minimal text CTA */
+    .nav-links a:last-child {
+        font-family: var(--font-mono);
+        font-size: 0.6rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--color-text-main);
+        border: 1px solid var(--color-border-strong);
+        padding: 5px 12px;
+        transition: border-color var(--transition-smooth), color var(--transition-smooth);
+    }
+
+    .nav-links a:last-child:hover {
+        border-color: var(--color-text-main);
+    }
+
+    /* ─── Fluid Typography ─── */
+    /* Clamp headlines to 28px–32px to avoid awkward single-word wrapping */
+    h1 {
+        font-size: clamp(1.75rem, 7.5vw, 2.05rem);  /* 28–33px */
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+    }
+
+    h2 {
+        font-size: clamp(1.4rem, 5.5vw, 1.75rem);   /* 22.4–28px */
+        letter-spacing: -0.015em;
+        line-height: 1.15;
+    }
+
+    /* ─── Section Header: Natural Vertical Stack ─── */
+    /* Chapter label sits cleanly at top, followed by h2 and p */
+    .section-header {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        padding-top: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .section-header .label {
+        padding-top: 0;
+        margin-bottom: 0.5rem;
+    }
+
+    .section-header h2 {
+        grid-column: 1;
+        margin-bottom: 0.6rem;
+    }
+
+    .section-header p {
+        grid-column: 1;
+        font-size: 0.9rem;
+        line-height: 1.75;
+        max-width: none;
+    }
+
+    /* ─── Sections: compressed vertical rhythm (py-12 to py-16 equivalent) ─── */
+    .section {
+        padding: var(--spacing-section) 0;
+    }
+
+    /* ─── Footer: compact mono style ─── */
+    .site-footer {
+        padding: 2rem 0;
+    }
+}
+
+/* ═══════════════════════════════════════════════
+   EXTRA SMALL MOBILE  (≤ 375px)
+   ═══════════════════════════════════════════════ */
+@media (max-width: 375px) {
+    .container {
+        padding: 0 1rem;  /* 16px */
+    }
+
+    h1 {
+        font-size: 1.75rem;  /* 28px floor */
+    }
+
+    h2 {
+        font-size: 1.35rem;
+    }
 }

@@ -225,17 +225,22 @@ function renderProfile(profile) {
     const container = document.getElementById('hero-container');
     if (!container) return;
     
+    const statBlock = profile.yearsOfExperience ? `
+        <div class="stat-block">
+            <span class="stat-number">${profile.yearsOfExperience}</span>
+            <span class="stat-label">Years of Practice · Executive Management</span>
+        </div>` : '';
+    
     container.innerHTML = `
         <div class="hero-content anim-target" data-anim="slide-up">
             <span class="hero-title">${profile.title}</span>
             <h1>${profile.name}</h1>
-            <p style="font-size: 1.25rem; color: var(--color-text-main); margin-bottom: 2rem;">
-                ${profile.slogan}
-            </p>
-            ${profile.yearsOfExperience ? `<p class="text-gold" style="font-weight: 500;">擁有 ${profile.yearsOfExperience} 年實戰經驗</p>` : ''}
+            <p>${profile.slogan}</p>
+            ${statBlock}
         </div>
     `;
 }
+
 
 function renderCertifications(certs) {
     const container = document.getElementById('certifications-container');
@@ -307,8 +312,8 @@ function initContactForm() {
             btn.innerText = '發送中...';
         }
         if (status) {
-            status.style.color = '#76e4f7';
-            status.innerHTML = '⏳ 訊息發送中，請稍候...';
+            status.className = 'form-status status-pending';
+            status.innerHTML = '訊息發送中，請稍候…';
         }
         
         try {
@@ -321,25 +326,25 @@ function initContactForm() {
             });
             if (response.ok) {
                 if (status) {
-                    status.style.color = '#68D391';
-                    status.innerHTML = '✅ 訊息已成功發送！感謝您的來信，我將儘快與您聯絡。';
+                    status.className = 'form-status status-success';
+                    status.innerHTML = '訊息已成功發送！感謝您的來信，我將盡快與您聯絡。';
                 }
                 form.reset();
             } else {
                 const resData = await response.json();
                 if (status) {
-                    status.style.color = '#FC8181';
+                    status.className = 'form-status status-error';
                     if (resData && Object.prototype.hasOwnProperty.call(resData, 'errors')) {
-                        status.innerHTML = '❌ ' + resData["errors"].map(error => error["message"]).join(", ");
+                        status.innerHTML = resData["errors"].map(error => error["message"]).join(", ");
                     } else {
-                        status.innerHTML = '❌ 發送失敗，請確認填寫內容後再試一次。';
+                        status.innerHTML = '發送失敗，請確認填寫內容後再試一次。';
                     }
                 }
             }
         } catch (error) {
             if (status) {
-                status.style.color = '#FC8181';
-                status.innerHTML = '❌ 網路連線問題，請稍後再試。';
+                status.className = 'form-status status-error';
+                status.innerHTML = '網路連線問題，請稍後再試。';
             }
         } finally {
             if (btn) {
