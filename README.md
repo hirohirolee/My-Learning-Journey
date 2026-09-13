@@ -43,5 +43,5 @@
 * **前端與設計**: HTML5, CSS3, JavaScript (ES6+), Vue.js, GSAP
 * **後端與 AI 模型**: Python, Streamlit, LangGraph, OpenAI/Ollama API, Hugging Face
 * **數據分析與資料庫**: Scikit-Learn, Pandas, Plotly, ChromaDB
-* **合規與管理**: ISO 27001, ISO 14064-1, PMP, CRISP-DM
+* **合規與管理**: ISO 27001, ISO 14064-1, ISO 14067, PMP, CRISP-DM
 * **部署與版本控制**: GitHub Pages, Vercel, Git
