@@ -49,6 +49,7 @@
 .nav-links {
     display: flex;
     gap: var(--spacing-lg);
+    align-items: center;
 }
 
 .nav-links a {
@@ -60,6 +61,14 @@
     color: var(--color-text-subtle);
     transition: color var(--transition-smooth);
     position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.nav-mobile-text {
+    display: none;
 }
 
 .nav-links a:hover {
@@ -156,8 +165,7 @@
         padding: 0 1.5rem;  /* 24px — generous but disciplined */
     }
 
-    /* ─── Header: Logo-left + Contact-only on right ─── */
-    /* No hamburger. No drawer. No glassmorphism. Pure text. */
+    /* ─── Header: Logo-left + Action Buttons on right ─── */
     .site-header {
         padding: 0.85rem 0;
     }
@@ -166,31 +174,94 @@
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        gap: 0;
+        gap: 0.5rem;
     }
 
-    /* Hide ALL nav links except the last one (Contact) on mobile */
-    .nav-links a:not(:last-child) {
+    .nav-desktop-text {
         display: none;
     }
 
-    .nav-links {
-        gap: 0;
+    .nav-mobile-text {
+        display: inline;
     }
 
-    /* The sole remaining Contact link: styled as a minimal text CTA */
-    .nav-links a:last-child {
+    .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    /* Hide section links on mobile */
+    .nav-links a.nav-link-services {
+        display: none;
+    }
+
+    /* On index page, hide home link (logo already links to home) */
+    body:not(.studio-page) .nav-links a.nav-link-home {
+        display: none;
+    }
+
+    /* On studio-page, hide studio link (already on studio page) */
+    body.studio-page .nav-links a.nav-link-studio {
+        display: none;
+    }
+
+    /* Base mobile button styles for visible links */
+    .nav-links a {
         font-family: var(--font-mono);
-        font-size: 0.6rem;
-        letter-spacing: 0.14em;
+        font-size: 0.58rem;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
+        padding: 5px 9px;
+        border-radius: var(--radius-sm);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all var(--transition-smooth);
+    }
+
+    .nav-links a.active::after {
+        display: none;
+    }
+
+    /* AI Studio prominent button with icon on mobile */
+    .nav-links a.nav-link-studio {
+        color: var(--color-gold);
+        border: 1px solid var(--color-gold);
+        background-color: rgba(146, 64, 14, 0.06);
+        font-weight: var(--fw-semibold);
+    }
+
+    .nav-links a.nav-link-studio:hover {
+        background-color: var(--color-gold);
+        color: #ffffff;
+    }
+
+    .nav-links a.nav-link-studio i {
+        font-size: 0.65rem;
+    }
+
+    /* Contact button */
+    .nav-links a.nav-link-contact {
         color: var(--color-text-main);
         border: 1px solid var(--color-border-strong);
-        padding: 5px 12px;
-        transition: border-color var(--transition-smooth), color var(--transition-smooth);
+        background: transparent;
     }
 
-    .nav-links a:last-child:hover {
+    .nav-links a.nav-link-contact:hover {
+        border-color: var(--color-text-main);
+    }
+
+    /* Home return button when on studio page */
+    .nav-links a.nav-link-home {
+        color: var(--color-text-main);
+        border: 1px solid var(--color-border-strong);
+        background: transparent;
+    }
+
+    .nav-links a.nav-link-home:hover {
         border-color: var(--color-text-main);
     }
 
@@ -252,6 +323,20 @@
 @media (max-width: 375px) {
     .container {
         padding: 0 1rem;  /* 16px */
+    }
+
+    .logo {
+        font-size: 0.58rem;
+        letter-spacing: 0.16em;
+    }
+
+    .nav-links {
+        gap: 0.3rem;
+    }
+
+    .nav-links a {
+        font-size: 0.52rem;
+        padding: 4px 7px;
     }
 
     h1 {

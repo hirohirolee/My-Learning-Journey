@@ -130,10 +130,20 @@ body.studio-page main {
     border-color: var(--color-border);
 }
 
-/* Left column: project number + category tag */
+/* Project category icon */
 .card-icon-box {
-    /* Repurposed as project number — no icon styling */
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg-surface);
+    color: var(--color-accent);
+    font-size: 0.75rem;
+    margin-right: 6px;
+    border: 1px solid var(--color-border);
+    vertical-align: middle;
 }
 
 /* The h3 becomes the left column in the grid */
