@@ -81,29 +81,14 @@
     color: var(--color-text-main);
 }
 
-/* AI Studio Lab Link in Nav: Restrained Technical Indicator */
+/* AI Studio Link in Nav: Clean Typography */
 .nav-link-studio {
-    color: var(--color-accent) !important;
-    font-weight: var(--fw-medium) !important;
+    color: var(--color-text-main);
+    font-weight: var(--fw-medium);
 }
 
-.nav-studio-badge {
-    font-family: var(--font-mono);
-    font-size: 0.52rem;
-    padding: 1px 4px;
-    border: 1px solid var(--color-accent);
+.nav-link-studio:hover {
     color: var(--color-accent);
-    border-radius: 2px;
-    line-height: 1.2;
-}
-
-.nav-arrow {
-    font-size: 0.7rem;
-    transition: transform var(--transition-smooth);
-}
-
-.nav-link-studio:hover .nav-arrow {
-    transform: translate(2px, -2px);
 }
 
 .nav-desktop-text {
@@ -307,10 +292,22 @@
         border-radius: var(--radius-sm);
     }
 
-    /* Mobile AI Studio button */
-    .nav-link-studio {
-        border: 1px solid var(--color-accent) !important;
-        background-color: var(--color-accent-subtle);
+    /* Mobile AI Studio button: pure, clean, restrained */
+    .nav-links a.nav-link-studio {
+        color: var(--color-text-main);
+        border: 1px solid var(--color-border-strong);
+        background-color: transparent;
+        font-family: var(--font-mono);
+        font-size: 0.58rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 5px 10px;
+    }
+
+    .nav-links a.nav-link-studio:hover,
+    .nav-links a.nav-link-studio:active {
+        border-color: var(--color-text-main);
+        color: var(--color-text-main);
     }
 
     /* Section Header Collapses to Clean Vertical Stack */
