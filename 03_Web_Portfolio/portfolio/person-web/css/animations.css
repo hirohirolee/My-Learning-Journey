@@ -1,35 +1,62 @@
 /* 
- * v2_executive_theme - Animations
- * Editorial: Subtle, fast, purposeful. No dramatic theatre.
- * Fade only — slide is restrained (8px, not 14-20px).
+ * v2_executive_theme - Micro-interactions & Subtle Transitions
+ * Editorial: Hand-crafted, tactile, and restrained. No exaggerated theatrical entrance.
  */
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
-
-@keyframes slideUpFade {
-    from {
-        opacity: 0;
-        transform: translateY(8px);  /* Editorial: barely perceptible lift */
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-fade-in {
-    animation: fadeIn 0.45s ease-out forwards;
-}
-
-.animate-slide-up {
-    /* Ease-out: enters quickly, settles softly */
-    animation: slideUpFade 0.45s ease-out forwards;
-}
-
-/* Wait in invisible state before IntersectionObserver fires */
+/* Content is immediately visible for accessibility, SEO & zero FOUC */
 .anim-target {
-    opacity: 0;
+    opacity: 1;
+}
+
+/* Tactile Button Feedback */
+button,
+.btn-primary,
+.btn-secondary,
+.btn-download,
+.btn-copy,
+.filter-btn {
+    transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1),
+                background-color var(--transition-smooth),
+                border-color var(--transition-smooth),
+                color var(--transition-smooth);
+}
+
+button:active,
+.btn-primary:active,
+.btn-secondary:active,
+.btn-download:active,
+.btn-copy:active,
+.filter-btn:active {
+    transform: scale(0.98);
+}
+
+/* Typographic link underline interaction */
+.text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-main);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--color-border-strong);
+    transition: text-decoration-color var(--transition-smooth), color var(--transition-smooth);
+}
+
+.text-link:hover {
+    color: var(--color-accent);
+    text-decoration-color: var(--color-accent);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
