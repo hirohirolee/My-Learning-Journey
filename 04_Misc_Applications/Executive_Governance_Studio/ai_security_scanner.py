@@ -164,6 +164,23 @@ hero(
     "結合 OWASP Top 10 for LLM 國際資安架構，提供即時 Prompt Injection 攻擊特徵分析、PII 機敏資料外洩攔截脫敏與企業 AI 防護成熟度雷達評估，供 CISO / AI 架構師驗證系統防禦深度。",
 )
 
+# Session state initializations & callbacks
+if "pi_input_text" not in st.session_state:
+    st.session_state["pi_input_text"] = list(PRESET_ATTACKS.values())[0]
+
+def apply_attack_preset():
+    sel = st.session_state.get("pi_preset")
+    if sel and sel in PRESET_ATTACKS:
+        st.session_state["pi_input_text"] = PRESET_ATTACKS[sel]
+
+if "pii_input_text" not in st.session_state:
+    st.session_state["pii_input_text"] = list(PRESET_PII_SAMPLES.values())[0]
+
+def apply_pii_preset():
+    sel = st.session_state.get("pii_preset")
+    if sel and sel in PRESET_PII_SAMPLES:
+        st.session_state["pii_input_text"] = PRESET_PII_SAMPLES[sel]
+
 tab1, tab2, tab3 = st.tabs([
     "🎯 模組一：Prompt 注入與越獄檢測",
     "🔒 模組二：機敏資料洩漏與脫敏攔截",
@@ -175,15 +192,18 @@ with tab1:
     section("① 測試樣本與 Prompt 輸入")
     col_preset, col_clear = st.columns([3, 1])
     with col_preset:
-        sel_preset = st.selectbox("選取攻擊演練樣本 (Attack Vectors)", list(PRESET_ATTACKS.keys()), key="pi_preset")
+        sel_preset = st.selectbox(
+            "選取攻擊演練樣本 (Attack Vectors)", 
+            list(PRESET_ATTACKS.keys()), 
+            key="pi_preset",
+            on_change=apply_attack_preset
+        )
     with col_clear:
         st.write("")
         st.write("")
-        if st.button("載入樣本", width="stretch", key="btn_load_attack"):
-            st.session_state["pi_input"] = PRESET_ATTACKS[sel_preset]
+        st.button("載入樣本", width="stretch", key="btn_load_attack", on_click=apply_attack_preset)
 
-    default_prompt = st.session_state.get("pi_input", PRESET_ATTACKS[sel_preset])
-    prompt_input = st.text_area("待檢測之使用者輸入 (Prompt Payload)", value=default_prompt, height=130, key="pi_input_text")
+    prompt_input = st.text_area("待檢測之使用者輸入 (Prompt Payload)", height=130, key="pi_input_text")
 
     score, matches = scan_injection(prompt_input)
 
@@ -221,12 +241,20 @@ with tab1:
 # ----------------------------------------------------------------- Tab 2
 with tab2:
     section("① 輸出/輸入機敏內容審查")
-    c_pii_preset, _ = st.columns([3, 1])
+    c_pii_preset, c_pii_btn = st.columns([3, 1])
     with c_pii_preset:
-        sel_pii_sample = st.selectbox("選取機敏資料演練情境", list(PRESET_PII_SAMPLES.keys()), key="pii_preset")
+        sel_pii_sample = st.selectbox(
+            "選取機敏資料演練情境", 
+            list(PRESET_PII_SAMPLES.keys()), 
+            key="pii_preset",
+            on_change=apply_pii_preset
+        )
+    with c_pii_btn:
+        st.write("")
+        st.write("")
+        st.button("載入情境", width="stretch", key="btn_load_pii", on_click=apply_pii_preset)
 
-    sample_text = PRESET_PII_SAMPLES[sel_pii_sample]
-    pii_input = st.text_area("待審核內容 (Simulated AI Input / Output)", value=sample_text, height=110, key="pii_input_text")
+    pii_input = st.text_area("待審核內容 (Simulated AI Input / Output)", height=110, key="pii_input_text")
 
     findings, redacted_result = scan_pii(pii_input)
 
