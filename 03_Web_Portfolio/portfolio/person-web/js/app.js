@@ -1,12 +1,15 @@
 /**
  * v2_executive_theme - Client-Side Micro-Interactions (Behavior Only)
  * De-containerized architecture: Content is static semantic HTML5.
- * This script only manages Accordion states and Clipboard copy.
+ * Core: Accordion states, Click-to-Reveal Email, Scrollspy, Progress Indicator, and Back-to-Top.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     initAccordion();
     initClickToRevealEmail();
+    initScrollProgress();
+    initScrollspy();
+    initBackToTop();
 });
 
 /**
@@ -65,6 +68,89 @@ function initClickToRevealEmail() {
 }
 
 /**
+ * Editorial Scroll Progress Indicator (1.5px Gold Accent)
+ */
+function initScrollProgress() {
+    const progressBar = document.getElementById('scroll-progress');
+    if (!progressBar) return;
+
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        progressBar.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+    }, { passive: true });
+}
+
+/**
+ * Native IntersectionObserver Scrollspy
+ * Zero-dependency viewport tracking that updates active nav state
+ */
+function initScrollspy() {
+    const navLinks = document.querySelectorAll('.nav-links .nav-link-item');
+    if (!navLinks.length) return;
+
+    const sections = [];
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+            const targetSection = document.querySelector(href);
+            if (targetSection) {
+                sections.push({ el: targetSection, link: link, id: href });
+            }
+        }
+    });
+
+    if (!sections.length || !('IntersectionObserver' in window)) return;
+
+    const observerOptions = {
+        root: null,
+        rootMargin: '-20% 0px -65% 0px',
+        threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const targetId = `#${entry.target.id}`;
+                navLinks.forEach(link => {
+                    if (link.getAttribute('href') === targetId) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(item => observer.observe(item.el));
+}
+
+/**
+ * Minimalist Back-to-Top Floating Trigger
+ */
+function initBackToTop() {
+    const btn = document.getElementById('btn-back-to-top');
+    if (!btn) return;
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 550) {
+            btn.classList.add('visible');
+        } else {
+            btn.classList.remove('visible');
+        }
+    }, { passive: true });
+
+    btn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
+
+/**
  * Accordion Interactivity for STAR Case Studies
  */
 function initAccordion() {
@@ -113,6 +199,10 @@ window.copyToClipboard = function(btn, elementId) {
     let textToCopy = targetEl.innerText || targetEl.textContent;
     if (targetEl.hasAttribute('data-user') && targetEl.hasAttribute('data-domain')) {
         textToCopy = `${targetEl.getAttribute('data-user')}@${targetEl.getAttribute('data-domain')}`;
+    }
+
+    if (!textToCopy || textToCopy.trim() === '') {
+        return;
     }
 
     navigator.clipboard.writeText(textToCopy).then(() => {

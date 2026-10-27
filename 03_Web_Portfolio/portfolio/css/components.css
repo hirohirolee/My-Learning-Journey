@@ -1091,3 +1091,354 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ─── Back-to-Top Minimalist Trigger ─── */
+.btn-back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    width: 44px;
+    height: 48px;
+    background-color: rgba(247, 246, 242, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px);
+    transition: opacity 0.3s ease, transform 0.3s ease, border-color 0.2s ease, color 0.2s ease;
+    z-index: 99;
+}
+
+.btn-back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.btn-back-to-top:hover {
+    border-color: var(--color-gold);
+    color: var(--color-accent);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.btn-back-to-top .back-to-top-text {
+    font-family: var(--font-mono);
+    font-size: 0.52rem;
+    letter-spacing: 0.1em;
+    font-weight: var(--fw-semibold);
+}
+
+/* ─── Cookie Consent Banner & Actions ─── */
+.cookie-banner {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 3rem);
+    max-width: 900px;
+    background-color: rgba(26, 29, 36, 0.97);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-sm);
+    padding: 1.1rem 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    z-index: 1000;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.cookie-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.cookie-icon {
+    font-size: 1.15rem;
+    color: var(--color-gold);
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+.cookie-content h4 {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ffffff;
+    margin: 0 0 4px 0;
+}
+
+.cookie-content p {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #a0aec0;
+    margin: 0;
+}
+
+.cookie-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.cookie-actions .btn-secondary {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 8px 14px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+
+.cookie-actions .btn-secondary:hover {
+    border-color: var(--color-gold);
+    color: var(--color-gold);
+}
+
+.cookie-actions .btn-primary {
+    background-color: var(--color-gold);
+    border: 1px solid var(--color-gold);
+    color: #12151a;
+    padding: 8px 16px;
+    font-size: 0.62rem;
+}
+
+.cookie-actions .btn-primary:hover {
+    background-color: #ffffff;
+    border-color: #ffffff;
+    color: #12151a;
+}
+
+/* ─── Executive Privacy & ISO 27701 Dialog Modal ─── */
+.executive-dialog {
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0;
+    background: transparent;
+    max-width: 620px;
+    width: 90vw;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+    z-index: 10000;
+}
+
+.executive-dialog::backdrop {
+    background-color: rgba(18, 21, 26, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.dialog-card {
+    background-color: var(--color-bg-main);
+    border: 1px solid var(--color-border-strong);
+    padding: 2rem 2.2rem;
+}
+
+.dialog-header {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.dialog-badge {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+    margin-bottom: 6px;
+}
+
+.dialog-header h3 {
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    font-weight: var(--fw-light);
+    color: var(--color-text-main);
+    margin: 0 0 4px 0;
+}
+
+.dialog-subtitle {
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.dialog-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+.privacy-clause {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 12px;
+}
+
+.clause-num {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: var(--fw-semibold);
+    color: var(--color-gold);
+}
+
+.privacy-clause h4 {
+    font-family: var(--font-primary);
+    font-size: 0.88rem;
+    font-weight: var(--fw-semibold);
+    color: var(--color-text-main);
+    margin: 0 0 4px 0;
+}
+
+.privacy-clause p {
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.privacy-clause code {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    padding: 2px 5px;
+    border-radius: 2px;
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1rem;
+}
+
+@media (max-width: 640px) {
+    .cookie-banner {
+        flex-direction: column;
+        align-items: stretch;
+        bottom: 1rem;
+        width: calc(100% - 2rem);
+    }
+    .cookie-actions {
+        justify-content: flex-end;
+    }
+    .btn-back-to-top {
+        bottom: 1.25rem;
+        right: 1.25rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════
+   Executive Boardroom Presentation Engine (@media print)
+   Optimized for A4 Briefing Dossier
+   ═══════════════════════════════════════════════════ */
+@media print {
+    /* Hide interactive chrome and web-only UI elements */
+    .site-header,
+    .scroll-progress-bar,
+    .cookie-banner,
+    .executive-dialog,
+    .btn-back-to-top,
+    .btn-reveal-email,
+    .btn-copy,
+    .hero-actions,
+    .inquiry-actions,
+    .nav-links,
+    .filter-bar,
+    .download-stack {
+        display: none !important;
+    }
+
+    /* Force executive white paper color space */
+    *,
+    *::before,
+    *::after {
+        background: #ffffff !important;
+        color: #111111 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    body {
+        font-size: 10pt;
+        line-height: 1.5;
+        padding: 0;
+        margin: 0;
+    }
+
+    .container {
+        max-width: 100% !important;
+        padding: 0 1cm !important;
+        margin: 0 !important;
+    }
+
+    /* Prevent awkward orphan page breaks */
+    h1, h2, h3, h4, .section-header {
+        page-break-after: avoid;
+        break-after: avoid;
+    }
+
+    .qual-card,
+    .timeline-item,
+    .service-card,
+    .accordion-item,
+    .inquiry-card,
+    .stat-card {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        border: 1px solid #e0e0e0 !important;
+        margin-bottom: 0.8rem !important;
+    }
+
+    /* Ensure accordion case study details are printed */
+    .accordion-content {
+        max-height: none !important;
+        display: block !important;
+        opacity: 1 !important;
+    }
+
+    /* Print official contact details */
+    #official-email {
+        display: inline-block !important;
+        color: #111111 !important;
+        font-weight: bold;
+    }
+
+    #official-email::before {
+        content: "Official Email: hirolee@gmail.com";
+    }
+
+    /* Institutional Footer Stamp */
+    body::after {
+        content: "Hiro Lee Advisory · Executive Briefing Dossier | Verified Portfolio: https://hirolee-advisory.com | Contact: hirolee@gmail.com | © 2026 Hiro Lee. All Rights Reserved.";
+        display: block;
+        margin-top: 1.5cm;
+        padding-top: 8pt;
+        border-top: 1pt solid #b0b0b0;
+        font-family: monospace;
+        font-size: 8pt;
+        color: #444444 !important;
+        text-align: center;
+    }
+}
