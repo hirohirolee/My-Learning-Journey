@@ -6,7 +6,29 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     initAccordion();
+    initEmailProtection();
 });
+
+/**
+ * Anti-Scraping Dynamic Email Protection (ISO 27001 / Privacy Defense)
+ * Prevents automated harvester bots from scraping plain text mailto addresses.
+ */
+function initEmailProtection() {
+    const emailEls = document.querySelectorAll('.email-link');
+    emailEls.forEach(el => {
+        const user = el.getAttribute('data-user');
+        const domain = el.getAttribute('data-domain');
+        if (user && domain) {
+            const address = `${user}@${domain}`;
+            if (el.tagName.toLowerCase() === 'a') {
+                el.href = `mailto:${address}`;
+            }
+            if (el.classList.contains('email-address')) {
+                el.textContent = address;
+            }
+        }
+    });
+}
 
 /**
  * Accordion Interactivity for STAR Case Studies
@@ -54,7 +76,11 @@ window.copyToClipboard = function(btn, elementId) {
     const targetEl = document.getElementById(elementId);
     if (!targetEl) return;
 
-    const textToCopy = targetEl.innerText;
+    let textToCopy = targetEl.innerText || targetEl.textContent;
+    if (targetEl.hasAttribute('data-user') && targetEl.hasAttribute('data-domain')) {
+        textToCopy = `${targetEl.getAttribute('data-user')}@${targetEl.getAttribute('data-domain')}`;
+    }
+
     navigator.clipboard.writeText(textToCopy).then(() => {
         const originalHtml = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i> 已複製';

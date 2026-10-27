@@ -12,8 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Functional Icons Only -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Functional Icons Only (SRI Integrity Verified) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
     
     <!-- Bespoke Stylesheets -->
     <link rel="stylesheet" href="css/variables.css?v=4.0">
@@ -504,11 +504,11 @@
                             
                             <div class="email-display-box">
                                 <span class="email-label">Official Email:</span>
-                                <a href="mailto:hirolee@gmail.com" class="email-address" id="official-email">hirolee@gmail.com</a>
+                                <a href="#" class="email-address email-link" id="official-email" data-user="hirolee" data-domain="gmail.com" title="點擊直接寄信">載入中...</a>
                             </div>
 
                             <div class="inquiry-actions">
-                                <a href="mailto:hirolee@gmail.com" class="btn-primary">
+                                <a href="#" class="btn-primary email-link" data-user="hirolee" data-domain="gmail.com">
                                     <i class="fa-regular fa-envelope" aria-hidden="true"></i> 開啟信箱直接寫信
                                 </a>
                                 <button type="button" class="btn-copy" onclick="copyToClipboard(this, 'official-email')">
@@ -533,7 +533,7 @@
                 </div>
                 <nav class="footer-links" aria-label="頁尾連結">
                     <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
-                    <a href="mailto:hirolee@gmail.com">Email ↗</a>
+                    <a href="#" class="email-link" data-user="hirolee" data-domain="gmail.com">Email ↗</a>
                     <a href="ai-studio.html">AI Studio Lab ↗</a>
                     <a href="assets/Hiro_Lee_Resume.pdf" target="_blank" rel="noopener noreferrer">Resume PDF ↗</a>
                 </nav>
