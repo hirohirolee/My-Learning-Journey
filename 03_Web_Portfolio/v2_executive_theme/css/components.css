@@ -880,6 +880,52 @@
     text-underline-offset: 3px;
 }
 
+/* ─── Click-to-Reveal Email Button ─── */
+.btn-reveal-email {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--color-bg-elevated);
+    border: 1px dashed var(--color-gold);
+    color: var(--color-text-main);
+    padding: 10px 16px;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: var(--fw-medium);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-smooth);
+    width: fit-content;
+    margin-top: 4px;
+}
+
+.btn-reveal-email:hover {
+    background-color: var(--color-bg-surface);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateY(-1px);
+}
+
+.btn-reveal-email i {
+    color: var(--color-gold);
+    transition: color var(--transition-smooth);
+}
+
+.btn-reveal-email:hover i {
+    color: var(--color-accent);
+}
+
+.btn-reveal-email .reveal-hint {
+    font-size: 0.62rem;
+    color: var(--color-text-muted);
+}
+
+.btn-reveal-email.revealing {
+    border-style: solid;
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
 .inquiry-actions {
     display: flex;
     flex-wrap: wrap;

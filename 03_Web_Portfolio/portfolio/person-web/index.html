@@ -502,13 +502,18 @@
                                 歡迎直接寄信至官方信箱，可隨信附帶專案背景簡報、需求規格書或企業 NDA（保密協定）範本，以利第一時間評估合作契合度。
                             </p>
                             
-                            <div class="email-display-box">
+                            <div class="email-display-box" id="email-display-box">
                                 <span class="email-label">Official Email:</span>
-                                <a href="#" class="email-address email-link" id="official-email" data-user="hirolee" data-domain="gmail.com" title="點擊直接寄信">載入中...</a>
+                                <div class="email-reveal-wrapper" id="email-reveal-wrapper">
+                                    <button type="button" class="btn-reveal-email" id="btn-reveal-email" aria-label="點擊驗證以揭示官方信箱">
+                                        <i class="fa-solid fa-lock" aria-hidden="true"></i> 點擊驗證以揭示信箱 <span class="reveal-hint">(Click to Reveal)</span>
+                                    </button>
+                                </div>
+                                <a href="#" class="email-address email-link" id="official-email" data-user="hirolee" data-domain="gmail.com" title="點擊直接寄信" style="display: none;"></a>
                             </div>
 
-                            <div class="inquiry-actions">
-                                <a href="#" class="btn-primary email-link" data-user="hirolee" data-domain="gmail.com">
+                            <div class="inquiry-actions" id="inquiry-actions" style="display: none;">
+                                <a href="#" class="btn-primary email-link" data-user="hirolee" data-domain="gmail.com" id="btn-email-inquiry">
                                     <i class="fa-regular fa-envelope" aria-hidden="true"></i> 開啟信箱直接寫信
                                 </a>
                                 <button type="button" class="btn-copy" onclick="copyToClipboard(this, 'official-email')">
@@ -533,7 +538,7 @@
                 </div>
                 <nav class="footer-links" aria-label="頁尾連結">
                     <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
-                    <a href="#" class="email-link" data-user="hirolee" data-domain="gmail.com">Email ↗</a>
+                    <a href="#" class="email-link footer-email" data-user="hirolee" data-domain="gmail.com">諮詢信箱 🔒</a>
                     <a href="ai-studio.html">AI Studio Lab ↗</a>
                     <a href="assets/Hiro_Lee_Resume.pdf" target="_blank" rel="noopener noreferrer">Resume PDF ↗</a>
                 </nav>

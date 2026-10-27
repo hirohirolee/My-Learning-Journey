@@ -6,27 +6,61 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     initAccordion();
-    initEmailProtection();
+    initClickToRevealEmail();
 });
 
 /**
- * Anti-Scraping Dynamic Email Protection (ISO 27001 / Privacy Defense)
- * Prevents automated harvester bots from scraping plain text mailto addresses.
+ * Click-to-Reveal Email Protection (Strict Privacy Defense Mode)
+ * Email remains completely hidden until a human visitor explicitly clicks the reveal button.
  */
-function initEmailProtection() {
-    const emailEls = document.querySelectorAll('.email-link');
-    emailEls.forEach(el => {
-        const user = el.getAttribute('data-user');
-        const domain = el.getAttribute('data-domain');
-        if (user && domain) {
-            const address = `${user}@${domain}`;
-            if (el.tagName.toLowerCase() === 'a') {
+function initClickToRevealEmail() {
+    const revealBtn = document.getElementById('btn-reveal-email');
+    const emailWrapper = document.getElementById('email-reveal-wrapper');
+    const inquiryActions = document.getElementById('inquiry-actions');
+
+    function revealAllEmails() {
+        const emailEls = document.querySelectorAll('.email-link');
+        emailEls.forEach(el => {
+            const user = el.getAttribute('data-user');
+            const domain = el.getAttribute('data-domain');
+            if (user && domain) {
+                const address = `${user}@${domain}`;
                 el.href = `mailto:${address}`;
+                if (el.classList.contains('email-address')) {
+                    el.textContent = address;
+                    el.style.display = 'inline-block';
+                } else if (el.classList.contains('footer-email')) {
+                    el.innerHTML = `${address} ↗`;
+                }
             }
-            if (el.classList.contains('email-address')) {
-                el.textContent = address;
+        });
+
+        if (emailWrapper) emailWrapper.style.display = 'none';
+        if (inquiryActions) inquiryActions.style.display = 'flex';
+    }
+
+    if (revealBtn) {
+        revealBtn.addEventListener('click', function() {
+            revealBtn.innerHTML = '<i class="fa-solid fa-lock-open" aria-hidden="true"></i> 驗證完成，正在揭示...';
+            revealBtn.classList.add('revealing');
+            setTimeout(() => {
+                revealAllEmails();
+            }, 300);
+        });
+    }
+
+    // Direct click handling on footer email if clicked before card reveal
+    document.querySelectorAll('.footer-email').forEach(el => {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            const user = this.getAttribute('data-user');
+            const domain = this.getAttribute('data-domain');
+            if (user && domain) {
+                revealAllEmails();
+                const address = `${user}@${domain}`;
+                window.location.href = `mailto:${address}`;
             }
-        }
+        });
     });
 }
 
