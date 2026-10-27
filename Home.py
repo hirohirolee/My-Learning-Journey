@@ -70,6 +70,8 @@ candidate_paths = [
     os.path.join(BASE_DIR, "04_Misc_Applications", "ORC"),
     os.path.join(BASE_DIR, "04_Misc_Applications", "AI+RAG"),
     os.path.join(BASE_DIR, "04_Misc_Applications", "miclaw"),
+    # Category 4: Executive Governance Studio
+    os.path.join(BASE_DIR, "04_Misc_Applications", "Executive_Governance_Studio"),
 ]
 
 for p in candidate_paths:
@@ -126,6 +128,11 @@ royal_app = make_page("streamlit_candidates/04_Misc_Applications/Royalgame/main.
 game_bj = make_page("streamlit_candidates/04_Misc_Applications/15games/blackjack.py", title="21 點撲克牌遊戲 (Blackjack)", icon="🃏", url_path="game-blackjack")
 game_ttt = make_page("streamlit_candidates/04_Misc_Applications/15games/tictactoe.py", title="井字棋 (Tic-Tac-Toe)", icon="❌", url_path="game-tictactoe")
 
+# 7. Executive Governance Studio (EU CBAM / EU AI Act / ISO 27001)
+exec_cbam = make_page("04_Misc_Applications/Executive_Governance_Studio/cbam_calculator.py", title="EU CBAM 碳關稅財務衝擊試算引擎", icon="⚖️", url_path="esg-cbam-calculator")
+exec_ai_act = make_page("04_Misc_Applications/Executive_Governance_Studio/ai_act_scanner.py", title="EU AI Act 人工智慧風險分級掃描器", icon="🛡️", url_path="ai-act-scanner")
+exec_iso = make_page("04_Misc_Applications/Executive_Governance_Studio/iso27001_radar.py", title="ISO 27001:2022 資安治理成熟度雷達", icon="🎯", url_path="iso-27001-radar")
+
 # =====================================================================
 # Structured Navigation System
 # =====================================================================
@@ -133,17 +140,18 @@ game_ttt = make_page("streamlit_candidates/04_Misc_Applications/15games/tictacto
 category_map = {
     "🏠 主頁總覽": [home_page],
     "🤖 AI 與數據學習專案": [
+        exec_ai_act,
         ai_orc, ai_flappy, ai_t2i, ai_linear, ai_top10, ai_startup,
         ai_boston, ai_california, ai_svm, ai_drama, ai_weather
     ],
     "🌿 ESG 企業永續專案": [
-        esg_main, esg_legacy
+        exec_cbam, esg_main, esg_legacy
     ],
     "📈 台灣 AI 量化選股系統": [
         quant_main, quant_apple, quant_time, quant_eval
     ],
     "🛡️ 數位韌性與大數據應用": [
-        resilience_legacy, lotto_app, btceth_app, crawler_app, sports_app
+        exec_iso, resilience_legacy, lotto_app, btceth_app, crawler_app, sports_app
     ],
     "🎮 生活趣味與遊戲專案": [
         yijing_app, mosaic_app, royal_app, game_bj, game_ttt
