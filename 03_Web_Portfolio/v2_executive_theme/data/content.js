@@ -86,10 +86,10 @@ const contentData = {
       "id": "ai-security-scanner",
       "title": "企業級 AI / LLM 資安防護與護欄檢測沙盒",
       "category": "ai",
-      "description": "結合 OWASP Top 10 for LLM 架構，提供 Prompt Injection 越獄攻擊檢測、PII 機敏資料外洩攔截脫敏與企業 AI 防護成熟度雷達評估。",
+      "description": "具備雙核心生產級防護：【方案 A】代碼與檔案機敏逐行掃描（API Key/個資脫敏修復），以及【方案 B】即時 LLM 紅隊滲透測試探針，整合全域 AI 護欄中樞 (Zero-Trust Guardrails)。",
       "icon": "fa-shield-virus",
-      "businessImpact": "協助企業在導入 LLM 與 AI Agent 前建立安全護欄 (Guardrails)，防止商業機密外流與模型濫用風險。",
-      "techStack": ["OWASP LLM Top 10", "Prompt Injection", "PII Redaction", "Plotly Radar", "Streamlit"],
+      "businessImpact": "協助企業在導入 LLM 與 AI Agent 前建立安全護欄 (Guardrails)，杜絕 Prompt 注入劫持、商業機密外流與模型濫用風險。",
+      "techStack": ["OWASP LLM Top 10", "AI Guardrails", "Prompt Injection", "PII Redaction", "Plotly Radar", "Streamlit"],
       "links": {
         "liveDemo": "https://hiro-journey.streamlit.app/ai-security-scanner"
       }

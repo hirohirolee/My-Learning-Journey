@@ -28,6 +28,7 @@ from egs_theme import (  # noqa: E402
     AMBER, BLUE, GOLD, PLOTLY_LAYOUT, RED, TEAL,
     banner, disclaimer, hero, inject_theme, section,
 )
+import ai_guardrails
 
 # =====================================================================
 # 1. Scanning Rules & Regex Database
@@ -255,6 +256,8 @@ hero(
     "整合實體檔案與代碼機敏深度掃描、即時 LLM API 紅隊滲透探針、Prompt 注入攔截與 OWASP 防禦成熟度評估，提供企業從開發到部署的全生命週期資安檢驗。",
 )
 
+ai_guardrails.render_guardrail_badge()
+
 # Callbacks for Module 3
 if "pi_input_text" not in st.session_state:
     st.session_state["pi_input_text"] = list(PRESET_ATTACKS.values())[0]
@@ -302,11 +305,15 @@ with tab_file:
     file_display_name = ""
 
     if uploaded_file is not None:
-        try:
-            content_to_scan = uploaded_file.read().decode("utf-8", errors="ignore")
-            file_display_name = uploaded_file.name
-        except Exception as e:
-            st.error(f"檔案讀取失敗: {e}")
+        is_valid, val_msg = ai_guardrails.validate_uploaded_file(uploaded_file, allowed_extensions={".txt", ".csv", ".env", ".py", ".js", ".json", ".log", ".sql", ".md"}, max_mb=10.0)
+        if not is_valid:
+            st.error(f"❌ 檔案上傳資安驗證攔截：{val_msg}")
+        else:
+            try:
+                content_to_scan = uploaded_file.read().decode("utf-8", errors="ignore")
+                file_display_name = uploaded_file.name
+            except Exception as e:
+                st.error(f"檔案讀取失敗: {e}")
     elif "scan_content_text" in st.session_state:
         content_to_scan = st.session_state["scan_content_text"]
         file_display_name = st.session_state.get("scan_filename", "demo_vulnerable_app.py")

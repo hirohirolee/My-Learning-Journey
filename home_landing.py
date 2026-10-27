@@ -42,6 +42,12 @@ with col3:
 with col4:
     st.metric(label="導覽體驗", value="下拉選單 + 自動換列", delta="全字體無遮擋")
 
+try:
+    import ai_guardrails
+    ai_guardrails.render_guardrail_badge()
+except Exception:
+    pass
+
 st.markdown("### 🌟 主題專案地圖")
 
 c1, c2 = st.columns(2)

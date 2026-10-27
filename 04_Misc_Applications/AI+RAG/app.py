@@ -5,10 +5,18 @@ import mock_data_generator
 import data_monitor
 import compliance_agent
 import os
+import sys
+
+try:
+    import ai_guardrails
+except ImportError:
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Executive_Governance_Studio")))
+    import ai_guardrails
 
 st.set_page_config(page_title="AI 顧問 - ISO 合規監控", page_icon="🏭", layout="wide")
 
 st.title("🏭 廠區數據解析與 ISO 合規 RAG AI 代理系統")
+ai_guardrails.render_guardrail_badge()
 st.markdown("本系統展示如何結合**規則引擎**與 **RAG (檢索增強生成)**，針對廠區異常能耗自動查閱 ISO 規範並生成顧問報告。*(基於本地端 HuggingFace + Ollama 模型)*")
 
 with st.sidebar:
@@ -70,7 +78,8 @@ with tab2:
                     vectorstore = compliance_agent.setup_rag_system()
                     
                     st.write("🧠 正在呼叫雲端 LLM (Groq API) 推理並撰寫報告...")
-                    report = compliance_agent.generate_compliance_report(anomalies_json, vectorstore, groq_api_key)
+                    raw_report = compliance_agent.generate_compliance_report(anomalies_json, vectorstore, groq_api_key)
+                    report = ai_guardrails.sanitize_output(raw_report)
                     
                     status.update(label="報告生成完成！", state="complete", expanded=False)
                     

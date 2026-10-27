@@ -69,6 +69,25 @@
                 <p>結合演算法模型、ESG 數據矩陣與無伺服器架構之實證沙盒，展示可落地的決策技術原型。</p>
             </header>
 
+            <!-- Enterprise AI Guardrails & Zero Trust Badge Banner -->
+            <div class="guardrail-status-card anim-target" data-anim="fade-in" style="background: rgba(18, 24, 38, 0.7); border: 1px solid rgba(197, 168, 128, 0.3); border-left: 4px solid #C5A880; border-radius: 8px; padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <i class="fa-solid fa-shield-halved" style="color: #C5A880; font-size: 22px;"></i>
+                    <div>
+                        <div style="font-weight: 600; color: #E2E8F0; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                            <span>全站 AI 應用啟用 OWASP Top 10 for LLM 資安護欄中樞</span>
+                            <span style="background: rgba(46, 204, 113, 0.15); color: #2ECC71; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(46, 204, 113, 0.4); font-family: monospace;">PROTECTED</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #94A3B8; margin-top: 3px;">
+                            防護範圍：LLM01 Prompt 注入阻斷 · LLM02 PII 個資自動脫敏 · LLM06 系統金鑰外洩防禦 · LLM07 XSS 輸出清洗 · LLM10 頻率限制
+                        </div>
+                    </div>
+                </div>
+                <a href="https://hiro-journey.streamlit.app/ai-security-scanner" target="_blank" rel="noopener noreferrer" style="font-size: 0.8rem; color: #C5A880; text-decoration: none; border: 1px solid rgba(197, 168, 128, 0.4); padding: 6px 14px; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(197,168,128,0.15)'" onmouseout="this.style.background='transparent'">
+                    進入資安檢測沙盒 ↗
+                </a>
+            </div>
+
             <!-- Category Filter Bar -->
             <div class="filter-bar filter-bar-wrapper anim-target" data-anim="fade-in">
                 <button class="filter-btn active" data-filter="all"><i class="fa-solid fa-layer-group"></i> 全部專案</button>
@@ -115,7 +134,7 @@
     </button>
 
     <!-- Application Logic -->
-    <script src="data/content.js?v=4.2"></script>
+    <script src="data/content.js?v=4.4"></script>
     <script src="js/ai-studio.js?v=4.0"></script>
     <script src="js/app.js?v=4.0"></script>
     <script src="js/cookie-consent.js?v=4.0"></script>

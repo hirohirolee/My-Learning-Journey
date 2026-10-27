@@ -2,11 +2,19 @@ import streamlit as st
 from langchain_groq import ChatGroq
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 import os
+import sys
+
+try:
+    import ai_guardrails
+except ImportError:
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Executive_Governance_Studio")))
+    import ai_guardrails
 
 # 網頁基本設定
 st.set_page_config(page_title="BizAgent 商務出差特務", page_icon="💼", layout="centered")
 
 st.title("💼 BizAgent 商務出差與行程管理特務")
+ai_guardrails.render_guardrail_badge()
 st.markdown("本系統模擬一個自主 AI Agent，接收出差需求並在背景調用模擬工具，為您產出專業的出差準備計畫。(採用雲端免費 Groq 服務)")
 
 # ==========================================
@@ -88,12 +96,40 @@ for msg in st.session_state.messages:
 # 接收使用者輸入與處理
 # ==========================================
 if prompt := st.chat_input("請輸入您的出差需求..."):
-    # 1. 顯示使用者輸入
+    # 0. 資安護欄：速率限制檢查 (DoS 防護)
+    allowed, cooldown_or_remain = ai_guardrails.check_rate_limit("bizagent", max_calls=12, window_seconds=60)
+    if not allowed:
+        st.error(f"🛑 系統請求過於頻繁（防範 DoS 攻擊）。請冷卻 {cooldown_or_remain} 秒後再試。")
+        st.stop()
+
+    # 1. 資安護欄：長度正規化與輸入消毒
+    prompt = ai_guardrails.sanitize_input(prompt, max_length=2000)
+
+    # 2. 資安護欄：Prompt 注入與越獄探測
+    is_safe, risk_lvl, findings = ai_guardrails.detect_injection(prompt)
+    if not is_safe:
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        with st.chat_message("assistant"):
+            st.error(f"🛡️ **系統資安護欄攔截 (OWASP LLM01 提示詞注入風險)**\n\n檢測到潛在惡意攻擊語意：`{', '.join(findings)}`（風險等級：`{risk_lvl}`）。\n\n系統已中斷轉發至大語言模型，以保障企業內部提示詞與系統運作安全。")
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": f"🛡️ [系統資安護欄攔截] 請求包含潛在提示詞注入語意 (`{', '.join(findings)}`)，已被拒絕執行。"
+            })
+        st.stop()
+
+    # 3. 資安護欄：個資與機敏數據脫敏 (PII Auto-Masking)
+    sanitized_prompt, pii_count = ai_guardrails.mask_pii(prompt)
+
+    # 4. 顯示使用者輸入
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
+        if pii_count > 0:
+            st.caption(f"🔒 *資安中樞已自動對輸入中的 {pii_count} 項機敏資料 (如電話/身分證/卡號) 進行脫敏遮罩後送出。*")
 
-    # 2. 呼叫 LLM 生成回應
+    # 5. 呼叫 LLM 生成回應
     with st.chat_message("assistant"):
         if not groq_api_key:
             st.warning("⚠️ 請先在左側邊欄輸入您的 Groq API Key！")
@@ -104,21 +140,26 @@ if prompt := st.chat_input("請輸入您的出差需求..."):
                 # 建立模型物件
                 llm = ChatGroq(model=model_name, temperature=temperature, groq_api_key=groq_api_key)
                 
-                # 組合對話歷史 (包含 System Prompt)
+                # 組合對話歷史 (包含 System Prompt)，傳入脫敏後的 sanitized_prompt
                 langchain_messages = [SystemMessage(content=SYSTEM_PROMPT)]
-                for m in st.session_state.messages:
+                for m in st.session_state.messages[:-1]:
                     if m["role"] == "user":
-                        # 強制在每次使用者對話後方加上提示，確保 LLM 記得用中文
-                        langchain_messages.append(HumanMessage(content=m["content"] + "\n\n【重要指令：你接下來所有的思考軌跡與最終報告，都必須嚴格使用『繁體中文 (Taiwan Traditional Chinese)』輸出，絕對不可以使用英文！】"))
+                        clean_history, _ = ai_guardrails.mask_pii(m["content"])
+                        langchain_messages.append(HumanMessage(content=clean_history + "\n\n【重要指令：你接下來所有的思考軌跡與最終報告，都必須嚴格使用『繁體中文 (Taiwan Traditional Chinese)』輸出，絕對不可以使用英文！】"))
                     elif m["role"] == "assistant":
                         langchain_messages.append(AIMessage(content=m["content"]))
+                
+                langchain_messages.append(HumanMessage(content=sanitized_prompt + "\n\n【重要指令：你接下來所有的思考軌跡與最終報告，都必須嚴格使用『繁體中文 (Taiwan Traditional Chinese)』輸出，絕對不可以使用英文！】"))
                 
                 # 取得回應
                 response = llm.invoke(langchain_messages)
                 
+                # 6. 資安護欄：輸出消毒 (金鑰阻絕 & XSS 清洗)
+                safe_output = ai_guardrails.sanitize_output(response.content)
+                
                 # 顯示並儲存結果
-                st.markdown(response.content)
-                st.session_state.messages.append({"role": "assistant", "content": response.content})
+                st.markdown(safe_output)
+                st.session_state.messages.append({"role": "assistant", "content": safe_output})
                 
             except Exception as e:
                 st.error(f"⚠️ 發生錯誤：{e}")
