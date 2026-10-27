@@ -19,6 +19,7 @@ pages = {
     "🏛️ Executive Governance Studio": [
         st.Page("cbam_calculator.py", title="EU CBAM 碳關稅財務衝擊試算", icon="⚖️", url_path="esg-cbam-calculator", default=True),
         st.Page("ai_act_scanner.py", title="EU AI Act 風險分級掃描器", icon="🛡️", url_path="ai-act-scanner"),
+        st.Page("ai_security_scanner.py", title="AI 系統資安與護欄檢測沙盒", icon="🔒", url_path="ai-security-scanner"),
         st.Page("iso27001_radar.py", title="ISO 27001:2022 成熟度雷達", icon="🎯", url_path="iso-27001-radar"),
     ]
 }

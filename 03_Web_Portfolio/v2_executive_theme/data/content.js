@@ -83,6 +83,18 @@ const contentData = {
       }
     },
     {
+      "id": "ai-security-scanner",
+      "title": "企業級 AI / LLM 資安防護與護欄檢測沙盒",
+      "category": "ai",
+      "description": "結合 OWASP Top 10 for LLM 架構，提供 Prompt Injection 越獄攻擊檢測、PII 機敏資料外洩攔截脫敏與企業 AI 防護成熟度雷達評估。",
+      "icon": "fa-shield-virus",
+      "businessImpact": "協助企業在導入 LLM 與 AI Agent 前建立安全護欄 (Guardrails)，防止商業機密外流與模型濫用風險。",
+      "techStack": ["OWASP LLM Top 10", "Prompt Injection", "PII Redaction", "Plotly Radar", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/ai-security-scanner"
+      }
+    },
+    {
       "id": "iso-27001-radar",
       "title": "ISO 27001:2022 資安治理成熟度雷達圖",
       "category": "resilience",

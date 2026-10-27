@@ -128,9 +128,10 @@ royal_app = make_page("streamlit_candidates/04_Misc_Applications/Royalgame/main.
 game_bj = make_page("streamlit_candidates/04_Misc_Applications/15games/blackjack.py", title="21 點撲克牌遊戲 (Blackjack)", icon="🃏", url_path="game-blackjack")
 game_ttt = make_page("streamlit_candidates/04_Misc_Applications/15games/tictactoe.py", title="井字棋 (Tic-Tac-Toe)", icon="❌", url_path="game-tictactoe")
 
-# 7. Executive Governance Studio (EU CBAM / EU AI Act / ISO 27001)
+# 7. Executive Governance Studio (EU CBAM / EU AI Act / ISO 27001 / AI Security)
 exec_cbam = make_page("04_Misc_Applications/Executive_Governance_Studio/cbam_calculator.py", title="EU CBAM 碳關稅財務衝擊試算引擎", icon="⚖️", url_path="esg-cbam-calculator")
 exec_ai_act = make_page("04_Misc_Applications/Executive_Governance_Studio/ai_act_scanner.py", title="EU AI Act 人工智慧風險分級掃描器", icon="🛡️", url_path="ai-act-scanner")
+exec_ai_sec = make_page("04_Misc_Applications/Executive_Governance_Studio/ai_security_scanner.py", title="AI 系統資安與護欄檢測沙盒", icon="🔒", url_path="ai-security-scanner")
 exec_iso = make_page("04_Misc_Applications/Executive_Governance_Studio/iso27001_radar.py", title="ISO 27001:2022 資安治理成熟度雷達", icon="🎯", url_path="iso-27001-radar")
 
 # =====================================================================
@@ -140,6 +141,7 @@ exec_iso = make_page("04_Misc_Applications/Executive_Governance_Studio/iso27001_
 category_map = {
     "🏠 主頁總覽": [home_page],
     "🤖 AI 與數據學習專案": [
+        exec_ai_sec,
         exec_ai_act,
         ai_orc, ai_flappy, ai_t2i, ai_linear, ai_top10, ai_startup,
         ai_boston, ai_california, ai_svm, ai_drama, ai_weather

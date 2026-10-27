@@ -10,5 +10,5 @@ Each module is a self-contained Streamlit page script. They are mounted by the
 root ``Home.py`` (via ``st.Page``) or launched standalone through ``app.py``.
 """
 
-__all__ = ["cbam_calculator", "ai_act_scanner", "iso27001_radar"]
+__all__ = ["cbam_calculator", "ai_act_scanner", "iso27001_radar", "ai_security_scanner"]
 __version__ = "1.0.0"
