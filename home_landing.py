@@ -34,11 +34,11 @@ st.divider()
 # Overview Statistics / Metrics
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    st.metric(label="專案類別", value="5 大主題", delta="完整架構")
+    st.metric(label="專案類別", value="5 大主題 + 治理沙盒", delta="高階決策矩陣")
 with col2:
-    st.metric(label="展示頁面", value="27 個功能頁", delta="全數 0 錯誤")
+    st.metric(label="展示頁面", value="31 個功能頁", delta="旗艦陣容 0 錯誤")
 with col3:
-    st.metric(label="技術堆疊", value="Python / ML / AI", delta="Streamlit Native")
+    st.metric(label="技術堆疊", value="Python / ML / RegTech", delta="Streamlit Native")
 with col4:
     st.metric(label="導覽體驗", value="下拉選單 + 自動換列", delta="全字體無遮擋")
 
@@ -49,13 +49,13 @@ c1, c2 = st.columns(2)
 with c1:
     st.markdown("""
     <div class="category-box">
-    <h4>🤖 1. AI 與數據機器學習專案 (AI Studio)</h4>
-    包含 YOLO 貓狗 AI 辨識與數量統計系統 (SOTA 雙階段三神經網絡 Ensemble)、Top 10 機器學習模型演算法、波士頓/加州房價回歸預測、3D SVM 核技巧視覺化、Puter.js AI 圖像生成、影視劇迷分析器與 CWA 氣象 AI 預報。
+    <h4>🤖 1. AI 演算法與治理安全專案 (AI & Governance Studio)</h4>
+    包含 <strong>企業級 AI/LLM 資安防護與紅隊掃描引擎</strong>、<strong>EU AI Act 人工智慧風險分級掃描器</strong>、YOLO 貓狗 AI 雙階段 Ensemble 辨識、Top 10 機器學習模型演算法、波士頓/加州房價預測、3D SVM 核技巧視覺化與 Puter.js AI 圖像生成。
     </div>
     
     <div class="category-box">
-    <h4>🌿 2. ESG 企業永續專案 (ESG Sustainability)</h4>
-    符合 GRI 準則與 ISO 14064-1 溫室氣體盤查規範，包含 ESG 企業永續報告生成系統與動態重大性門檻矩陣。
+    <h4>🌿 2. ESG 企業永續與法規合規 (ESG & Carbon Regulation)</h4>
+    包含 <strong>EU CBAM 歐盟碳關稅財務衝擊試算引擎</strong>、符合 ISO 14064-1 與 GRI 準則之 ESG 企業永續報告生成系統，以及動態雙曲線重大性門檻矩陣。
     </div>
     
     <div class="category-box">
@@ -67,8 +67,8 @@ with c1:
 with c2:
     st.markdown("""
     <div class="category-box">
-    <h4>🛡️ 4. 數位韌性與大數據應用 (Digital Resilience & Data)</h4>
-    包含數位韌性監控儀表板、製造業 AI 決策系統、BTC/ETH 區塊鏈分析儀表板、樂透大數據分析、跨論壇討論區爬蟲與體育賽事數據分析。
+    <h4>🛡️ 4. 數位韌性與資安防禦 (Digital Resilience & Security)</h4>
+    包含 <strong>ISO 27001:2022 資安治理成熟度雷達圖</strong>、製造業 AI 決策系統、BTC/ETH 區塊鏈分析儀表板、跨論壇輿情爬蟲與體育賽事數據分析。
     </div>
     
     <div class="category-box">
