@@ -55,6 +55,45 @@ const contentData = {
   ],
   "aiStudioProjects": [
 
+    // ==========================================
+    // Executive Governance Studio — 3 大旗艦高階治理決策工具
+    // ==========================================
+    {
+      "id": "esg-cbam-calculator",
+      "title": "EU CBAM 歐盟碳關稅財務衝擊試算引擎",
+      "category": "esg",
+      "description": "鎖定出口歐盟高碳排產業（鋼鐵扣件、鋁、水泥、肥料、氫），依 CBAM 正式期規則計算產品隱含排放、EU ETS 免費配額遞減調整與原產國碳價抵減，即時估算財務曝險。",
+      "icon": "fa-calculator",
+      "businessImpact": "協助 CFO / CSO 量化 2026–2034 碳關稅成本路徑與碳價敏感度，作為歐盟報價、綠電轉型與供應鏈調整之決策依據。",
+      "techStack": ["EU CBAM", "EU ETS Benchmark", "Plotly Waterfall", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/esg-cbam-calculator"
+      }
+    },
+    {
+      "id": "ai-act-scanner",
+      "title": "EU AI Act 企業人工智慧風險分級掃描器",
+      "category": "ai",
+      "description": "依歐盟人工智慧法 (EU 2024/1689) 風險金字塔（禁止、高風險、透明度義務、極小風險），即時判定 AI 系統分級、Art. 99 罰鍰曝險與 Art. 10–15 高風險義務落差清單。",
+      "icon": "fa-scale-balanced",
+      "businessImpact": "協助 CIO / CDO 於專案立項前完成法規可行性評估，規避最高 €3,500 萬或全球營業額 7% 之違規罰鍰。",
+      "techStack": ["EU AI Act", "RegTech", "Compliance Gap Analysis", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/ai-act-scanner"
+      }
+    },
+    {
+      "id": "iso-27001-radar",
+      "title": "ISO 27001:2022 資安治理成熟度雷達圖",
+      "category": "resilience",
+      "description": "將 ISO/IEC 27001:2022 附錄 A 四大主題、93 項控制措施濃縮為 8 大策略軸向，動態評量資安成熟度並對照稽核基準生成雷達圖與前三大改善行動矩陣。",
+      "icon": "fa-bullseye",
+      "businessImpact": "為 CISO 提供董事會報告等級的資安成熟度全貌，直觀掌握防禦短板並排定改善與資本支出優先順序。",
+      "techStack": ["ISO 27001:2022", "Annex A Controls", "Plotly Polar Radar", "Streamlit"],
+      "links": {
+        "liveDemo": "https://hiro-journey.streamlit.app/iso-27001-radar"
+      }
+    },
     {
       "id": "ai-cat-dog-orc",
       "title": "YOLO 貓狗 AI 辨識與數量統計 Web 系統",
